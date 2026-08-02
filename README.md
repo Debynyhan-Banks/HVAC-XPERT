@@ -54,7 +54,7 @@ Every contributor and AI agent must read these files in order:
 
 ## Immediate gate
 
-The first controlled extraction and its operating-state/measurement extension are technically approved in private, ignored packages. Internal development composes them through the validated private-package gate; public export remains disabled under the unresolved legal and source-rights hold. The deterministic simulator foundation preserves unknown behavior and applies only approved facts. The next authorized work is manual integration of the approved cooling phases and diagnostics; automatic transitions remain disabled because reviewed timing and transition conditions do not exist. Automated discovery or downloading begins only after `approved_for_collection` is set to `true` by an authorized reviewer in `sources/source-registry.yaml`.
+The first controlled extraction and its operating-state/measurement extension are technically approved in private, ignored packages. Internal development composes them through the validated private-package gate; public export remains disabled under the unresolved legal and source-rights hold. The deterministic simulator now supports exact manual phase selection, approved component commands, fault injection, and approved diagnostic definitions through a local JSON runner. The next authorized work is a private local interface over these snapshots; automatic transitions remain disabled because reviewed timing and transition conditions do not exist. Automated discovery or downloading begins only after `approved_for_collection` is set to `true` by an authorized reviewer in `sources/source-registry.yaml`.
 
 ## Completion protocol
 
