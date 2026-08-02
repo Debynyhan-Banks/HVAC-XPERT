@@ -34,3 +34,4 @@ Every completion report must state:
 - `Done`: what was completed, validated, committed, and pushed.
 - `Next`: the immediate next work unit.
 - `Blocked`: decisions, permissions, reviews, or synchronization failures preventing progress.
+- `Merge link`: the clickable GitHub pull-request URL whenever a merge is pending, or an explicit `Not applicable` when no pull request exists.

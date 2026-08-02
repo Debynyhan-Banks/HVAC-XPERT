@@ -65,6 +65,14 @@ Use the ladder defined in `VALIDATION_POLICY.md`. A record may advance only when
 
 One person may hold multiple roles during the pilot, but the review action and identity must still be recorded.
 
+## Current role assignments
+
+| Role | Assignee | Scope | Status | Assigned |
+| --- | --- | --- | --- | --- |
+| Technical reviewer | `Debynyhan-Banks` | Pilot family and model `ASXS6S4810AA`; HVAC/R correctness, applicability, and source comparison | Active | 2026-08-02 |
+
+Assignment does not automatically validate any technical assertion. Each review must still record the reviewer identity, date, cited evidence, outcome, and resulting validation level.
+
 ## Change control
 
 - Schema changes require a recorded decision and migration impact review.
