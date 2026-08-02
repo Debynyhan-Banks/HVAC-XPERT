@@ -49,8 +49,11 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Immutable `KNOWLEDGE_EXTENSION` packages implemented so new facts cannot inherit a base package's prior approval
 - Extension validation enforces base-package identity, model revision, record counts, provenance, and component/state/measurement references
 - Approval tooling now applies explicit decisions to operating-state and measurement records
-- Private pending package `RUN-ASXS6-20260802-002` created with six cooling-flow phases and six diagnostic measurements supported by fifteen page-cited assertions
+- Private extension `RUN-ASXS6-20260802-002` created with six cooling-flow phases and six diagnostic measurements supported by fifteen page-cited assertions
 - Candidate pages 5, 6, 10, 15, 16, 17, 21, and 72 visually reviewed during extraction
+- `Debynyhan-Banks` accepted all fifteen assertions in `RUN-ASXS6-20260802-002` at `2026-08-02T23:00:09Z`
+- Extension assertions advanced to `LEVEL_4_TECHNICIAN_REVIEWED` while retaining the legal and publication hold
+- Approved base and extension compose successfully at runtime as 16 components, 51 faults, 6 operating states, and 6 measurements
 - Ten package-gate tests, three extension-review tests, and ten simulator tests pass together
 
 ## In progress
@@ -59,7 +62,7 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Copyright, storage, factual-extraction, and derivative-use determination
 - Confirmation of exact official service, parts, and specification asset URLs
 - Manual-upload ingestion design using authorized documents or synthetic fixtures
-- HVAC/R technical review of private extension `RUN-ASXS6-20260802-002`
+- Simulator integration of the approved cooling-phase and diagnostic-measurement extension
 
 ## Blockers
 
@@ -68,12 +71,11 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Storage, factual-extraction, and derivative-publication rights remain unresolved
 - Exact official URLs for the service manual and parts catalog are unconfirmed
 - Technically approved records cannot enter the public repository while the legal hold remains
-- Pending extension records cannot load into the simulator until `Debynyhan-Banks` explicitly reviews and accepts all fifteen new assertions
 - Transition timing and automatic transition conditions remain unknown because the cooling-flow chart does not specify them
 
 ## Next action
 
-`Debynyhan-Banks` reviews `sources/private/review/RUN-ASXS6-20260802-002/package/REVIEW_SUMMARY.md` and the twelve private JSON records against service-manual pages 5, 6, 10, 15, 16, 17, 21, and 72. If every assertion is correct, create `review-decision.json` from the included template and explicitly approve package `RUN-ASXS6-20260802-002`; otherwise record the required revisions.
+Extend the deterministic simulator to expose and manually select the six approved cooling phases, apply only their explicit component commands, and surface the six approved diagnostic measurements. Keep automatic phase transitions disabled until reviewed timing and transition conditions exist.
 
 After the work unit passes validation, update this file, commit only the intended non-private files, and push the current branch to `origin`.
 
