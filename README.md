@@ -54,7 +54,7 @@ Every contributor and AI agent must read these files in order:
 
 ## Immediate gate
 
-The first controlled extraction is technically approved in a private, ignored package. Internal development loads it through a validated private-package gate; public export remains disabled under the unresolved legal and source-rights hold. The deterministic simulator foundation now preserves unknown behavior and applies only approved fault effects. The next authorized work is private operating-state and measurement extraction for technical review. Automated discovery or downloading begins only after `approved_for_collection` is set to `true` by an authorized reviewer in `sources/source-registry.yaml`.
+The first controlled extraction is technically approved in a private, ignored package. Internal development loads it through a validated private-package gate; public export remains disabled under the unresolved legal and source-rights hold. The deterministic simulator foundation preserves unknown behavior and applies only approved fault effects. A separate private operating-state and measurement extension is now pending HVAC/R technical review; it cannot load until explicitly approved. Automated discovery or downloading begins only after `approved_for_collection` is set to `true` by an authorized reviewer in `sources/source-registry.yaml`.
 
 ## Completion protocol
 

@@ -3,7 +3,7 @@
 import argparse
 import json
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -30,6 +30,9 @@ class PrivateKnowledgePackage:
     components: tuple[dict[str, Any], ...]
     faults: tuple[dict[str, Any], ...]
     wiring_assertions: tuple[dict[str, Any], ...]
+    operating_states: tuple[dict[str, Any], ...] = ()
+    measurements: tuple[dict[str, Any], ...] = ()
+    extension_package_ids: tuple[str, ...] = ()
 
     @property
     def model_id(self):
@@ -154,6 +157,58 @@ def validate_wiring_assertions(records, manifest):
         validate_provenance([assertion], manifest["model_id"], manifest, f"wiring assertion {fact_id}")
 
 
+def validate_operating_states(records, measurements, package, manifest):
+    state_ids = set()
+    component_ids = {record["component_id"] for record in package.components}
+    measurement_ids = {record.get("measurement_id") for record in package.measurements}
+    measurement_ids.update(record.get("measurement_id") for record in measurements)
+    available_state_ids = {record.get("state_id") for record in package.operating_states}
+    available_state_ids.update(record.get("state_id") for record in records)
+    for record in records:
+        state_id = record.get("state_id")
+        require(state_id and state_id not in state_ids, f"Duplicate or missing operating-state ID: {state_id}")
+        state_ids.add(state_id)
+        require(record.get("model_id") == package.model_id, f"Operating state {state_id} model ID mismatch")
+        require(record.get("revision_id") == package.revision_id, f"Operating state {state_id} revision mismatch")
+        commands = record.get("component_commands")
+        require(isinstance(commands, list), f"Operating state {state_id} component commands must be an array")
+        for command in commands:
+            require(isinstance(command, dict), f"Operating state {state_id} contains an invalid component command")
+            require(command.get("component_id") in component_ids, f"Operating state {state_id} references an unknown component")
+        transitions = record.get("transitions")
+        require(isinstance(transitions, list), f"Operating state {state_id} transitions must be an array")
+        for transition in transitions:
+            require(isinstance(transition, dict), f"Operating state {state_id} contains an invalid transition")
+            require(transition.get("target_state_id") in available_state_ids, f"Operating state {state_id} references an unknown target state")
+        referenced_measurements = record.get("measurement_ids")
+        require(isinstance(referenced_measurements, list), f"Operating state {state_id} measurement IDs must be an array")
+        require(set(referenced_measurements) <= measurement_ids, f"Operating state {state_id} references an unknown measurement")
+        validate_provenance(record.get("provenance"), state_id, manifest, f"operating state {state_id}")
+
+
+def validate_measurements(records, operating_states, package, manifest):
+    measurement_ids = set()
+    component_ids = {record["component_id"] for record in package.components}
+    available_state_ids = {record.get("state_id") for record in package.operating_states}
+    available_state_ids.update(record.get("state_id") for record in operating_states)
+    for record in records:
+        measurement_id = record.get("measurement_id")
+        require(measurement_id and measurement_id not in measurement_ids, f"Duplicate or missing measurement ID: {measurement_id}")
+        measurement_ids.add(measurement_id)
+        require(record.get("model_id") == package.model_id, f"Measurement {measurement_id} model ID mismatch")
+        require(record.get("revision_id") == package.revision_id, f"Measurement {measurement_id} revision mismatch")
+        operating_state_id = record.get("operating_state_id")
+        require(operating_state_id is None or operating_state_id in available_state_ids, f"Measurement {measurement_id} references an unknown operating state")
+        for point_name in ("point_a", "point_b"):
+            point = record.get(point_name)
+            if point is None:
+                continue
+            require(isinstance(point, dict), f"Measurement {measurement_id} {point_name} must be an object or null")
+            if point.get("reference_type") == "COMPONENT_TERMINAL":
+                require(point.get("reference_id") in component_ids, f"Measurement {measurement_id} references an unknown component")
+        validate_provenance(record.get("provenance"), measurement_id, manifest, f"measurement {measurement_id}")
+
+
 def validate_no_binaries(package_root):
     forbidden_suffixes = {".pdf", ".png", ".jpg", ".jpeg"}
     forbidden_files = [path for path in package_root.rglob("*") if path.is_file() and path.suffix.lower() in forbidden_suffixes]
@@ -203,6 +258,62 @@ def load_private_approved_package(package_path, private_root=DEFAULT_PRIVATE_ROO
     )
 
 
+def load_private_approved_extension(extension_path, package, private_root=DEFAULT_PRIVATE_ROOT):
+    extension_root = require_private_path(Path(extension_path), Path(private_root))
+    manifest = load_json(extension_root / "package-manifest.json")
+    require(manifest.get("package_kind") == "KNOWLEDGE_EXTENSION", "Extension package kind must be KNOWLEDGE_EXTENSION")
+    require(manifest.get("base_package_id") == package.manifest["package_id"], "Extension base package ID mismatch")
+    require(manifest.get("model_id") == package.model_id, "Extension model ID mismatch")
+    require(manifest.get("revision_id") == package.revision_id, "Extension revision ID mismatch")
+    require(manifest.get("status") == INTERNAL_APPROVED_STATUS, f"Extension status must be {INTERNAL_APPROVED_STATUS}")
+    require(manifest.get("publication_allowed") is False, "Internal extension cannot be marked for publication")
+    require(manifest.get("contains_source_binaries") is False, "Extension manifest cannot claim embedded source binaries")
+    require(isinstance(manifest.get("document_ids"), list) and manifest["document_ids"], "Extension document list is missing")
+
+    technical_review = manifest.get("technical_review", {})
+    require(technical_review.get("outcome") == "ACCEPTED", "Extension technical review outcome must be ACCEPTED")
+    require(technical_review.get("scope") == "ALL_ASSERTIONS", "Extension technical review must cover all assertions")
+    require(technical_review.get("reviewer_id") == manifest.get("assigned_reviewer"), "Extension technical reviewer does not match assignment")
+    require(technical_review.get("legal_hold") is True, "Approved extension must retain legal hold")
+    require(isinstance(technical_review.get("reviewed_at"), str), "Extension technical review timestamp is missing")
+    validate_decision(extension_root, manifest)
+
+    operating_states = load_records(extension_root / "operating-states")
+    measurements = load_records(extension_root / "measurements")
+    actual_counts = {
+        "operating_states": len(operating_states),
+        "measurements": len(measurements),
+    }
+    require(manifest.get("record_counts") == actual_counts, f"Extension record counts do not match manifest: {actual_counts}")
+    validate_measurements(measurements, operating_states, package, manifest)
+    validate_operating_states(operating_states, measurements, package, manifest)
+    validate_no_binaries(extension_root)
+
+    assertion_count = sum(len(record["provenance"]) for record in operating_states)
+    assertion_count += sum(len(record["provenance"]) for record in measurements)
+    require(technical_review.get("assertion_count") == assertion_count, "Extension technical-review assertion count does not match package")
+    return manifest, operating_states, measurements
+
+
+def load_private_approved_package_with_extensions(package_path, extension_paths, private_root=DEFAULT_PRIVATE_ROOT):
+    package = load_private_approved_package(package_path, private_root)
+    for extension_path in extension_paths:
+        manifest, operating_states, measurements = load_private_approved_extension(extension_path, package, private_root)
+        existing_state_ids = {record["state_id"] for record in package.operating_states}
+        new_state_ids = {record["state_id"] for record in operating_states}
+        require(existing_state_ids.isdisjoint(new_state_ids), "Extension operating-state IDs overlap a loaded extension")
+        existing_measurement_ids = {record["measurement_id"] for record in package.measurements}
+        new_measurement_ids = {record["measurement_id"] for record in measurements}
+        require(existing_measurement_ids.isdisjoint(new_measurement_ids), "Extension measurement IDs overlap a loaded extension")
+        package = replace(
+            package,
+            operating_states=package.operating_states + operating_states,
+            measurements=package.measurements + measurements,
+            extension_package_ids=package.extension_package_ids + (manifest["package_id"],),
+        )
+    return package
+
+
 def publication_blockers(package_or_manifest):
     manifest = package_or_manifest.manifest if isinstance(package_or_manifest, PrivateKnowledgePackage) else package_or_manifest
     blockers = []
@@ -239,6 +350,9 @@ def package_summary(package):
         "components": len(package.components),
         "faults": len(package.faults),
         "wiring_assertions": len(package.wiring_assertions),
+        "operating_states": len(package.operating_states),
+        "measurements": len(package.measurements),
+        "extension_package_ids": package.extension_package_ids,
     }
 
 
@@ -246,6 +360,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Load an approved private knowledge package and enforce its publication gate.")
     parser.add_argument("package", type=Path)
     parser.add_argument("--private-root", type=Path, default=DEFAULT_PRIVATE_ROOT)
+    parser.add_argument("--extension", action="append", type=Path, default=[])
     parser.add_argument("--mode", choices=("internal", "public"), default="internal")
     return parser.parse_args()
 
@@ -253,7 +368,7 @@ def parse_args():
 def main():
     args = parse_args()
     try:
-        package = load_private_approved_package(args.package, args.private_root)
+        package = load_private_approved_package_with_extensions(args.package, args.extension, args.private_root)
         if args.mode == "public":
             assert_public_export_allowed(package)
     except (PackageValidationError, PublicationBlockedError) as error:

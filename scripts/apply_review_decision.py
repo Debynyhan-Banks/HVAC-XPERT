@@ -21,9 +21,11 @@ def write_json(path, value):
 
 
 def record_paths(package_root):
-    yield package_root / "equipment-model.json"
-    yield from sorted((package_root / "components").glob("*.json"))
-    yield from sorted((package_root / "faults").glob("*.json"))
+    model_path = package_root / "equipment-model.json"
+    if model_path.is_file():
+        yield model_path
+    for directory in ("components", "faults", "operating-states", "measurements"):
+        yield from sorted((package_root / directory).glob("*.json"))
 
 
 def apply_validation(assertion, reviewer_id, reviewed_at, notes):
@@ -72,6 +74,12 @@ def apply(package_root, decision_path):
         raise ValueError("This command applies only a complete ACCEPTED decision")
     if decision.get("scope") != "ALL_ASSERTIONS":
         raise ValueError("Complete approval requires ALL_ASSERTIONS scope")
+    if decision.get("publication_authorized") is not False:
+        raise ValueError("Technical approval cannot authorize publication")
+    if not isinstance(decision.get("reviewed_at"), str) or not decision["reviewed_at"]:
+        raise ValueError("Complete approval requires a review timestamp")
+    if not isinstance(decision.get("reviewer_statement"), str) or not decision["reviewer_statement"]:
+        raise ValueError("Complete approval requires a reviewer statement")
 
     reviewer_id = decision["reviewer_id"]
     reviewed_at = decision["reviewed_at"]

@@ -9,6 +9,7 @@ from scripts.private_package_gate import (
     PublicationBlockedError,
     assert_public_export_allowed,
     load_private_approved_package,
+    load_private_approved_package_with_extensions,
 )
 
 
@@ -57,6 +58,12 @@ def provenance(fact_id, entity_id):
             "notes": "Synthetic approval",
         },
     }
+
+
+def extension_provenance(fact_id, entity_id, package_id):
+    assertion = provenance(fact_id, entity_id)
+    assertion["extraction"]["run_id"] = package_id
+    return assertion
 
 
 def package_data():
@@ -138,6 +145,69 @@ class PrivatePackageFixture:
     def close(self):
         self.temporary_directory.cleanup()
 
+    def write_extension(self, package_id="RUN-SYNTHETIC-EXTENSION-001"):
+        extension_root = self.private_root / "review" / package_id / "package"
+        state_id = f"{MODEL_ID}:state:idle"
+        measurement_id = f"{MODEL_ID}:measurement:supply"
+        manifest = {
+            "schema_version": "1.0.0",
+            "package_kind": "KNOWLEDGE_EXTENSION",
+            "package_id": package_id,
+            "base_package_id": PACKAGE_ID,
+            "model_id": MODEL_ID,
+            "revision_id": REVISION_ID,
+            "status": "TECHNICALLY_APPROVED_LEGAL_HOLD",
+            "assigned_reviewer": REVIEWER_ID,
+            "publication_allowed": False,
+            "contains_source_binaries": False,
+            "document_ids": [DOCUMENT_ID],
+            "record_counts": {"operating_states": 1, "measurements": 1},
+            "technical_review": {
+                "outcome": "ACCEPTED",
+                "scope": "ALL_ASSERTIONS",
+                "reviewer_id": REVIEWER_ID,
+                "reviewed_at": REVIEWED_AT,
+                "assertion_count": 2,
+                "decision_file": "review-decision.json",
+                "legal_hold": True,
+            },
+        }
+        decision = {
+            "package_id": package_id,
+            "reviewer_id": REVIEWER_ID,
+            "outcome": "ACCEPTED",
+            "scope": "ALL_ASSERTIONS",
+            "reviewed_at": REVIEWED_AT,
+            "publication_authorized": False,
+        }
+        measurement = {
+            "schema_version": "1.0.0",
+            "measurement_id": measurement_id,
+            "model_id": MODEL_ID,
+            "revision_id": REVISION_ID,
+            "operating_state_id": state_id,
+            "point_a": {"reference_type": "COMPONENT_TERMINAL", "reference_id": self.component["component_id"]},
+            "point_b": None,
+            "provenance": [extension_provenance("FACT-SYNTHETIC-MEASUREMENT", measurement_id, package_id)],
+        }
+        state = {
+            "schema_version": "1.0.0",
+            "state_id": state_id,
+            "model_id": MODEL_ID,
+            "revision_id": REVISION_ID,
+            "component_commands": [
+                {"component_id": self.component["component_id"], "property": "state", "value": "UNKNOWN", "unit": None}
+            ],
+            "transitions": [],
+            "measurement_ids": [measurement_id],
+            "provenance": [extension_provenance("FACT-SYNTHETIC-STATE", state_id, package_id)],
+        }
+        write_json(extension_root / "package-manifest.json", manifest)
+        write_json(extension_root / "review-decision.json", decision)
+        write_json(extension_root / "measurements" / "supply.json", measurement)
+        write_json(extension_root / "operating-states" / "idle.json", state)
+        return extension_root, manifest, state
+
 
 class PrivatePackageGateTests(unittest.TestCase):
     def setUp(self):
@@ -197,6 +267,39 @@ class PrivatePackageGateTests(unittest.TestCase):
     def test_rejects_package_outside_private_root(self):
         with self.assertRaisesRegex(PackageValidationError, "must remain under private root"):
             load_private_approved_package(self.fixture.package_root, self.fixture.private_root / "different")
+
+    def test_loads_approved_extension_records(self):
+        extension_root, _, _ = self.fixture.write_extension()
+        package = load_private_approved_package_with_extensions(
+            self.fixture.package_root,
+            (extension_root,),
+            self.fixture.private_root,
+        )
+        self.assertEqual(len(package.operating_states), 1)
+        self.assertEqual(len(package.measurements), 1)
+        self.assertEqual(package.extension_package_ids, ("RUN-SYNTHETIC-EXTENSION-001",))
+
+    def test_rejects_extension_for_different_base_package(self):
+        extension_root, manifest, _ = self.fixture.write_extension()
+        manifest["base_package_id"] = "DIFFERENT-BASE"
+        write_json(extension_root / "package-manifest.json", manifest)
+        with self.assertRaisesRegex(PackageValidationError, "base package ID mismatch"):
+            load_private_approved_package_with_extensions(
+                self.fixture.package_root,
+                (extension_root,),
+                self.fixture.private_root,
+            )
+
+    def test_rejects_extension_with_unknown_component_reference(self):
+        extension_root, _, state = self.fixture.write_extension()
+        state["component_commands"][0]["component_id"] = "UNKNOWN-COMPONENT"
+        write_json(extension_root / "operating-states" / "idle.json", state)
+        with self.assertRaisesRegex(PackageValidationError, "unknown component"):
+            load_private_approved_package_with_extensions(
+                self.fixture.package_root,
+                (extension_root,),
+                self.fixture.private_root,
+            )
 
 
 if __name__ == "__main__":
