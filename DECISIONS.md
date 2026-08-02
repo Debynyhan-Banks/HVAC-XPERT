@@ -92,3 +92,10 @@ This file records accepted cross-project decisions. Revisions must preserve prio
 - Date: 2026-08-02
 - Decision: The deterministic simulator applies only explicit operating-state commands and fault effects from approved model-revision records. Missing component behavior remains `UNKNOWN`, and conflicting active effects fail closed rather than being resolved by precedence or inference.
 - Reason: A plausible sequence is not evidence of the manufacturer's actual sequence and could create unsafe troubleshooting guidance.
+
+## ADR-014: New assertions use immutable approval extensions
+
+- Status: Accepted
+- Date: 2026-08-02
+- Decision: New facts added after a package is technically approved enter a separate pending `KNOWLEDGE_EXTENSION` that references the approved base package. Runtime composition is allowed only after the extension receives its own complete technical decision.
+- Reason: Editing an approved package would silently broaden the scope of its prior review and weaken the audit trail.
