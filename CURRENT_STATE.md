@@ -36,6 +36,10 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Accepted assertions advanced to `LEVEL_4_TECHNICIAN_REVIEWED`
 - Three wiring pages accepted as equivalent applicable renderings of the 3.5-5.0 ton outdoor AC drawing
 - Technical approval audit recorded while retaining the package under legal hold
+- Private approved-package loader implemented with model, revision, count, provenance, decision, and private-path validation
+- Fail-closed publication gate implemented with separate technical, legal-hold, and publication-approval requirements
+- Seven synthetic gate tests pass for valid loading, status, provenance, revision, path, legal hold, and explicit publication approval
+- Approved pilot package loads successfully for internal use while public mode is rejected as required
 
 ## In progress
 
@@ -43,7 +47,7 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Copyright, storage, factual-extraction, and derivative-use determination
 - Confirmation of exact official service, parts, and specification asset URLs
 - Manual-upload ingestion design using authorized documents or synthetic fixtures
-- Private approved-package loader and fail-closed publication gate
+- Deterministic simulator foundation using runtime-loaded private approved records
 
 ## Blockers
 
@@ -55,7 +59,7 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 
 ## Next action
 
-Build a private approved-package loader and fail-closed publication gate that permits internal development with `RUN-ASXS6-20260802-001` while refusing public export because `publication_allowed` is `false`.
+Define the deterministic simulator foundation for `ASXS6S4810AA`, beginning with stable component state, operating inputs, fault-state interfaces, and tests. Load approved model metadata at runtime through the private package gate; do not commit private records.
 
 After the work unit passes validation, update this file, commit only the intended non-private files, and push the current branch to `origin`.
 
