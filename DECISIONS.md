@@ -85,3 +85,10 @@ This file records accepted cross-project decisions. Revisions must preserve prio
 - Date: 2026-08-02
 - Decision: Technically approved private packages may support internal development, but public export requires a separate explicit publication approval and a cleared legal hold. All missing or contradictory gate values block export.
 - Reason: HVAC/R correctness review does not establish source licensing, redistribution rights, or permission to publish manufacturer-derived records.
+
+## ADR-013: Missing simulator behavior remains unknown
+
+- Status: Accepted
+- Date: 2026-08-02
+- Decision: The deterministic simulator applies only explicit operating-state commands and fault effects from approved model-revision records. Missing component behavior remains `UNKNOWN`, and conflicting active effects fail closed rather than being resolved by precedence or inference.
+- Reason: A plausible sequence is not evidence of the manufacturer's actual sequence and could create unsafe troubleshooting guidance.

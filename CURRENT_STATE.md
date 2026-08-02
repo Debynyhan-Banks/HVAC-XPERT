@@ -40,6 +40,12 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Fail-closed publication gate implemented with separate technical, legal-hold, and publication-approval requirements
 - Seven synthetic gate tests pass for valid loading, status, provenance, revision, path, legal hold, and explicit publication approval
 - Approved pilot package loads successfully for internal use while public mode is rejected as required
+- Deterministic simulator core implemented with immutable model, revision, component, fault, and effect definitions
+- Explicit power and operation-requested inputs produce stable engine-level statuses without inferring manufacturer behavior
+- Manual fault activation accepts only exact approved fault codes and applies only declared simulator effects
+- Matching effects combine deterministically while conflicting active effects fail closed
+- Ten synthetic simulator tests pass for input validation, unknown-state preservation, fault activation, clearing, effects, definition validation, conflicts, and replay determinism
+- All seventeen private-gate and simulator tests pass together
 
 ## In progress
 
@@ -56,10 +62,11 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Storage, factual-extraction, and derivative-publication rights remain unresolved
 - Exact official URLs for the service manual and parts catalog are unconfirmed
 - Technically approved records cannot enter the public repository while the legal hold remains
+- Manufacturer-specific component commands, timing, transitions, measurements, and lockout behavior cannot be simulated until operating-state and measurement records are extracted and technically approved
 
 ## Next action
 
-Define the deterministic simulator foundation for `ASXS6S4810AA`, beginning with stable component state, operating inputs, fault-state interfaces, and tests. Load approved model metadata at runtime through the private package gate; do not commit private records.
+Extend the private extraction package and gate to load canonical operating-state and measurement records. Extract model- and revision-specific sequence facts from the private service and installation documents for `Debynyhan-Banks` to review; use synthetic fixtures until those facts are accepted.
 
 After the work unit passes validation, update this file, commit only the intended non-private files, and push the current branch to `origin`.
 

@@ -67,4 +67,4 @@ Before handing off work:
 
 ## Current authorized scope
 
-Governance, schema validation, private approved-package loading, and deterministic simulator development are authorized. Private records must be loaded at runtime and must not be committed. Automated collection is not authorized until a source reviewer sets `approved_for_collection: true` for the exact source. Public export is not authorized while the package legal hold remains active.
+Governance, schema validation, private approved-package loading, and deterministic simulator development are authorized. The next simulator work must add reviewed operating-state and measurement records to the private package before implementing manufacturer-specific transitions. Private records must be loaded at runtime and must not be committed. Automated collection is not authorized until a source reviewer sets `approved_for_collection: true` for the exact source. Public export is not authorized while the package legal hold remains active.
