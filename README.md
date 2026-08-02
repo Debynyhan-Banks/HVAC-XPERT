@@ -54,7 +54,7 @@ Every contributor and AI agent must read these files in order:
 
 ## Immediate gate
 
-The next authorized work is controlled extraction from the four manually supplied pilot documents. Extracted facts remain in review status with page-level provenance. Automated discovery or downloading begins only after `approved_for_collection` is set to `true` by an authorized reviewer in `sources/source-registry.yaml`.
+The first controlled extraction is complete in a private, ignored review package. The next authorized work is technical review of its page-cited model, component, fault-index, and wiring-inventory assertions. Automated discovery or downloading begins only after `approved_for_collection` is set to `true` by an authorized reviewer in `sources/source-registry.yaml`.
 
 ## Completion protocol
 
