@@ -78,3 +78,10 @@ This file records accepted cross-project decisions. Revisions must preserve prio
 - Date: 2026-08-02
 - Decision: Each validated work unit is committed and pushed to `https://github.com/Debynyhan-Banks/HVAC-XPERT.git` before it is reported complete. Normal changes use a focused branch and pull request when supported; the initial publication may establish `main` directly.
 - Reason: Frequent remote synchronization preserves continuity, reviewability, and recovery while the project is developed across human and AI work sessions.
+
+## ADR-012: Technical approval and publication authorization are separate gates
+
+- Status: Accepted
+- Date: 2026-08-02
+- Decision: Technically approved private packages may support internal development, but public export requires a separate explicit publication approval and a cleared legal hold. All missing or contradictory gate values block export.
+- Reason: HVAC/R correctness review does not establish source licensing, redistribution rights, or permission to publish manufacturer-derived records.
