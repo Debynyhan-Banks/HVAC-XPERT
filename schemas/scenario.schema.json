@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.hvac-xpert.local/scenario.schema.json",
+  "title": "Training Scenario",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "scenario_id",
+    "model_id",
+    "revision_id",
+    "title",
+    "description",
+    "difficulty",
+    "starting_state_id",
+    "injected_fault_ids",
+    "required_tools",
+    "learning_objectives",
+    "steps",
+    "completion_criteria",
+    "safety_notes",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": {"$ref": "common.schema.json#/$defs/schemaVersion"},
+    "scenario_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "model_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "revision_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "title": {"type": "string", "minLength": 1},
+    "description": {"$ref": "common.schema.json#/$defs/nullableString"},
+    "difficulty": {"type": "string", "enum": ["FOUNDATIONAL", "APPRENTICE", "TECHNICIAN", "ADVANCED", "INSTRUCTOR"]},
+    "starting_state_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "injected_fault_ids": {"$ref": "common.schema.json#/$defs/idArray"},
+    "required_tools": {"$ref": "common.schema.json#/$defs/stringArray"},
+    "learning_objectives": {"$ref": "common.schema.json#/$defs/stringArray"},
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["step_id", "prompt", "allowed_action_types", "expected_evidence", "hint", "safety_gate"],
+        "properties": {
+          "step_id": {"$ref": "common.schema.json#/$defs/entityId"},
+          "prompt": {"type": "string", "minLength": 1},
+          "allowed_action_types": {"$ref": "common.schema.json#/$defs/stringArray"},
+          "expected_evidence": {"$ref": "common.schema.json#/$defs/stringArray"},
+          "hint": {"$ref": "common.schema.json#/$defs/nullableString"},
+          "safety_gate": {"type": "boolean"}
+        }
+      }
+    },
+    "completion_criteria": {"$ref": "common.schema.json#/$defs/stringArray"},
+    "safety_notes": {"$ref": "common.schema.json#/$defs/stringArray"},
+    "provenance": {"$ref": "common.schema.json#/$defs/provenanceArray"}
+  }
+}

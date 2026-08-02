@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.hvac-xpert.local/component.schema.json",
+  "title": "Equipment Component",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "component_id",
+    "model_id",
+    "revision_id",
+    "display_name",
+    "component_type",
+    "manufacturer_part_number",
+    "parent_component_id",
+    "connector_ids",
+    "attributes",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": {"$ref": "common.schema.json#/$defs/schemaVersion"},
+    "component_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "model_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "revision_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "display_name": {"type": "string", "minLength": 1},
+    "component_type": {
+      "type": "string",
+      "enum": [
+        "CONTROL_BOARD",
+        "INVERTER_BOARD",
+        "COMPRESSOR",
+        "MOTOR",
+        "CONTACTOR",
+        "RELAY",
+        "TRANSFORMER",
+        "CAPACITOR",
+        "RESISTOR",
+        "INDUCTOR",
+        "DIODE",
+        "FUSE",
+        "SWITCH",
+        "SENSOR",
+        "THERMISTOR",
+        "PRESSURE_TRANSDUCER",
+        "VALVE",
+        "HEAT_EXCHANGER",
+        "FILTER_DRIER",
+        "CONNECTOR",
+        "TERMINAL_BLOCK",
+        "OTHER",
+        "UNKNOWN"
+      ]
+    },
+    "manufacturer_part_number": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+    "parent_component_id": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+    "connector_ids": {"$ref": "common.schema.json#/$defs/idArray"},
+    "attributes": {"type": "object", "additionalProperties": true},
+    "provenance": {"$ref": "common.schema.json#/$defs/provenanceArray"}
+  }
+}

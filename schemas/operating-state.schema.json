@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.hvac-xpert.local/operating-state.schema.json",
+  "title": "Operating State",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "state_id",
+    "model_id",
+    "revision_id",
+    "name",
+    "description",
+    "entry_conditions",
+    "component_commands",
+    "transitions",
+    "measurement_ids",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": {"$ref": "common.schema.json#/$defs/schemaVersion"},
+    "state_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "model_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "revision_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "name": {"type": "string", "minLength": 1},
+    "description": {"$ref": "common.schema.json#/$defs/nullableString"},
+    "entry_conditions": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/condition"}
+    },
+    "component_commands": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["component_id", "property", "value", "unit"],
+        "properties": {
+          "component_id": {"$ref": "common.schema.json#/$defs/entityId"},
+          "property": {"type": "string", "minLength": 1},
+          "value": {"type": ["string", "number", "integer", "boolean", "null"]},
+          "unit": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"}
+        }
+      }
+    },
+    "transitions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["target_state_id", "conditions", "delay_seconds", "priority"],
+        "properties": {
+          "target_state_id": {"$ref": "common.schema.json#/$defs/entityId"},
+          "conditions": {"type": "array", "items": {"$ref": "#/$defs/condition"}},
+          "delay_seconds": {"type": ["number", "null"], "minimum": 0},
+          "priority": {"type": "integer", "minimum": 0}
+        }
+      }
+    },
+    "measurement_ids": {"$ref": "common.schema.json#/$defs/idArray"},
+    "provenance": {"$ref": "common.schema.json#/$defs/provenanceArray"}
+  },
+  "$defs": {
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subject_id", "property", "operator", "value", "unit"],
+      "properties": {
+        "subject_id": {"$ref": "common.schema.json#/$defs/entityId"},
+        "property": {"type": "string", "minLength": 1},
+        "operator": {"type": "string", "enum": ["EQ", "NE", "GT", "GTE", "LT", "LTE", "IN", "NOT_IN", "KNOWN", "UNKNOWN"]},
+        "value": {"type": ["string", "number", "integer", "boolean", "array", "null"]},
+        "unit": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"}
+      }
+    }
+  }
+}

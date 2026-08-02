@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.hvac-xpert.local/measurement.schema.json",
+  "title": "Diagnostic Measurement",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "measurement_id",
+    "model_id",
+    "revision_id",
+    "operating_state_id",
+    "name",
+    "quantity",
+    "signal_type",
+    "point_a",
+    "point_b",
+    "meter_mode",
+    "expected",
+    "safety_category",
+    "procedure",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": {"$ref": "common.schema.json#/$defs/schemaVersion"},
+    "measurement_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "model_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "revision_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "operating_state_id": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+    "name": {"type": "string", "minLength": 1},
+    "quantity": {"type": "string", "enum": ["VOLTAGE", "CURRENT", "RESISTANCE", "CAPACITANCE", "FREQUENCY", "TEMPERATURE", "PRESSURE", "CONTINUITY", "DUTY_CYCLE", "OTHER", "UNKNOWN"]},
+    "signal_type": {"type": "string", "enum": ["AC", "DC", "PULSED", "DIGITAL", "ANALOG", "NONE", "OTHER", "UNKNOWN"]},
+    "point_a": {"$ref": "#/$defs/measurementPoint"},
+    "point_b": {
+      "oneOf": [
+        {"$ref": "#/$defs/measurementPoint"},
+        {"type": "null"}
+      ]
+    },
+    "meter_mode": {"type": "string", "enum": ["VAC", "VDC", "AAC", "ADC", "OHMS", "CAPACITANCE", "HZ", "TEMPERATURE", "CONTINUITY", "OTHER", "UNKNOWN"]},
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["nominal", "minimum", "maximum", "unit", "interpretation"],
+      "properties": {
+        "nominal": {"type": ["number", "null"]},
+        "minimum": {"type": ["number", "null"]},
+        "maximum": {"type": ["number", "null"]},
+        "unit": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+        "interpretation": {"$ref": "common.schema.json#/$defs/nullableString"}
+      }
+    },
+    "safety_category": {"type": "string", "enum": ["DEENERGIZED_ONLY", "ENERGIZED_LOW_VOLTAGE", "ENERGIZED_LINE_VOLTAGE", "HIGH_VOLTAGE_DC", "REFRIGERANT_PRESSURE", "OTHER", "UNKNOWN"]},
+    "procedure": {"$ref": "common.schema.json#/$defs/nullableString"},
+    "provenance": {"$ref": "common.schema.json#/$defs/provenanceArray"}
+  },
+  "$defs": {
+    "measurementPoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reference_type", "reference_id", "label"],
+      "properties": {
+        "reference_type": {"type": "string", "enum": ["NODE", "PIN", "COMPONENT_TERMINAL", "CHASSIS_GROUND", "REFRIGERANT_POINT", "OTHER"]},
+        "reference_id": {"$ref": "common.schema.json#/$defs/entityId"},
+        "label": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"}
+      }
+    }
+  }
+}

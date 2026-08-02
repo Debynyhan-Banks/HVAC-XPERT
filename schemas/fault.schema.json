@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.hvac-xpert.local/fault.schema.json",
+  "title": "Equipment Fault",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "fault_id",
+    "model_id",
+    "revision_id",
+    "code",
+    "name",
+    "description",
+    "severity",
+    "trigger_conditions",
+    "affected_component_ids",
+    "observable_symptoms",
+    "diagnostic_measurement_ids",
+    "simulator_effects",
+    "reset_procedure",
+    "safety_warning",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": {"$ref": "common.schema.json#/$defs/schemaVersion"},
+    "fault_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "model_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "revision_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "code": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+    "name": {"type": "string", "minLength": 1},
+    "description": {"$ref": "common.schema.json#/$defs/nullableString"},
+    "severity": {"type": "string", "enum": ["INFO", "WARNING", "LOCKOUT", "SAFETY_CRITICAL", "UNKNOWN"]},
+    "trigger_conditions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["subject_id", "property", "operator", "value", "unit", "duration_seconds"],
+        "properties": {
+          "subject_id": {"$ref": "common.schema.json#/$defs/entityId"},
+          "property": {"type": "string", "minLength": 1},
+          "operator": {"type": "string", "enum": ["EQ", "NE", "GT", "GTE", "LT", "LTE", "OUTSIDE_RANGE", "KNOWN", "UNKNOWN"]},
+          "value": {"type": ["string", "number", "integer", "boolean", "array", "null"]},
+          "unit": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+          "duration_seconds": {"type": ["number", "null"], "minimum": 0}
+        }
+      }
+    },
+    "affected_component_ids": {"$ref": "common.schema.json#/$defs/idArray"},
+    "observable_symptoms": {"$ref": "common.schema.json#/$defs/stringArray"},
+    "diagnostic_measurement_ids": {"$ref": "common.schema.json#/$defs/idArray"},
+    "simulator_effects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["target_id", "property", "value", "unit"],
+        "properties": {
+          "target_id": {"$ref": "common.schema.json#/$defs/entityId"},
+          "property": {"type": "string", "minLength": 1},
+          "value": {"type": ["string", "number", "integer", "boolean", "null"]},
+          "unit": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"}
+        }
+      }
+    },
+    "reset_procedure": {"$ref": "common.schema.json#/$defs/nullableString"},
+    "safety_warning": {"$ref": "common.schema.json#/$defs/nullableString"},
+    "provenance": {"$ref": "common.schema.json#/$defs/provenanceArray"}
+  }
+}

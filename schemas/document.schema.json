@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.hvac-xpert.local/document.schema.json",
+  "title": "Manufacturer Document",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "document_id",
+    "source_id",
+    "title",
+    "document_type",
+    "document_number",
+    "document_revision",
+    "published_date",
+    "language",
+    "source_url",
+    "applicability",
+    "fingerprint",
+    "acquisition",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": {"$ref": "common.schema.json#/$defs/schemaVersion"},
+    "document_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "source_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "title": {"type": "string", "minLength": 1},
+    "document_type": {
+      "type": "string",
+      "enum": [
+        "installation_manual",
+        "service_manual",
+        "engineering_data",
+        "product_specification",
+        "wiring_diagram",
+        "parts_catalog",
+        "service_bulletin",
+        "fault_code_reference",
+        "connector_test_chart",
+        "sequence_of_operation",
+        "thermistor_table",
+        "sensor_specification",
+        "compressor_data",
+        "motor_data",
+        "control_board_data",
+        "refrigerant_circuit",
+        "training_material",
+        "technical_video_metadata",
+        "certification_data",
+        "revision_history",
+        "other",
+        "unknown"
+      ]
+    },
+    "document_number": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+    "document_revision": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+    "published_date": {"$ref": "common.schema.json#/$defs/nullableDate"},
+    "language": {"type": "string", "minLength": 2},
+    "source_url": {
+      "oneOf": [
+        {"type": "string", "format": "uri"},
+        {"type": "null"}
+      ]
+    },
+    "applicability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["manufacturer_ids", "brand_ids", "family_ids", "model_ids", "revision_ids", "serial_ranges", "notes"],
+      "properties": {
+        "manufacturer_ids": {"$ref": "common.schema.json#/$defs/idArray"},
+        "brand_ids": {"$ref": "common.schema.json#/$defs/idArray"},
+        "family_ids": {"$ref": "common.schema.json#/$defs/idArray"},
+        "model_ids": {"$ref": "common.schema.json#/$defs/idArray"},
+        "revision_ids": {"$ref": "common.schema.json#/$defs/idArray"},
+        "serial_ranges": {"$ref": "common.schema.json#/$defs/stringArray"},
+        "notes": {"$ref": "common.schema.json#/$defs/nullableString"}
+      }
+    },
+    "fingerprint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sha256", "file_size_bytes", "mime_type", "page_count", "duplicate_of_document_id", "ocr_required"],
+      "properties": {
+        "sha256": {
+          "oneOf": [
+            {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+            {"type": "null"}
+          ]
+        },
+        "file_size_bytes": {"type": ["integer", "null"], "minimum": 0},
+        "mime_type": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+        "page_count": {"type": ["integer", "null"], "minimum": 1},
+        "duplicate_of_document_id": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+        "ocr_required": {"type": ["boolean", "null"]}
+      }
+    },
+    "acquisition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["discovered_at", "downloaded_at", "method", "http_status", "final_url", "audit_event_id"],
+      "properties": {
+        "discovered_at": {"type": "string", "format": "date-time"},
+        "downloaded_at": {"$ref": "common.schema.json#/$defs/nullableDateTime"},
+        "method": {"type": "string", "enum": ["CONTROLLED_CRAWLER", "API", "LICENSED_FEED", "MANUAL_UPLOAD"]},
+        "http_status": {"type": ["integer", "null"], "minimum": 100, "maximum": 599},
+        "final_url": {
+          "oneOf": [
+            {"type": "string", "format": "uri"},
+            {"type": "null"}
+          ]
+        },
+        "audit_event_id": {"$ref": "common.schema.json#/$defs/entityId"}
+      }
+    },
+    "provenance": {"$ref": "common.schema.json#/$defs/provenanceArray"}
+  }
+}

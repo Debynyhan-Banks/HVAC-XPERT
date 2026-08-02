@@ -1,0 +1,353 @@
+schema_version: 1.0.0
+registry_id: hvac_xpert_source_registry
+last_updated: 2026-08-02
+default_policy:
+  fail_closed: true
+  review_valid_days: 180
+  collection_requires_explicit_approval: true
+  redistribution_requires_explicit_approval: true
+
+manufacturers:
+  - manufacturer_id: daikin_comfort_technologies
+    display_name: Daikin Comfort Technologies
+    pilot: true
+    brands:
+      - brand_id: daikin
+        display_name: Daikin
+      - brand_id: goodman
+        display_name: Goodman
+      - brand_id: amana
+        display_name: Amana
+    pilot_scope:
+      family: S-Series inverter outdoor units
+      model: ASXS6S4810AA
+    sources:
+      - schema_version: 1.0.0
+        source_id: daikin_public_document_library
+        owner: Daikin Comfort Technologies
+        source_type: manufacturer_document_portal
+        domain: daikincomfort.com
+        domain_verification: verified
+        base_urls:
+          - https://www.daikincomfort.com/resource-center
+        expected_document_types:
+          - installation_manual
+          - service_manual
+          - engineering_data
+          - product_specification
+          - wiring_diagram
+          - parts_catalog
+          - service_bulletin
+          - fault_code_reference
+          - connector_test_chart
+          - sequence_of_operation
+          - thermistor_table
+          - sensor_specification
+          - compressor_data
+          - motor_data
+          - control_board_data
+          - refrigerant_circuit
+          - training_material
+          - technical_video_metadata
+          - certification_data
+          - revision_history
+        access_level: public
+        authentication_required: "no"
+        collection_method: none
+        rate_limit:
+          requests_per_minute: 0
+          max_concurrency: 0
+          crawl_delay_seconds: null
+        terms_review:
+          status: prohibited
+          reviewed_at: 2026-08-02
+          reviewed_by: Codex read-only source review
+          evidence_url: https://backend.daikincomfort.com/docs/default-source/default-document-library/general/ggh_terms.pdf
+          notes: Posted terms prohibit automated systems from monitoring or copying site content. Written permission is required before crawler use.
+        robots_review:
+          status: approved
+          reviewed_at: 2026-08-02
+          reviewed_by: Codex read-only source review
+          evidence_url: https://www.daikincomfort.com/robots.txt
+          notes: The current robots file allows all user agents, but this does not override the terms prohibition.
+        rights_review:
+          copyright_status: copyrighted
+          storage_allowed: requires_review
+          extraction_allowed: requires_review
+          redistribution_allowed: "no"
+          derivative_facts_allowed: requires_review
+          reviewed_at: 2026-08-02
+          reviewed_by: Codex read-only source review
+          notes: Site access does not grant a content license. Internal storage, factual extraction, and original redraw publication require written legal confirmation.
+        reliability_ranking: authoritative
+        approved_for_collection: false
+        approved_at: null
+        approved_by: null
+        review_expires_at: null
+        removal_contact: null
+        removal_procedure: Follow DATA_GOVERNANCE.md and suspend collection immediately.
+
+      - schema_version: 1.0.0
+        source_id: goodman_product_documents
+        owner: Daikin Comfort Technologies
+        source_type: product_document_library
+        domain: goodmanmfg.com
+        domain_verification: verified
+        base_urls: []
+        expected_document_types:
+          - installation_manual
+          - service_manual
+          - engineering_data
+          - product_specification
+          - wiring_diagram
+          - parts_catalog
+          - service_bulletin
+          - fault_code_reference
+          - connector_test_chart
+          - sequence_of_operation
+          - thermistor_table
+          - sensor_specification
+          - compressor_data
+          - motor_data
+          - control_board_data
+          - refrigerant_circuit
+          - training_material
+          - technical_video_metadata
+          - certification_data
+          - revision_history
+        access_level: public_candidate
+        authentication_required: unknown
+        collection_method: none
+        rate_limit:
+          requests_per_minute: 0
+          max_concurrency: 0
+          crawl_delay_seconds: null
+        terms_review:
+          status: prohibited
+          reviewed_at: 2026-08-02
+          reviewed_by: Codex read-only source review
+          evidence_url: https://backend.daikincomfort.com/docs/default-source/default-document-library/general/ggh_terms.pdf
+          notes: Posted terms expressly cover GoodmanMFG.com and prohibit automated systems from monitoring or copying site content.
+        robots_review:
+          status: restricted
+          reviewed_at: 2026-08-02
+          reviewed_by: Codex read-only source review
+          evidence_url: https://www.goodmanmfg.com/robots.txt
+          notes: The current robots file disallows /docs/* and /api for the general user agent.
+        rights_review:
+          copyright_status: copyrighted
+          storage_allowed: requires_review
+          extraction_allowed: requires_review
+          redistribution_allowed: "no"
+          derivative_facts_allowed: requires_review
+          reviewed_at: 2026-08-02
+          reviewed_by: Codex read-only source review
+          notes: No permission for automated collection, source storage, or public redistribution has been established.
+        reliability_ranking: authoritative
+        approved_for_collection: false
+        approved_at: null
+        approved_by: null
+        review_expires_at: null
+        removal_contact: null
+        removal_procedure: Follow DATA_GOVERNANCE.md and suspend collection immediately.
+
+      - schema_version: 1.0.0
+        source_id: amana_literature_library
+        owner: Daikin Comfort Technologies
+        source_type: product_document_library
+        domain: amana-hac.com
+        domain_verification: verified
+        base_urls:
+          - https://www.amana-hac.com/resources/literature-library
+        expected_document_types:
+          - installation_manual
+          - service_manual
+          - engineering_data
+          - product_specification
+          - wiring_diagram
+          - parts_catalog
+          - warranty_certificate
+          - training_material
+        access_level: public
+        authentication_required: "no"
+        collection_method: none
+        rate_limit:
+          requests_per_minute: 0
+          max_concurrency: 0
+          crawl_delay_seconds: null
+        terms_review:
+          status: prohibited
+          reviewed_at: 2026-08-02
+          reviewed_by: Codex read-only source review
+          evidence_url: https://backend.daikincomfort.com/docs/default-source/default-document-library/general/ggh_terms.pdf
+          notes: Posted terms expressly cover Amana-HAC.com and prohibit automated systems from monitoring or copying site content.
+        robots_review:
+          status: restricted
+          reviewed_at: 2026-08-02
+          reviewed_by: Codex read-only source review
+          evidence_url: https://www.amana-hac.com/robots.txt
+          notes: The current robots file disallows /docs/* and /api for the general user agent.
+        rights_review:
+          copyright_status: copyrighted
+          storage_allowed: requires_review
+          extraction_allowed: requires_review
+          redistribution_allowed: "no"
+          derivative_facts_allowed: requires_review
+          reviewed_at: 2026-08-02
+          reviewed_by: Codex read-only source review
+          notes: Public manual links are visible, but public access does not establish automated collection or reuse rights.
+        reliability_ranking: authoritative
+        approved_for_collection: false
+        approved_at: null
+        approved_by: null
+        review_expires_at: null
+        removal_contact: null
+        removal_procedure: Follow DATA_GOVERNANCE.md and suspend collection immediately.
+
+      - schema_version: 1.0.0
+        source_id: daikin_city_library
+        owner: Daikin Comfort Technologies
+        source_type: manufacturer_document_portal
+        domain: library.daikincity.com
+        domain_verification: verified
+        base_urls:
+          - https://library.daikincity.com
+        expected_document_types:
+          - installation_manual
+          - service_manual
+          - engineering_data
+          - product_specification
+          - wiring_diagram
+          - parts_catalog
+          - service_bulletin
+          - training_material
+        access_level: public_candidate
+        authentication_required: unknown
+        collection_method: none
+        rate_limit:
+          requests_per_minute: 0
+          max_concurrency: 0
+          crawl_delay_seconds: null
+        terms_review:
+          status: restricted
+          reviewed_at: 2026-08-02
+          reviewed_by: Codex read-only source review
+          evidence_url: https://www.daikincity.com/DaikinCityB2BTermsOfUse.html
+          notes: Product documents may be visible without login, while other assets are credential-controlled. Exact public-library automation terms require written confirmation.
+        robots_review:
+          status: pending
+          reviewed_at: 2026-08-02
+          reviewed_by: Codex read-only source review
+          evidence_url: https://library.daikincity.com/robots.txt
+          notes: The robots path returned the application shell rather than a usable robots policy.
+        rights_review:
+          copyright_status: copyrighted
+          storage_allowed: requires_review
+          extraction_allowed: requires_review
+          redistribution_allowed: "no"
+          derivative_facts_allowed: requires_review
+          reviewed_at: 2026-08-02
+          reviewed_by: Codex read-only source review
+          notes: Credential-restricted and confidential assets must be excluded unless a separate agreement expressly permits use.
+        reliability_ranking: authoritative
+        approved_for_collection: false
+        approved_at: null
+        approved_by: null
+        review_expires_at: null
+        removal_contact: null
+        removal_procedure: Follow DATA_GOVERNANCE.md and suspend collection immediately.
+
+      - schema_version: 1.0.0
+        source_id: daikin_public_document_cdn
+        owner: Daikin Comfort Technologies
+        source_type: product_document_library
+        domain: cdn.daikincloud.io
+        domain_verification: verified
+        base_urls:
+          - https://cdn.daikincloud.io/PIM/Assets/Documents
+        expected_document_types:
+          - installation_manual
+          - product_specification
+          - wiring_diagram
+        access_level: public
+        authentication_required: "no"
+        collection_method: none
+        rate_limit:
+          requests_per_minute: 0
+          max_concurrency: 0
+          crawl_delay_seconds: null
+        terms_review:
+          status: prohibited
+          reviewed_at: 2026-08-02
+          reviewed_by: Codex read-only source review
+          evidence_url: https://backend.daikincomfort.com/docs/default-source/default-document-library/general/ggh_terms.pdf
+          notes: Delivery URLs were manually supplied and verified. No automated discovery or downloading is approved.
+        robots_review:
+          status: pending
+          reviewed_at: null
+          reviewed_by: null
+          evidence_url: null
+          notes: null
+        rights_review:
+          copyright_status: copyrighted
+          storage_allowed: requires_review
+          extraction_allowed: requires_review
+          redistribution_allowed: "no"
+          derivative_facts_allowed: requires_review
+          reviewed_at: 2026-08-02
+          reviewed_by: Codex read-only source review
+          notes: Private manual-upload storage is recorded for the pilot; broader retention and publication rights remain unresolved.
+        reliability_ranking: authoritative
+        approved_for_collection: false
+        approved_at: null
+        approved_by: null
+        review_expires_at: null
+        removal_contact: null
+        removal_procedure: Follow DATA_GOVERNANCE.md and suspend collection immediately.
+
+      - schema_version: 1.0.0
+        source_id: ecmdi_manual_document_copy
+        owner: East Coast Metal Distributors
+        source_type: distributor_library
+        domain: resource.ecmdi.com
+        domain_verification: verified
+        base_urls:
+          - https://resource.ecmdi.com/is/content/Watscocom/Gemaire
+        expected_document_types:
+          - service_manual
+          - parts_catalog
+        access_level: public_candidate
+        authentication_required: "no"
+        collection_method: manual_upload
+        rate_limit:
+          requests_per_minute: 0
+          max_concurrency: 0
+          crawl_delay_seconds: null
+        terms_review:
+          status: pending
+          reviewed_at: null
+          reviewed_by: null
+          evidence_url: null
+          notes: Documents were manually supplied by the user. No automated collection is approved.
+        robots_review:
+          status: pending
+          reviewed_at: null
+          reviewed_by: null
+          evidence_url: null
+          notes: null
+        rights_review:
+          copyright_status: copyrighted
+          storage_allowed: requires_review
+          extraction_allowed: requires_review
+          redistribution_allowed: "no"
+          derivative_facts_allowed: requires_review
+          reviewed_at: 2026-08-02
+          reviewed_by: Codex PDF import verification
+          notes: These are manufacturer-issued documents hosted by a distributor. They remain secondary provenance until matched to official copies.
+        reliability_ranking: reliable_secondary
+        approved_for_collection: false
+        approved_at: null
+        approved_by: null
+        review_expires_at: null
+        removal_contact: null
+        removal_procedure: Follow DATA_GOVERNANCE.md and suspend collection immediately.

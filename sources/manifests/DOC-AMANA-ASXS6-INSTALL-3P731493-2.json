@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0.0",
+  "document_id": "DOC-AMANA-ASXS6-INSTALL-3P731493-2",
+  "source_id": "daikin_public_document_cdn",
+  "title": "ASXS6 / ASZS6 Outdoor Unit Installation and Service Reference",
+  "document_type": "installation_manual",
+  "document_number": "3P731493-2",
+  "document_revision": null,
+  "published_date": null,
+  "language": "en",
+  "source_url": "https://cdn.daikincloud.io/PIM/Assets/Documents/IM-3P731493-2_amana.pdf",
+  "applicability": {
+    "manufacturer_ids": ["daikin_comfort_technologies"],
+    "brand_ids": ["amana"],
+    "family_ids": ["amana_asxs6_s_series"],
+    "model_ids": ["ASXS6S4810AA"],
+    "revision_ids": ["AA"],
+    "serial_ranges": [],
+    "notes": "Family installation document for ASXS6***1*A*. Exact model applicability must be preserved during extraction."
+  },
+  "fingerprint": {
+    "sha256": "a8a6470c11a4642ea58307d0cafc1b37853da419cf147d1de73575bc57addebb",
+    "file_size_bytes": 21456602,
+    "mime_type": "application/pdf",
+    "page_count": 60,
+    "duplicate_of_document_id": null,
+    "ocr_required": false
+  },
+  "acquisition": {
+    "discovered_at": "2026-08-02T15:55:03Z",
+    "downloaded_at": null,
+    "method": "MANUAL_UPLOAD",
+    "http_status": null,
+    "final_url": "https://cdn.daikincloud.io/PIM/Assets/Documents/IM-3P731493-2_amana.pdf",
+    "audit_event_id": "AUDIT-IMPORT-20260802-004"
+  },
+  "provenance": [
+    {
+      "fact_id": "FACT-DOC-3P731493-2-IDENTITY",
+      "entity_id": "DOC-AMANA-ASXS6-INSTALL-3P731493-2",
+      "property": "/document_identity",
+      "value": {
+        "document_number": "3P731493-2",
+        "model_pattern": "ASXS6***1*A*"
+      },
+      "unit": null,
+      "source": {
+        "document_id": "DOC-AMANA-ASXS6-INSTALL-3P731493-2",
+        "document_title": "ASXS6 / ASZS6 Outdoor Unit Installation and Service Reference",
+        "page": 1,
+        "section": "Cover and footer",
+        "source_url": "https://cdn.daikincloud.io/PIM/Assets/Documents/IM-3P731493-2_amana.pdf",
+        "document_revision": null
+      },
+      "extraction": {
+        "method": "MANUAL_ENTRY",
+        "confidence": 1.0,
+        "extracted_at": "2026-08-02T15:55:03Z",
+        "provider": null,
+        "model_version": null,
+        "prompt_version": null,
+        "run_id": "RUN-MANUAL-IMPORT-20260802-001"
+      },
+      "validation": {
+        "level": "LEVEL_2_SOURCE_VISIBLE",
+        "outcome": "ACCEPTED",
+        "reviewed_by": "Codex PDF import verification",
+        "reviewed_at": "2026-08-02T15:55:03Z",
+        "notes": "Document identity only. Installation procedures and technical facts have not been extracted or reviewed."
+      }
+    }
+  ]
+}

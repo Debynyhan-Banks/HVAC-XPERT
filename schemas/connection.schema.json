@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.hvac-xpert.local/connection.schema.json",
+  "title": "Electrical Connection",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "connection_id",
+    "model_id",
+    "revision_id",
+    "from_node_id",
+    "to_node_id",
+    "connection_type",
+    "controlled_by_component_id",
+    "normally_closed",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": {"$ref": "common.schema.json#/$defs/schemaVersion"},
+    "connection_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "model_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "revision_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "from_node_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "to_node_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "connection_type": {"type": "string", "enum": ["WIRE", "TRACE", "CONTACT", "SWITCH", "FUSE", "LOAD", "BUS", "VIRTUAL", "OTHER", "UNKNOWN"]},
+    "controlled_by_component_id": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+    "normally_closed": {"type": ["boolean", "null"]},
+    "provenance": {"$ref": "common.schema.json#/$defs/provenanceArray"}
+  }
+}

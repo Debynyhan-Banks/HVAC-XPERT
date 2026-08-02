@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.hvac-xpert.local/source-registry.schema.json",
+  "title": "Source Registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "registry_id", "last_updated", "default_policy", "manufacturers"],
+  "properties": {
+    "schema_version": {"$ref": "common.schema.json#/$defs/schemaVersion"},
+    "registry_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "last_updated": {"type": "string", "format": "date"},
+    "default_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fail_closed", "review_valid_days", "collection_requires_explicit_approval", "redistribution_requires_explicit_approval"],
+      "properties": {
+        "fail_closed": {"const": true},
+        "review_valid_days": {"type": "integer", "minimum": 1},
+        "collection_requires_explicit_approval": {"const": true},
+        "redistribution_requires_explicit_approval": {"const": true}
+      }
+    },
+    "manufacturers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["manufacturer_id", "display_name", "pilot", "brands", "pilot_scope", "sources"],
+        "properties": {
+          "manufacturer_id": {"$ref": "common.schema.json#/$defs/entityId"},
+          "display_name": {"type": "string", "minLength": 1},
+          "pilot": {"type": "boolean"},
+          "brands": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["brand_id", "display_name"],
+              "properties": {
+                "brand_id": {"$ref": "common.schema.json#/$defs/entityId"},
+                "display_name": {"type": "string", "minLength": 1}
+              }
+            }
+          },
+          "pilot_scope": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["family", "model"],
+            "properties": {
+              "family": {"type": "string", "minLength": 1},
+              "model": {"type": "string", "minLength": 1}
+            }
+          },
+          "sources": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"$ref": "document-source.schema.json"}
+          }
+        }
+      }
+    }
+  }
+}

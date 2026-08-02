@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.hvac-xpert.local/provenance.schema.json",
+  "title": "Sourced Fact Provenance",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "fact_id",
+    "entity_id",
+    "property",
+    "value",
+    "unit",
+    "source",
+    "extraction",
+    "validation"
+  ],
+  "properties": {
+    "fact_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "entity_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "property": {"type": "string", "minLength": 1},
+    "value": {
+      "type": ["string", "number", "integer", "boolean", "object", "array", "null"]
+    },
+    "unit": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "document_id",
+        "document_title",
+        "page",
+        "section",
+        "source_url",
+        "document_revision"
+      ],
+      "properties": {
+        "document_id": {"$ref": "common.schema.json#/$defs/entityId"},
+        "document_title": {"type": "string", "minLength": 1},
+        "page": {"type": ["integer", "null"], "minimum": 1},
+        "section": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+        "source_url": {
+          "oneOf": [
+            {"type": "string", "format": "uri"},
+            {"type": "null"}
+          ]
+        },
+        "document_revision": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+        "region": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["x", "y", "width", "height", "coordinate_space"],
+              "properties": {
+                "x": {"type": "number", "minimum": 0},
+                "y": {"type": "number", "minimum": 0},
+                "width": {"type": "number", "exclusiveMinimum": 0},
+                "height": {"type": "number", "exclusiveMinimum": 0},
+                "coordinate_space": {"type": "string", "enum": ["PDF_POINTS", "NORMALIZED", "PIXELS"]}
+              }
+            },
+            {"type": "null"}
+          ]
+        }
+      }
+    },
+    "extraction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "method",
+        "confidence",
+        "extracted_at",
+        "provider",
+        "model_version",
+        "prompt_version",
+        "run_id"
+      ],
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": [
+            "MANUAL_ENTRY",
+            "NATIVE_TEXT_EXTRACTION",
+            "OCR",
+            "TABLE_EXTRACTION",
+            "VISUAL_EXTRACTION",
+            "GEMINI_STRUCTURED_EXTRACTION",
+            "OTHER_STRUCTURED_AI_EXTRACTION"
+          ]
+        },
+        "confidence": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "extracted_at": {"type": "string", "format": "date-time"},
+        "provider": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+        "model_version": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+        "prompt_version": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+        "run_id": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"}
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "outcome", "reviewed_by", "reviewed_at", "notes"],
+      "properties": {
+        "level": {"$ref": "common.schema.json#/$defs/validationLevel"},
+        "outcome": {"$ref": "common.schema.json#/$defs/reviewOutcome"},
+        "reviewed_by": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+        "reviewed_at": {"$ref": "common.schema.json#/$defs/nullableDateTime"},
+        "notes": {"$ref": "common.schema.json#/$defs/nullableString"}
+      }
+    }
+  }
+}

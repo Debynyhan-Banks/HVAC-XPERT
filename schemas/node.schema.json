@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.hvac-xpert.local/node.schema.json",
+  "title": "Electrical Node",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "node_id",
+    "model_id",
+    "revision_id",
+    "label",
+    "node_type",
+    "reference_node_id",
+    "pin_ids",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": {"$ref": "common.schema.json#/$defs/schemaVersion"},
+    "node_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "model_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "revision_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "label": {"type": "string", "minLength": 1},
+    "node_type": {
+      "type": "string",
+      "enum": ["POWER", "NEUTRAL", "GROUND", "SIGNAL", "COMMUNICATION", "SENSOR", "SWITCHED", "REFERENCE", "OTHER", "UNKNOWN"]
+    },
+    "reference_node_id": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+    "pin_ids": {"$ref": "common.schema.json#/$defs/idArray"},
+    "provenance": {"$ref": "common.schema.json#/$defs/provenanceArray"}
+  }
+}

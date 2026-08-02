@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.hvac-xpert.local/equipment-family.schema.json",
+  "title": "Equipment Family",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "family_id", "manufacturer_id", "brand_ids", "display_name", "equipment_type", "model_ids", "provenance"],
+  "properties": {
+    "schema_version": {"$ref": "common.schema.json#/$defs/schemaVersion"},
+    "family_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "manufacturer_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "brand_ids": {"$ref": "common.schema.json#/$defs/idArray"},
+    "display_name": {"type": "string", "minLength": 1},
+    "equipment_type": {
+      "type": "string",
+      "enum": [
+        "AIR_CONDITIONER",
+        "HEAT_PUMP",
+        "FURNACE",
+        "AIR_HANDLER",
+        "FAN_COIL",
+        "PACKAGED_UNIT",
+        "ROOFTOP_UNIT",
+        "CHILLER",
+        "BOILER",
+        "REFRIGERATION_SYSTEM",
+        "CONTROL_SYSTEM",
+        "OTHER",
+        "UNKNOWN"
+      ]
+    },
+    "description": {"$ref": "common.schema.json#/$defs/nullableString"},
+    "model_ids": {"$ref": "common.schema.json#/$defs/idArray"},
+    "provenance": {"$ref": "common.schema.json#/$defs/provenanceArray"}
+  }
+}

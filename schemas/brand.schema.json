@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.hvac-xpert.local/brand.schema.json",
+  "title": "Brand",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "brand_id", "manufacturer_id", "display_name", "website", "provenance"],
+  "properties": {
+    "schema_version": {"$ref": "common.schema.json#/$defs/schemaVersion"},
+    "brand_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "manufacturer_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "display_name": {"type": "string", "minLength": 1},
+    "website": {
+      "oneOf": [
+        {"type": "string", "format": "uri"},
+        {"type": "null"}
+      ]
+    },
+    "provenance": {"$ref": "common.schema.json#/$defs/provenanceArray"}
+  }
+}

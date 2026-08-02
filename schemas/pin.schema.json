@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.hvac-xpert.local/pin.schema.json",
+  "title": "Connector Pin",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "pin_id",
+    "model_id",
+    "revision_id",
+    "connector_id",
+    "pin_number",
+    "label",
+    "node_id",
+    "signal_type",
+    "wire_color",
+    "measurement_ids",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": {"$ref": "common.schema.json#/$defs/schemaVersion"},
+    "pin_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "model_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "revision_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "connector_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "pin_number": {"type": "string", "minLength": 1},
+    "label": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+    "node_id": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+    "signal_type": {
+      "type": "string",
+      "enum": [
+        "LINE_VOLTAGE_AC",
+        "LOW_VOLTAGE_AC",
+        "HIGH_VOLTAGE_DC",
+        "LOW_VOLTAGE_DC",
+        "GROUND",
+        "COMMUNICATION",
+        "ANALOG_SENSOR",
+        "DIGITAL_INPUT",
+        "DIGITAL_OUTPUT",
+        "PWM",
+        "CURRENT_LOOP",
+        "OTHER",
+        "UNKNOWN"
+      ]
+    },
+    "wire_color": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+    "measurement_ids": {"$ref": "common.schema.json#/$defs/idArray"},
+    "provenance": {"$ref": "common.schema.json#/$defs/provenanceArray"}
+  }
+}

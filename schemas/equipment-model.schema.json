@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.hvac-xpert.local/equipment-model.schema.json",
+  "title": "Equipment Model Revision",
+  "description": "One record represents one explicit model revision.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "model_id",
+    "manufacturer_id",
+    "brand_id",
+    "family_id",
+    "model_number",
+    "revision_id",
+    "serial_range",
+    "status",
+    "attributes",
+    "document_ids",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": {"$ref": "common.schema.json#/$defs/schemaVersion"},
+    "model_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "manufacturer_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "brand_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "family_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "model_number": {"type": "string", "minLength": 1},
+    "revision_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "serial_range": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start", "end", "notes"],
+      "properties": {
+        "start": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+        "end": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+        "notes": {"$ref": "common.schema.json#/$defs/nullableString"}
+      }
+    },
+    "status": {"type": "string", "enum": ["ACTIVE", "DISCONTINUED", "SUPERSEDED", "UNKNOWN"]},
+    "attributes": {"type": "object", "additionalProperties": true},
+    "document_ids": {"$ref": "common.schema.json#/$defs/idArray"},
+    "provenance": {"$ref": "common.schema.json#/$defs/provenanceArray"}
+  }
+}

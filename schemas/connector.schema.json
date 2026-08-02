@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.hvac-xpert.local/connector.schema.json",
+  "title": "Component Connector",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "connector_id",
+    "model_id",
+    "revision_id",
+    "component_id",
+    "label",
+    "connector_type",
+    "keying",
+    "pin_ids",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": {"$ref": "common.schema.json#/$defs/schemaVersion"},
+    "connector_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "model_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "revision_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "component_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "label": {"type": "string", "minLength": 1},
+    "connector_type": {"type": "string", "enum": ["PLUG", "RECEPTACLE", "HEADER", "TERMINAL_BLOCK", "SPLICE", "OTHER", "UNKNOWN"]},
+    "keying": {"$ref": "common.schema.json#/$defs/nullableString"},
+    "pin_ids": {"$ref": "common.schema.json#/$defs/idArray"},
+    "provenance": {"$ref": "common.schema.json#/$defs/provenanceArray"}
+  }
+}

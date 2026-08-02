@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.hvac-xpert.local/document-source.schema.json",
+  "title": "Document Source",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "source_id",
+    "owner",
+    "source_type",
+    "domain",
+    "domain_verification",
+    "base_urls",
+    "expected_document_types",
+    "access_level",
+    "authentication_required",
+    "collection_method",
+    "rate_limit",
+    "terms_review",
+    "robots_review",
+    "rights_review",
+    "reliability_ranking",
+    "approved_for_collection",
+    "approved_at",
+    "approved_by",
+    "review_expires_at",
+    "removal_contact",
+    "removal_procedure"
+  ],
+  "properties": {
+    "schema_version": {"$ref": "common.schema.json#/$defs/schemaVersion"},
+    "source_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "owner": {"type": "string", "minLength": 1},
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "manufacturer_document_portal",
+        "product_document_library",
+        "public_web_page",
+        "distributor_library",
+        "manual_upload",
+        "api",
+        "licensed_feed",
+        "component_datasheet_library",
+        "certification_registry",
+        "training_media_library"
+      ]
+    },
+    "domain": {"type": "string", "minLength": 1},
+    "domain_verification": {"type": "string", "enum": ["pending", "verified", "rejected"]},
+    "base_urls": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "format": "uri"}
+    },
+    "expected_document_types": {"$ref": "common.schema.json#/$defs/stringArray"},
+    "access_level": {
+      "type": "string",
+      "enum": ["public_candidate", "public", "authenticated", "licensed", "partner_only", "prohibited", "unknown"]
+    },
+    "authentication_required": {
+      "type": "string",
+      "enum": ["yes", "no", "unknown"]
+    },
+    "collection_method": {
+      "type": "string",
+      "enum": ["controlled_crawler", "api", "licensed_feed", "manual_upload", "none"]
+    },
+    "rate_limit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requests_per_minute", "max_concurrency", "crawl_delay_seconds"],
+      "properties": {
+        "requests_per_minute": {"type": "integer", "minimum": 0},
+        "max_concurrency": {"type": "integer", "minimum": 0},
+        "crawl_delay_seconds": {"type": ["number", "null"], "minimum": 0}
+      }
+    },
+    "terms_review": {"$ref": "#/$defs/policyReview"},
+    "robots_review": {"$ref": "#/$defs/policyReview"},
+    "rights_review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "copyright_status",
+        "storage_allowed",
+        "extraction_allowed",
+        "redistribution_allowed",
+        "derivative_facts_allowed",
+        "reviewed_at",
+        "reviewed_by",
+        "notes"
+      ],
+      "properties": {
+        "copyright_status": {"type": "string", "enum": ["copyrighted", "public_domain", "licensed", "unknown"]},
+        "storage_allowed": {"$ref": "#/$defs/rightsStatus"},
+        "extraction_allowed": {"$ref": "#/$defs/rightsStatus"},
+        "redistribution_allowed": {"$ref": "#/$defs/rightsStatus"},
+        "derivative_facts_allowed": {"$ref": "#/$defs/rightsStatus"},
+        "reviewed_at": {"$ref": "common.schema.json#/$defs/nullableDate"},
+        "reviewed_by": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+        "notes": {"$ref": "common.schema.json#/$defs/nullableString"}
+      }
+    },
+    "reliability_ranking": {
+      "type": "string",
+      "enum": ["authoritative", "authoritative_candidate", "reliable_secondary", "unverified", "rejected"]
+    },
+    "approved_for_collection": {"type": "boolean"},
+    "approved_at": {"$ref": "common.schema.json#/$defs/nullableDateTime"},
+    "approved_by": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+    "review_expires_at": {"$ref": "common.schema.json#/$defs/nullableDate"},
+    "removal_contact": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+    "removal_procedure": {"type": "string", "minLength": 1}
+  },
+  "$defs": {
+    "policyReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reviewed_at", "reviewed_by", "evidence_url", "notes"],
+      "properties": {
+        "status": {"type": "string", "enum": ["pending", "approved", "restricted", "prohibited"]},
+        "reviewed_at": {"$ref": "common.schema.json#/$defs/nullableDate"},
+        "reviewed_by": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+        "evidence_url": {
+          "oneOf": [
+            {"type": "string", "format": "uri"},
+            {"type": "null"}
+          ]
+        },
+        "notes": {"$ref": "common.schema.json#/$defs/nullableString"}
+      }
+    },
+    "rightsStatus": {
+      "type": "string",
+      "enum": ["yes", "no", "requires_review", "unknown"]
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"approved_for_collection": {"const": true}}, "required": ["approved_for_collection"]},
+      "then": {
+        "properties": {
+          "domain_verification": {"const": "verified"},
+          "approved_at": {"type": "string", "format": "date-time"},
+          "approved_by": {"type": "string", "minLength": 1},
+          "review_expires_at": {"type": "string", "format": "date"},
+          "rate_limit": {
+            "properties": {
+              "requests_per_minute": {"minimum": 1},
+              "max_concurrency": {"minimum": 1}
+            }
+          },
+          "terms_review": {"properties": {"status": {"const": "approved"}}},
+          "robots_review": {"properties": {"status": {"const": "approved"}}}
+        }
+      }
+    }
+  ]
+}
