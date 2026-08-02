@@ -60,6 +60,12 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Local simulator runner lists approved phases and diagnostics or emits a deterministic JSON snapshot
 - Real-package smoke test selects steady cooling and applies the two approved compressor and outdoor-fan commands
 - Ten package-gate tests, three extension-review tests, seventeen simulator tests, and two runner tests pass together
+- Private local browser application implemented over deterministic simulator snapshots
+- Local server binds only to `127.0.0.1`, validates local host headers, disables cross-origin access, and sends restrictive browser security headers
+- Browser interface provides model counts, exact manual phase selection, explicit power/request controls, searchable fault activation, component commands/effects, and applicable diagnostic definitions
+- Every snapshot request creates a fresh simulator instance, preserving deterministic replay and preventing hidden phase persistence
+- Static browser assets contain no pilot model identifier or private package path; approved records load only through the ignored private vault at runtime
+- Eight private-application tests cover definitions, deterministic snapshots, exact identifiers, strict input validation, loopback binding, host filtering, and static-asset privacy
 
 ## In progress
 
@@ -67,7 +73,7 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Copyright, storage, factual-extraction, and derivative-use determination
 - Confirmation of exact official service, parts, and specification asset URLs
 - Manual-upload ingestion design using authorized documents or synthetic fixtures
-- Definition of the first private local application interface over deterministic simulator snapshots
+- HVAC technical review of the first private local application interface
 
 ## Blockers
 
@@ -80,7 +86,7 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 
 ## Next action
 
-Build a private local application shell over the deterministic engine with a model summary, manual phase picker, power/request controls, fault picker, component-command panel, and diagnostic table. Consume simulator snapshots without adding automatic transitions or exposing private records publicly.
+Run and technically review the private local application against the approved pilot package. Confirm that the manual phases, explicit commands, fault effects, diagnostic definitions, and source-page references match the reviewed records without implying automatic equipment behavior.
 
 After the work unit passes validation, update this file, commit only the intended non-private files, and push the current branch to `origin`.
 

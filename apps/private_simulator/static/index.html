@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <title>HVAC XPERT · Private Simulator</title>
+    <link rel="stylesheet" href="/assets/app.css">
+    <script src="/assets/app.js" defer></script>
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="HVAC XPERT home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>
+          <strong>HVAC XPERT</strong>
+          <small>Deterministic equipment lab</small>
+        </span>
+      </a>
+      <div class="privacy-badge"><span></span> Private · localhost only</div>
+    </header>
+
+    <main class="shell">
+      <section class="hero panel">
+        <div>
+          <p class="eyebrow">Approved knowledge runtime</p>
+          <h1 id="model-name">Loading model…</h1>
+          <p class="hero-copy">Manually inspect reviewed operating phases, component commands, fault effects, and diagnostic procedures.</p>
+        </div>
+        <div class="model-facts" aria-label="Model summary">
+          <div><span>Revision</span><strong id="revision-id">—</strong></div>
+          <div><span>Components</span><strong id="component-count">—</strong></div>
+          <div><span>Phases</span><strong id="phase-count">—</strong></div>
+          <div><span>Diagnostics</span><strong id="measurement-count">—</strong></div>
+        </div>
+      </section>
+
+      <section class="guardrail" role="note">
+        <span class="guardrail-icon">!</span>
+        <div>
+          <strong>Manual simulation boundary</strong>
+          <p>Phases never advance automatically. Displayed measurements are approved test definitions, not live readings.</p>
+        </div>
+      </section>
+
+      <div id="error-banner" class="error-banner" role="alert" hidden>
+        <strong>Simulation stopped</strong>
+        <span id="error-message"></span>
+      </div>
+
+      <section class="workspace">
+        <aside class="control-stack">
+          <div class="panel control-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">01 · Operating envelope</p>
+                <h2>System controls</h2>
+              </div>
+              <span id="status-badge" class="status-badge status-loading">Loading</span>
+            </div>
+
+            <label class="field-label" for="phase-select">Approved phase</label>
+            <div class="select-wrap">
+              <select id="phase-select" disabled>
+                <option value="">No phase selected</option>
+              </select>
+            </div>
+            <p id="phase-description" class="field-help">Select a reviewed phase manually.</p>
+
+            <div class="toggle-list">
+              <label class="toggle-row">
+                <span><strong>Power available</strong><small>Explicit external input</small></span>
+                <input id="power-toggle" type="checkbox" disabled>
+                <i aria-hidden="true"></i>
+              </label>
+              <label class="toggle-row">
+                <span><strong>Operation requested</strong><small>Explicit external input</small></span>
+                <input id="request-toggle" type="checkbox" disabled>
+                <i aria-hidden="true"></i>
+              </label>
+            </div>
+          </div>
+
+          <div class="panel fault-panel">
+            <div class="panel-heading compact">
+              <div>
+                <p class="eyebrow">02 · Fault injection</p>
+                <h2>Active faults</h2>
+              </div>
+              <span id="fault-count" class="count-badge">0</span>
+            </div>
+            <label class="search-field">
+              <span class="sr-only">Search fault codes</span>
+              <input id="fault-search" type="search" placeholder="Search approved fault codes" disabled>
+            </label>
+            <div id="fault-list" class="fault-list" aria-live="polite"></div>
+          </div>
+        </aside>
+
+        <div class="results-stack">
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">03 · Deterministic output</p>
+                <h2>Component commands</h2>
+              </div>
+              <span id="command-count" class="count-badge">0</span>
+            </div>
+            <div id="command-grid" class="command-grid empty-state">
+              <p>Select an approved phase to inspect explicit commands.</p>
+            </div>
+            <div id="unknown-summary" class="unknown-summary">No component state is inferred.</div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">04 · Service verification</p>
+                <h2>Diagnostic definitions</h2>
+              </div>
+              <span id="diagnostic-count" class="count-badge">0</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Test</th>
+                    <th>Meter / Points</th>
+                    <th>Expected</th>
+                    <th>Safety / Source</th>
+                  </tr>
+                </thead>
+                <tbody id="diagnostic-body">
+                  <tr><td colspan="4" class="table-empty">Select a phase to view applicable diagnostics.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>HVAC XPERT private technical-review workspace</span>
+      <span>Automatic transitions disabled</span>
+    </footer>
+  </body>
+</html>
