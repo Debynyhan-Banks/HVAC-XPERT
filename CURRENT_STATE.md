@@ -54,7 +54,12 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - `Debynyhan-Banks` accepted all fifteen assertions in `RUN-ASXS6-20260802-002` at `2026-08-02T23:00:09Z`
 - Extension assertions advanced to `LEVEL_4_TECHNICIAN_REVIEWED` while retaining the legal and publication hold
 - Approved base and extension compose successfully at runtime as 16 components, 51 faults, 6 operating states, and 6 measurements
-- Ten package-gate tests, three extension-review tests, and ten simulator tests pass together
+- Deterministic simulator now exposes immutable approved operating-state and diagnostic-measurement definitions
+- Exact manual phase selection applies only approved component commands and never advances automatically
+- State/fault conflicts on the same component property fail closed
+- Local simulator runner lists approved phases and diagnostics or emits a deterministic JSON snapshot
+- Real-package smoke test selects steady cooling and applies the two approved compressor and outdoor-fan commands
+- Ten package-gate tests, three extension-review tests, seventeen simulator tests, and two runner tests pass together
 
 ## In progress
 
@@ -62,7 +67,7 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Copyright, storage, factual-extraction, and derivative-use determination
 - Confirmation of exact official service, parts, and specification asset URLs
 - Manual-upload ingestion design using authorized documents or synthetic fixtures
-- Simulator integration of the approved cooling-phase and diagnostic-measurement extension
+- Definition of the first private local application interface over deterministic simulator snapshots
 
 ## Blockers
 
@@ -75,7 +80,7 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 
 ## Next action
 
-Extend the deterministic simulator to expose and manually select the six approved cooling phases, apply only their explicit component commands, and surface the six approved diagnostic measurements. Keep automatic phase transitions disabled until reviewed timing and transition conditions exist.
+Build a private local application shell over the deterministic engine with a model summary, manual phase picker, power/request controls, fault picker, component-command panel, and diagnostic table. Consume simulator snapshots without adding automatic transitions or exposing private records publicly.
 
 After the work unit passes validation, update this file, commit only the intended non-private files, and push the current branch to `origin`.
 

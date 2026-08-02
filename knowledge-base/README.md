@@ -25,6 +25,9 @@ python3 scripts/private_package_gate.py \
 
 Pending, mismatched, partially reviewed, or conflicting extensions fail closed. Extension commands and measurements must reference known components, states, and measurements from the approved package set.
 
+The approved composed package can be inspected through `scripts/run_simulator.py`.
+See `simulator/README.md` for state-listing, diagnostic-listing, and manual phase-selection commands.
+
 ## Public export gate
 
 ```bash
