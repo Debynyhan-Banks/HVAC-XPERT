@@ -54,7 +54,19 @@ Every contributor and AI agent must read these files in order:
 
 ## Immediate gate
 
-The first controlled extraction and its operating-state/measurement extension are technically approved in private, ignored packages. Internal development composes them through the validated private-package gate; public export remains disabled under the unresolved legal and source-rights hold. The deterministic simulator now supports exact manual phase selection, approved component commands, fault injection, and approved diagnostic definitions through a local JSON runner. The next authorized work is a private local interface over these snapshots; automatic transitions remain disabled because reviewed timing and transition conditions do not exist. Automated discovery or downloading begins only after `approved_for_collection` is set to `true` by an authorized reviewer in `sources/source-registry.yaml`.
+The first controlled extraction and its operating-state/measurement extension are technically approved in private, ignored packages. Internal development composes them through the validated private-package gate; public export remains disabled under the unresolved legal and source-rights hold. The deterministic simulator supports exact manual phase selection, approved component commands, fault injection, and approved diagnostic definitions through both a local JSON runner and a private browser interface that binds only to `127.0.0.1`. Automatic transitions remain disabled because reviewed timing and transition conditions do not exist. Automated discovery or downloading begins only after `approved_for_collection` is set to `true` by an authorized reviewer in `sources/source-registry.yaml`.
+
+## Private local interface
+
+```bash
+python3 scripts/run_local_app.py \
+  sources/private/review/RUN-ASXS6-20260802-001/package \
+  --extension sources/private/review/RUN-ASXS6-20260802-002/package \
+  --open
+```
+
+The local interface reads the ignored, approved packages at runtime. It does not
+copy private records into tracked application assets or expose a network listener.
 
 ## Completion protocol
 
