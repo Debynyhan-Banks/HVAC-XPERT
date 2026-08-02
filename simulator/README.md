@@ -19,8 +19,8 @@ operation requested, then idle.
 
 ## Deliberate limit
 
-The current approved pilot package does not contain operating-state or transition
-records. The engine therefore does not infer contactor, compressor, fan, valve,
-inverter, pressure, voltage, timing, or lockout behavior. Those behaviors remain
-blocked until model- and revision-specific records are extracted, technically
-reviewed, and loaded through the private gate.
+The approved pilot extension contains six cooling-phase records and six diagnostic
+measurements, but no reviewed automatic transition logic or transition timing. The
+current engine does not yet consume those records. Integration may expose manual
+phase selection and explicit component commands only; it must not infer contactor,
+valve, inverter, timing, or lockout behavior.

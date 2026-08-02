@@ -191,6 +191,8 @@ class ReviewPackageExtensionTests(unittest.TestCase):
             (self.package_root / "operating-states" / "idle.json").read_text(encoding="utf-8")
         )
         self.assertEqual(approved_state["provenance"][0]["validation"]["level"], "LEVEL_4_TECHNICIAN_REVIEWED")
+        approved_summary = (self.package_root / "REVIEW_SUMMARY.md").read_text(encoding="utf-8")
+        self.assertNotIn("PENDING_TECHNICAL_REVIEW", approved_summary)
 
     def test_rejects_unknown_component_command(self):
         state_path = self.package_root / "operating-states" / "idle.json"

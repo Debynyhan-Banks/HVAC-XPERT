@@ -49,12 +49,20 @@ def update_summary(package_root, reviewer_id, reviewed_at):
     summary = summary.replace("- Status: `PENDING_TECHNICAL_REVIEW`", "- Status: `TECHNICALLY_APPROVED_LEGAL_HOLD`")
     summary = summary.replace("- Publication allowed: No", f"- Technical review: Accepted by `{reviewer_id}` at `{reviewed_at}`\n- Publication allowed: No - legal and source-rights hold remains")
     summary = summary.replace(
+        "Your approval of the base package and simulator code does not approve these new assertions. Review each item against the cited private PDF pages before creating `review-decision.json`.",
+        f"All extension assertions were accepted by `{reviewer_id}` at `{reviewed_at}` and advanced to `LEVEL_4_TECHNICIAN_REVIEWED`. The extension remains private under the legal and source-rights hold.",
+    )
+    summary = summary.replace(
         "## Review actions\n\n1. Compare each record to its cited PDF page.\n2. Mark each assertion `ACCEPTED`, `REVISED`, `REJECTED`, or `CONFLICTED`.\n3. Record your reviewer ID, review timestamp, and notes for every decision.\n4. Do not promote records with unresolved applicability or revision questions.",
         f"## Review decision\n\nAll assertions were accepted by `{reviewer_id}` at `{reviewed_at}` and advanced to `LEVEL_4_TECHNICIAN_REVIEWED`. The package remains private because source-rights and publication authorization are unresolved.",
     )
     summary = summary.replace(
         "The three wiring pages appear to contain the same applicable 3.5-5.0 ton outdoor AC drawing. Duplicate status remains pending reviewer confirmation.",
         "The technical reviewer accepted the three wiring pages as equivalent applicable source renderings of the 3.5-5.0 ton outdoor AC drawing.",
+    )
+    summary = summary.replace(
+        "## Review actions\n\n1. Compare every record to its cited PDF page.\n2. Confirm the cooling phase/component mapping applies to `ASXS6S4810AA` revision `AA`.\n3. Confirm measurement points, values, units, procedures, and safety categories.\n4. Mark the complete package accepted only if every assertion is correct; otherwise record revisions or rejections before approval.\n5. Keep `publication_authorized` false because the legal and source-rights hold remains.",
+        f"## Review decision\n\nAll assertions were accepted by `{reviewer_id}` at `{reviewed_at}`. Publication remains unauthorized.",
     )
     summary_path.write_text(summary, encoding="utf-8")
 
