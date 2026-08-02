@@ -25,6 +25,7 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Product specification and installation documents matched to official Daikin CDN URLs
 - Service and repair-parts documents recorded as distributor-hosted copies pending official-source matching
 - Completion protocol now requires validation, a focused commit, and a GitHub push after every completed work unit
+- `Debynyhan-Banks` assigned as the pilot HVAC/R technical reviewer
 
 ## In progress
 
@@ -41,7 +42,6 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Posted terms prohibit automated monitoring or copying of covered sites
 - Storage, factual-extraction, and derivative-publication rights remain unresolved
 - Exact official URLs for the service manual and parts catalog are unconfirmed
-- No qualified technical reviewer is assigned
 
 ## Next action
 
