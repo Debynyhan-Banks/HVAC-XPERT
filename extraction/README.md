@@ -11,6 +11,14 @@ Raw extraction and unreviewed sourced assertions are restricted data. They remai
 5. Record `ACCEPTED`, `REVISED`, `REJECTED`, or `CONFLICTED` with reviewer identity, timestamp, and notes.
 6. Promote only accepted or revised records that pass the publication gate.
 
+Complete-package approval is applied from a private decision record:
+
+```bash
+python3 scripts/apply_review_decision.py sources/private/review/RUN-ASXS6-20260802-001/package sources/private/review/RUN-ASXS6-20260802-001/package/review-decision.json
+```
+
+Technical approval advances accepted assertions to `LEVEL_4_TECHNICIAN_REVIEWED`. It does not set `publication_allowed` while licensing, storage, or source-rights questions remain unresolved.
+
 ## Private package validation
 
 ```bash

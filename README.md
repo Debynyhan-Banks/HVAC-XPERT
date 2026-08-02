@@ -54,7 +54,7 @@ Every contributor and AI agent must read these files in order:
 
 ## Immediate gate
 
-The first controlled extraction is complete in a private, ignored review package. The next authorized work is technical review of its page-cited model, component, fault-index, and wiring-inventory assertions. Automated discovery or downloading begins only after `approved_for_collection` is set to `true` by an authorized reviewer in `sources/source-registry.yaml`.
+The first controlled extraction is technically approved in a private, ignored package. Its assertions are `LEVEL_4_TECHNICIAN_REVIEWED`, but public export remains disabled under the unresolved legal and source-rights hold. The next authorized work is a private package loader with a fail-closed publication gate. Automated discovery or downloading begins only after `approved_for_collection` is set to `true` by an authorized reviewer in `sources/source-registry.yaml`.
 
 ## Completion protocol
 

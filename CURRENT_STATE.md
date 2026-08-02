@@ -32,6 +32,10 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Fifty-one outdoor fault-code index records mapped from service-manual pages 45-48
 - Three applicable wiring-diagram source locations inventoried without copying diagrams into Git
 - Private review package passed referential, page-range, privacy-boundary, and canonical schema validation
+- `Debynyhan-Banks` accepted all 74 page-cited assertions in `RUN-ASXS6-20260802-001`
+- Accepted assertions advanced to `LEVEL_4_TECHNICIAN_REVIEWED`
+- Three wiring pages accepted as equivalent applicable renderings of the 3.5-5.0 ton outdoor AC drawing
+- Technical approval audit recorded while retaining the package under legal hold
 
 ## In progress
 
@@ -39,8 +43,7 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Copyright, storage, factual-extraction, and derivative-use determination
 - Confirmation of exact official service, parts, and specification asset URLs
 - Manual-upload ingestion design using authorized documents or synthetic fixtures
-- Technical review of private package `RUN-ASXS6-20260802-001` by `Debynyhan-Banks`
-- Duplicate determination for the three applicable wiring-diagram source locations
+- Private approved-package loader and fail-closed publication gate
 
 ## Blockers
 
@@ -48,11 +51,11 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Posted terms prohibit automated monitoring or copying of covered sites
 - Storage, factual-extraction, and derivative-publication rights remain unresolved
 - Exact official URLs for the service manual and parts catalog are unconfirmed
-- Extracted records cannot be promoted from private review until technical review outcomes are recorded
+- Technically approved records cannot enter the public repository while the legal hold remains
 
 ## Next action
 
-Review `sources/private/review/RUN-ASXS6-20260802-001/package/REVIEW_SUMMARY.md` against the cited PDF pages. Record an `ACCEPTED`, `REVISED`, `REJECTED`, or `CONFLICTED` outcome for every assertion before promotion.
+Build a private approved-package loader and fail-closed publication gate that permits internal development with `RUN-ASXS6-20260802-001` while refusing public export because `publication_allowed` is `false`.
 
 After the work unit passes validation, update this file, commit only the intended non-private files, and push the current branch to `origin`.
 

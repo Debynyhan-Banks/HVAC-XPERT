@@ -31,7 +31,7 @@ def load_document_pages(failures):
     return document_pages
 
 
-def validate_provenance(assertion, entity_id, package_id, document_pages, failures, location):
+def validate_provenance(assertion, entity_id, package_id, package_status, assigned_reviewer, expected_reviewed_at, document_pages, failures, location):
     required_keys = {"fact_id", "entity_id", "property", "value", "unit", "source", "extraction", "validation"}
     missing_keys = required_keys - set(assertion)
     if missing_keys:
@@ -53,15 +53,25 @@ def validate_provenance(assertion, entity_id, package_id, document_pages, failur
         failures.append(f"{location}: extraction run does not match package ID")
 
     validation = assertion.get("validation", {})
-    if validation.get("level") != "LEVEL_1_AI_EXTRACTED":
-        failures.append(f"{location}: unreviewed assertion must remain LEVEL_1_AI_EXTRACTED")
-    if validation.get("outcome") != "PENDING":
-        failures.append(f"{location}: unreviewed assertion must remain PENDING")
-    if validation.get("reviewed_by") is not None or validation.get("reviewed_at") is not None:
-        failures.append(f"{location}: pending assertion cannot contain reviewer approval")
+    if package_status == "PENDING_TECHNICAL_REVIEW":
+        if validation.get("level") != "LEVEL_1_AI_EXTRACTED":
+            failures.append(f"{location}: unreviewed assertion must remain LEVEL_1_AI_EXTRACTED")
+        if validation.get("outcome") != "PENDING":
+            failures.append(f"{location}: unreviewed assertion must remain PENDING")
+        if validation.get("reviewed_by") is not None or validation.get("reviewed_at") is not None:
+            failures.append(f"{location}: pending assertion cannot contain reviewer approval")
+    elif package_status == "TECHNICALLY_APPROVED_LEGAL_HOLD":
+        if validation.get("level") != "LEVEL_4_TECHNICIAN_REVIEWED":
+            failures.append(f"{location}: approved assertion must be LEVEL_4_TECHNICIAN_REVIEWED")
+        if validation.get("outcome") != "ACCEPTED":
+            failures.append(f"{location}: approved assertion must be ACCEPTED")
+        if validation.get("reviewed_by") != assigned_reviewer:
+            failures.append(f"{location}: approved assertion reviewer does not match assignment")
+        if validation.get("reviewed_at") != expected_reviewed_at:
+            failures.append(f"{location}: approved assertion timestamp does not match review decision")
 
 
-def validate_entity(record, id_field, model_id, revision_id, package_id, document_pages, failures, location):
+def validate_entity(record, id_field, model_id, revision_id, package_id, package_status, assigned_reviewer, expected_reviewed_at, document_pages, failures, location):
     entity_id = record.get(id_field)
     if not entity_id:
         failures.append(f"{location}: missing {id_field}")
@@ -75,7 +85,7 @@ def validate_entity(record, id_field, model_id, revision_id, package_id, documen
         failures.append(f"{location}: missing provenance")
         return
     for index, assertion in enumerate(provenance_entries):
-        validate_provenance(assertion, entity_id, package_id, document_pages, failures, f"{location} provenance[{index}]")
+        validate_provenance(assertion, entity_id, package_id, package_status, assigned_reviewer, expected_reviewed_at, document_pages, failures, f"{location} provenance[{index}]")
 
 
 def validate(package_path):
@@ -95,10 +105,14 @@ def validate(package_path):
     package_id = manifest.get("package_id")
     model_id = manifest.get("model_id")
     revision_id = manifest.get("revision_id")
-    if manifest.get("status") != "PENDING_TECHNICAL_REVIEW":
-        failures.append("Package must remain PENDING_TECHNICAL_REVIEW before reviewer action")
+    package_status = manifest.get("status")
+    assigned_reviewer = manifest.get("assigned_reviewer")
+    technical_review = manifest.get("technical_review", {})
+    expected_reviewed_at = technical_review.get("reviewed_at")
+    if package_status not in {"PENDING_TECHNICAL_REVIEW", "TECHNICALLY_APPROVED_LEGAL_HOLD"}:
+        failures.append(f"Unsupported package status: {package_status}")
     if manifest.get("publication_allowed") is not False:
-        failures.append("Pending review package cannot be publication-approved")
+        failures.append("Private review package cannot be publication-approved while legal hold remains")
     if manifest.get("contains_source_binaries") is not False:
         failures.append("Review package manifest must not claim embedded source binaries")
 
@@ -108,10 +122,12 @@ def validate(package_path):
         failures.append("Package references an unknown document manifest")
 
     model = load_json(package_root / "equipment-model.json", failures)
+    assertion_count = 0
     if model is not None:
         if model.get("model_id") != model_id:
             failures.append("Equipment model ID does not match package")
-        validate_entity(model, "model_id", model_id, revision_id, package_id, document_pages, failures, "equipment-model.json")
+        assertion_count += len(model.get("provenance", []))
+        validate_entity(model, "model_id", model_id, revision_id, package_id, package_status, assigned_reviewer, expected_reviewed_at, document_pages, failures, "equipment-model.json")
 
     component_paths = sorted((package_root / "components").glob("*.json"))
     fault_paths = sorted((package_root / "faults").glob("*.json"))
@@ -135,7 +151,8 @@ def validate(package_path):
         if component_id in component_ids:
             failures.append(f"Duplicate component ID: {component_id}")
         component_ids.add(component_id)
-        validate_entity(component, "component_id", model_id, revision_id, package_id, document_pages, failures, str(path))
+        assertion_count += len(component.get("provenance", []))
+        validate_entity(component, "component_id", model_id, revision_id, package_id, package_status, assigned_reviewer, expected_reviewed_at, document_pages, failures, str(path))
 
     fault_ids = set()
     fault_codes = set()
@@ -151,7 +168,8 @@ def validate(package_path):
             failures.append(f"Duplicate fault code: {fault_code}")
         fault_ids.add(fault_id)
         fault_codes.add(fault_code)
-        validate_entity(fault, "fault_id", model_id, revision_id, package_id, document_pages, failures, str(path))
+        assertion_count += len(fault.get("provenance", []))
+        validate_entity(fault, "fault_id", model_id, revision_id, package_id, package_status, assigned_reviewer, expected_reviewed_at, document_pages, failures, str(path))
 
     wiring_fact_ids = set()
     for path in wiring_paths:
@@ -162,7 +180,35 @@ def validate(package_path):
         if fact_id in wiring_fact_ids:
             failures.append(f"Duplicate wiring fact ID: {fact_id}")
         wiring_fact_ids.add(fact_id)
-        validate_provenance(assertion, model_id, package_id, document_pages, failures, str(path))
+        assertion_count += 1
+        validate_provenance(assertion, model_id, package_id, package_status, assigned_reviewer, expected_reviewed_at, document_pages, failures, str(path))
+
+    if package_status == "TECHNICALLY_APPROVED_LEGAL_HOLD":
+        if technical_review.get("outcome") != "ACCEPTED" or technical_review.get("scope") != "ALL_ASSERTIONS":
+            failures.append("Approved package requires a complete ACCEPTED technical review")
+        if technical_review.get("reviewer_id") != assigned_reviewer:
+            failures.append("Technical-review manifest reviewer does not match assignment")
+        if technical_review.get("assertion_count") != assertion_count:
+            failures.append("Technical-review assertion count does not match package")
+        if technical_review.get("legal_hold") is not True:
+            failures.append("Technically approved package must remain on legal hold")
+        decision_file = technical_review.get("decision_file")
+        if not isinstance(decision_file, str) or Path(decision_file).name != decision_file:
+            failures.append("Technical review has an invalid decision filename")
+        else:
+            decision = load_json(package_root / decision_file, failures)
+            if decision is not None:
+                expected_decision = {
+                    "package_id": package_id,
+                    "reviewer_id": assigned_reviewer,
+                    "outcome": "ACCEPTED",
+                    "scope": "ALL_ASSERTIONS",
+                    "reviewed_at": expected_reviewed_at,
+                    "publication_authorized": False,
+                }
+                for key, expected_value in expected_decision.items():
+                    if decision.get(key) != expected_value:
+                        failures.append(f"Review decision {key} does not match package approval")
 
     forbidden_files = [path for path in package_root.rglob("*") if path.is_file() and path.suffix.lower() in {".pdf", ".png", ".jpg", ".jpeg"}]
     if forbidden_files:
