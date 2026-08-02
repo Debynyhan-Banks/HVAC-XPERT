@@ -53,6 +53,7 @@ Before handing off work:
 - Inspect the staged file list and confirm that no private documents, credentials, secrets, or generated artifacts are included.
 - Commit the completed work with a focused message and push the current branch to `origin`.
 - Verify that the remote accepted the commit; if synchronization fails, report it as a blocker rather than claiming completion.
+- When a pull request exists, include its clickable GitHub merge/review link in the final handoff.
 
 ## Repository synchronization protocol
 
@@ -62,6 +63,7 @@ Before handing off work:
 - Never bypass failed validation merely to create a commit or push.
 - Never push files excluded by `.gitignore`, especially `sources/private/`, source PDFs, credentials, local environment files, or temporary extraction output.
 - If GitHub authentication, network access, branch protection, or review requirements prevent a push, keep the local work intact and report the exact blocker.
+- Never omit the pull-request link when a merge is pending. If work was published directly because no pull request was applicable, state that explicitly.
 
 ## Current authorized scope
 
