@@ -56,6 +56,10 @@ class SourceReference:
     document_id: str
     page: int
     section: str | None
+    validation_level: str
+    validation_outcome: str
+    reviewed_by: str
+    reviewed_at: str
 
 
 @dataclass(frozen=True)
@@ -603,8 +607,11 @@ class DeterministicSimulator:
         sources = set()
         for assertion in provenance:
             source = assertion.get("source") if isinstance(assertion, dict) else None
+            validation = assertion.get("validation") if isinstance(assertion, dict) else None
             if not isinstance(source, dict):
                 raise SimulationDefinitionError(f"{location} has invalid provenance")
+            if not isinstance(validation, dict):
+                raise SimulationDefinitionError(f"{location} has invalid validation metadata")
             document_id = cls._required_string(source.get("document_id"), f"{location} source document ID")
             page = source.get("page")
             section = source.get("section")
@@ -612,7 +619,29 @@ class DeterministicSimulator:
                 raise SimulationDefinitionError(f"{location} has an invalid source page")
             if section is not None and (not isinstance(section, str) or not section):
                 raise SimulationDefinitionError(f"{location} has an invalid source section")
-            sources.add(SourceReference(document_id=document_id, page=page, section=section))
+            sources.add(
+                SourceReference(
+                    document_id=document_id,
+                    page=page,
+                    section=section,
+                    validation_level=cls._required_string(
+                        validation.get("level"),
+                        f"{location} validation level",
+                    ),
+                    validation_outcome=cls._required_string(
+                        validation.get("outcome"),
+                        f"{location} validation outcome",
+                    ),
+                    reviewed_by=cls._required_string(
+                        validation.get("reviewed_by"),
+                        f"{location} validation reviewer",
+                    ),
+                    reviewed_at=cls._required_string(
+                        validation.get("reviewed_at"),
+                        f"{location} validation timestamp",
+                    ),
+                )
+            )
         return tuple(sorted(sources, key=lambda value: (value.document_id, value.page, value.section or "")))
 
     @classmethod

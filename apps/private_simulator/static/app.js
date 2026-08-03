@@ -3,6 +3,8 @@
 const state = {
   definitions: null,
   activeFaults: new Set(),
+  availableMeasurements: [],
+  selectedMeasurementId: null,
 };
 
 const elements = {
@@ -22,6 +24,17 @@ const elements = {
   commandCount: document.querySelector("#command-count"),
   commandGrid: document.querySelector("#command-grid"),
   unknownSummary: document.querySelector("#unknown-summary"),
+  meterMode: document.querySelector("#meter-mode"),
+  meterReading: document.querySelector("#meter-reading"),
+  meterInterpretation: document.querySelector("#meter-interpretation"),
+  meterPointA: document.querySelector("#meter-point-a"),
+  meterPointB: document.querySelector("#meter-point-b"),
+  meterName: document.querySelector("#meter-name"),
+  meterSafety: document.querySelector("#meter-safety"),
+  meterValidation: document.querySelector("#meter-validation"),
+  meterManufacturer: document.querySelector("#meter-manufacturer"),
+  meterProcedure: document.querySelector("#meter-procedure"),
+  meterSource: document.querySelector("#meter-source"),
   diagnosticCount: document.querySelector("#diagnostic-count"),
   diagnosticBody: document.querySelector("#diagnostic-body"),
   errorBanner: document.querySelector("#error-banner"),
@@ -171,7 +184,59 @@ function formatSources(sources) {
   return sources.map((source) => `${source.document_id} · p. ${source.page}`).join("; ") || "No source listed";
 }
 
+function humanize(value) {
+  return value.replaceAll("_", " ").toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function validationLabel(source) {
+  if (!source) return "Validation unavailable";
+  if (source.validation_level === "LEVEL_4_TECHNICIAN_REVIEWED") return "Technician reviewed · accepted";
+  if (source.validation_level === "LEVEL_5_INSTRUCTOR_VALIDATED") return "Instructor validated · accepted";
+  if (source.validation_level === "LEVEL_6_MANUFACTURER_VERIFIED") return "Manufacturer verified · accepted";
+  return `${humanize(source.validation_level)} · ${humanize(source.validation_outcome)}`;
+}
+
+function renderMeter(measurement) {
+  if (!measurement) {
+    elements.meterMode.textContent = "—";
+    elements.meterReading.textContent = "Select test";
+    elements.meterInterpretation.textContent = "No live or simulated reading is generated.";
+    elements.meterPointA.textContent = "Select a diagnostic definition";
+    elements.meterPointB.textContent = "Select a diagnostic definition";
+    elements.meterName.textContent = "No test selected";
+    elements.meterSafety.textContent = "Safety category unavailable";
+    elements.meterValidation.textContent = "Validation unavailable";
+    elements.meterManufacturer.textContent = "Manufacturer verification pending";
+    elements.meterManufacturer.className = "pending-pill";
+    elements.meterProcedure.textContent = "Choose a diagnostic definition from the table.";
+    elements.meterSource.textContent = "No source selected.";
+    return;
+  }
+  const primarySource = measurement.sources[0];
+  const manufacturerVerified = measurement.sources.every(
+    (source) => source.validation_level === "LEVEL_6_MANUFACTURER_VERIFIED",
+  );
+  elements.meterMode.textContent = measurement.meter_mode;
+  elements.meterReading.textContent = formatExpected(measurement.expected);
+  elements.meterInterpretation.textContent = measurement.expected.interpretation || "No interpretation provided.";
+  elements.meterPointA.textContent = formatPoint(measurement.point_a);
+  elements.meterPointB.textContent = measurement.point_b ? formatPoint(measurement.point_b) : "Second point not specified";
+  elements.meterName.textContent = measurement.name;
+  elements.meterSafety.textContent = humanize(measurement.safety_category);
+  elements.meterValidation.textContent = `${validationLabel(primarySource)} · ${primarySource?.reviewed_by || "reviewer unavailable"}`;
+  elements.meterManufacturer.textContent = manufacturerVerified
+    ? "Manufacturer verified"
+    : "Manufacturer verification pending";
+  elements.meterManufacturer.className = manufacturerVerified ? "verified-pill" : "pending-pill";
+  elements.meterProcedure.textContent = measurement.procedure || "No procedure provided.";
+  elements.meterSource.textContent = formatSources(measurement.sources);
+}
+
 function renderDiagnostics(measurements) {
+  state.availableMeasurements = measurements;
+  if (!measurements.some((measurement) => measurement.measurement_id === state.selectedMeasurementId)) {
+    state.selectedMeasurementId = null;
+  }
   elements.diagnosticCount.textContent = measurements.length;
   elements.diagnosticBody.replaceChildren();
   if (measurements.length === 0) {
@@ -180,12 +245,21 @@ function renderDiagnostics(measurements) {
     cell.colSpan = 4;
     row.append(cell);
     elements.diagnosticBody.append(row);
+    renderMeter(null);
     return;
   }
   for (const measurement of measurements) {
     const row = document.createElement("tr");
+    if (measurement.measurement_id === state.selectedMeasurementId) row.className = "selected-diagnostic";
     const name = document.createElement("td");
-    name.append(node("strong", "", measurement.name), node("small", "", `${measurement.quantity} · ${measurement.signal_type}`));
+    const inspectButton = node("button", "diagnostic-name-button", measurement.name);
+    inspectButton.type = "button";
+    inspectButton.setAttribute("aria-label", `Inspect ${measurement.name}`);
+    inspectButton.addEventListener("click", () => {
+      state.selectedMeasurementId = measurement.measurement_id;
+      renderDiagnostics(state.availableMeasurements);
+    });
+    name.append(inspectButton, node("small", "", `${measurement.quantity} · ${measurement.signal_type}`));
     const points = document.createElement("td");
     points.append(node("strong", "", measurement.meter_mode), node("small", "", `${formatPoint(measurement.point_a)} ↔ ${formatPoint(measurement.point_b)}`));
     const expected = document.createElement("td");
@@ -195,6 +269,9 @@ function renderDiagnostics(measurements) {
     row.append(name, points, expected, safety);
     elements.diagnosticBody.append(row);
   }
+  renderMeter(
+    measurements.find((measurement) => measurement.measurement_id === state.selectedMeasurementId) || null,
+  );
 }
 
 async function updateSnapshot() {
@@ -225,6 +302,9 @@ async function updateSnapshot() {
 async function initialize() {
   try {
     state.definitions = await requestJson("/api/definitions");
+    if (state.definitions.measurement_behavior !== "REFERENCE_DEFINITION_ONLY") {
+      throw new Error("Unsupported measurement behavior; simulator stopped.");
+    }
     populateModel(state.definitions.model);
     populatePhases(state.definitions.operating_states);
     renderFaults();

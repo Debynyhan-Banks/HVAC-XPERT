@@ -58,7 +58,15 @@ def package():
                 "transitions": [],
                 "measurement_ids": [MEASUREMENT_ID],
                 "provenance": [
-                    {"source": {"document_id": "DOC-SYNTHETIC", "page": 1, "section": "Test"}}
+                    {
+                        "source": {"document_id": "DOC-SYNTHETIC", "page": 1, "section": "Test"},
+                        "validation": {
+                            "level": "LEVEL_4_TECHNICIAN_REVIEWED",
+                            "outcome": "ACCEPTED",
+                            "reviewed_by": "SYNTHETIC-REVIEWER",
+                            "reviewed_at": "2026-01-01T00:00:00Z",
+                        },
+                    }
                 ],
             },
         ),
@@ -86,7 +94,15 @@ def package():
                 "safety_category": "ENERGIZED_LOW_VOLTAGE",
                 "procedure": "Synthetic procedure",
                 "provenance": [
-                    {"source": {"document_id": "DOC-SYNTHETIC", "page": 2, "section": "Test"}}
+                    {
+                        "source": {"document_id": "DOC-SYNTHETIC", "page": 2, "section": "Test"},
+                        "validation": {
+                            "level": "LEVEL_4_TECHNICIAN_REVIEWED",
+                            "outcome": "ACCEPTED",
+                            "reviewed_by": "SYNTHETIC-REVIEWER",
+                            "reviewed_at": "2026-01-01T00:00:00Z",
+                        },
+                    }
                 ],
             },
         ),
@@ -113,6 +129,7 @@ class PrivateSimulatorApplicationTests(unittest.TestCase):
 
         self.assertEqual(definitions["classification"], "PRIVATE_LOCAL_ONLY")
         self.assertIs(definitions["automatic_transitions_enabled"], False)
+        self.assertEqual(definitions["measurement_behavior"], "REFERENCE_DEFINITION_ONLY")
         self.assertEqual(definitions["model"]["model_id"], MODEL_ID)
         self.assertEqual(definitions["model"]["component_count"], 1)
         self.assertEqual(definitions["fault_codes"], ["F01"])
@@ -128,6 +145,10 @@ class PrivateSimulatorApplicationTests(unittest.TestCase):
         self.assertEqual(first["selected_operating_state_id"], STATE_ID)
         self.assertEqual(first["applied_commands"][0]["value"], "RUNNING")
         self.assertEqual(first["diagnostic_measurements"][0]["measurement_id"], MEASUREMENT_ID)
+        self.assertEqual(
+            first["diagnostic_measurements"][0]["sources"][0]["validation_level"],
+            "LEVEL_4_TECHNICIAN_REVIEWED",
+        )
 
     def test_applies_exact_approved_fault(self):
         snapshot = self.application.snapshot(snapshot_request(fault_codes=["F01"]))
@@ -178,6 +199,17 @@ class PrivateSimulatorApplicationTests(unittest.TestCase):
         )
         self.assertNotIn("sources/private", static_text)
         self.assertNotIn("ASXS6S4810AA", static_text)
+
+    def test_meter_interface_is_explicitly_reference_only_and_traceable(self):
+        html = (STATIC_ROOT / "index.html").read_text(encoding="utf-8")
+        javascript = (STATIC_ROOT / "app.js").read_text(encoding="utf-8")
+
+        self.assertIn("Reference only", html)
+        self.assertIn("No live or simulated reading is generated", html)
+        self.assertIn("Manufacturer verification pending", html)
+        self.assertIn("REFERENCE_DEFINITION_ONLY", javascript)
+        self.assertIn("validation_level", javascript)
+        self.assertIn("reviewed_by", javascript)
 
 
 if __name__ == "__main__":
