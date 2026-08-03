@@ -115,10 +115,63 @@
             <div id="unknown-summary" class="unknown-summary">No component state is inferred.</div>
           </section>
 
+          <section class="panel meter-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">04 · Virtual test instrument</p>
+                <h2>Diagnostic meter</h2>
+              </div>
+              <span class="reference-badge">Reference only</span>
+            </div>
+            <div class="meter-layout">
+              <div class="meter-shell" aria-label="Approved diagnostic reference display">
+                <div class="meter-screen">
+                  <div class="meter-screen-top">
+                    <span id="meter-mode">—</span>
+                    <span>Approved reference</span>
+                  </div>
+                  <strong id="meter-reading">Select test</strong>
+                  <small id="meter-interpretation">No live or simulated reading is generated.</small>
+                </div>
+                <div class="lead-grid">
+                  <div class="lead lead-red">
+                    <span>A</span>
+                    <p id="meter-point-a">Select a diagnostic definition</p>
+                  </div>
+                  <div class="lead lead-black">
+                    <span>B</span>
+                    <p id="meter-point-b">Select a diagnostic definition</p>
+                  </div>
+                </div>
+              </div>
+              <div class="meter-detail">
+                <div class="meter-title-row">
+                  <div>
+                    <span class="detail-label">Selected definition</span>
+                    <h3 id="meter-name">No test selected</h3>
+                  </div>
+                  <span id="meter-safety" class="safety-pill">Safety category unavailable</span>
+                </div>
+                <div class="validation-row">
+                  <span id="meter-validation" class="validation-pill">Validation unavailable</span>
+                  <span id="meter-manufacturer" class="pending-pill">Manufacturer verification pending</span>
+                </div>
+                <div class="procedure-block">
+                  <span class="detail-label">Approved procedure</span>
+                  <p id="meter-procedure">Choose a diagnostic definition from the table.</p>
+                </div>
+                <div class="source-block">
+                  <span class="detail-label">Traceability</span>
+                  <p id="meter-source">No source selected.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
           <section class="panel">
             <div class="panel-heading">
               <div>
-                <p class="eyebrow">04 · Service verification</p>
+                <p class="eyebrow">05 · Service verification</p>
                 <h2>Diagnostic definitions</h2>
               </div>
               <span id="diagnostic-count" class="count-badge">0</span>
@@ -134,7 +187,7 @@
                   </tr>
                 </thead>
                 <tbody id="diagnostic-body">
-                  <tr><td colspan="4" class="table-empty">Select a phase to view applicable diagnostics.</td></tr>
+                  <tr><td colspan="4" class="table-empty">Select a diagnostic definition to load the reference meter.</td></tr>
                 </tbody>
               </table>
             </div>

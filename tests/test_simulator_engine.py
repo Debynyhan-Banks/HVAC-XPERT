@@ -28,7 +28,13 @@ def provenance():
                 "document_id": "DOC-SYNTHETIC",
                 "page": 1,
                 "section": "Synthetic",
-            }
+            },
+            "validation": {
+                "level": "LEVEL_4_TECHNICIAN_REVIEWED",
+                "outcome": "ACCEPTED",
+                "reviewed_by": "SYNTHETIC-REVIEWER",
+                "reviewed_at": "2026-01-01T00:00:00Z",
+            },
         }
     ]
 
@@ -305,6 +311,17 @@ class DeterministicSimulatorTests(unittest.TestCase):
             (cooling_only["measurement_id"], general["measurement_id"]),
         )
         self.assertEqual(selected.diagnostic_measurements[0].sources[0].page, 1)
+        self.assertEqual(
+            selected.diagnostic_measurements[0].sources[0].validation_level,
+            "LEVEL_4_TECHNICIAN_REVIEWED",
+        )
+
+    def test_rejects_missing_validation_metadata(self):
+        state = operating_state("cooling")
+        del state["provenance"][0]["validation"]
+
+        with self.assertRaisesRegex(SimulationDefinitionError, "validation metadata"):
+            DeterministicSimulator(package(operating_states=(state,)))
 
     def test_state_command_and_fault_effect_conflict_fails_closed(self):
         state = operating_state(

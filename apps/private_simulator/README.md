@@ -21,7 +21,10 @@ The interface supports:
 - exact approved fault-code activation
 - explicit component commands and fault effects
 - applicable diagnostic definitions with source-page references
+- reference-only virtual meter display with approved mode, points, values, procedures, and safety category
+- technician-validation labels and explicit manufacturer-verification status
 
 The server creates a fresh deterministic simulator for every snapshot request.
 It does not infer or persist equipment state, automate phase transitions, publish
-private records, or serve on a network-accessible interface.
+private records, generate live or simulated meter readings, or serve on a
+network-accessible interface.

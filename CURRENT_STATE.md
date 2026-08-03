@@ -66,6 +66,12 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Every snapshot request creates a fresh simulator instance, preserving deterministic replay and preventing hidden phase persistence
 - Static browser assets contain no pilot model identifier or private package path; approved records load only through the ignored private vault at runtime
 - Eight private-application tests cover definitions, deterministic snapshots, exact identifiers, strict input validation, loopback binding, host filtering, and static-asset privacy
+- Private local application pull request #9 merged as commit `5516eb8`
+- Simulator source references now preserve validation level, outcome, reviewer, and review timestamp
+- Reference-only virtual diagnostic meter implemented with approved meter mode, lead points, expected value or range, interpretation, procedure, safety category, and source pages
+- Meter interface exposes human-readable technician validation and explicit manufacturer-verification-pending status
+- The meter fails closed if the server does not declare reference-definition-only measurement behavior and never generates a live or simulated reading
+- Real approved-package browser test verified the `197–253 VAC` L1/L2 supply-voltage definition, energized-line-voltage category, approved procedure, technician reviewer, and service-manual page 15 traceability
 
 ## In progress
 
@@ -73,7 +79,7 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Copyright, storage, factual-extraction, and derivative-use determination
 - Confirmation of exact official service, parts, and specification asset URLs
 - Manual-upload ingestion design using authorized documents or synthetic fixtures
-- HVAC technical review of the first private local application interface
+- HVAC technical review of the reference-only virtual diagnostic meter
 
 ## Blockers
 
@@ -86,7 +92,7 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 
 ## Next action
 
-Run and technically review the private local application against the approved pilot package. Confirm that the manual phases, explicit commands, fault effects, diagnostic definitions, and source-page references match the reviewed records without implying automatic equipment behavior.
+Run and technically review the reference-only virtual diagnostic meter against the approved pilot package. Confirm that meter modes, lead points, expected references, safety categories, procedures, technician-validation labels, and source pages match the reviewed records without implying a live measurement.
 
 After the work unit passes validation, update this file, commit only the intended non-private files, and push the current branch to `origin`.
 

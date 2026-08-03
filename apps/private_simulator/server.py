@@ -47,6 +47,7 @@ class PrivateSimulatorApplication:
         return {
             "classification": "PRIVATE_LOCAL_ONLY",
             "automatic_transitions_enabled": False,
+            "measurement_behavior": "REFERENCE_DEFINITION_ONLY",
             "model": {
                 "model_id": self._definitions.model_id,
                 "revision_id": self._definitions.revision_id,

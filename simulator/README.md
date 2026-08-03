@@ -10,6 +10,7 @@ fault, and simulator-effect definitions into immutable runtime structures.
 - Operating states are manually selected by exact approved state ID.
 - Selected states apply only their explicit approved component commands.
 - Diagnostic definitions expose expected values, points, procedures, safety categories, and source pages; they are not simulated readings.
+- Source references preserve technician validation level, outcome, reviewer, and review timestamp for display in the private application.
 - Faults are manually activated by an exact code present in the approved package.
 - Active faults apply only their declared `simulator_effects` values.
 - Matching effects are combined; state/fault conflicts for the same target property fail closed.
