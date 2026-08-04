@@ -24,6 +24,7 @@ const elements = {
   commandCount: document.querySelector("#command-count"),
   commandGrid: document.querySelector("#command-grid"),
   unknownSummary: document.querySelector("#unknown-summary"),
+  diagnosticSelect: document.querySelector("#diagnostic-select"),
   meterMode: document.querySelector("#meter-mode"),
   meterReading: document.querySelector("#meter-reading"),
   meterInterpretation: document.querySelector("#meter-interpretation"),
@@ -123,6 +124,45 @@ function formatValue(value, unit) {
   return unit ? `${display} ${unit}` : display;
 }
 
+function humanize(value) {
+  return value.replaceAll("_", " ").replaceAll("-", " ").toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function componentName(referenceId) {
+  const identifier = referenceId.split(":").at(-1) || referenceId;
+  return humanize(identifier).replace(/^Dc\b/, "DC").replace(/^Pcb\b/, "PCB");
+}
+
+function commandPresentation(record, effect) {
+  const rawValue = formatValue(record.value, record.unit);
+  if (record.value === "PERCENT_DEMAND" && record.unit === "%") {
+    return {
+      value: "Demand-driven",
+      note: "Exact compressor demand percentage is not specified in this approved phase definition.",
+      rawValue,
+    };
+  }
+  if (record.value === "VARIABLE_0_TO_8" && record.unit === "step") {
+    return {
+      value: "Variable steps 0–8",
+      note: "Exact outdoor-fan step is not specified in this approved phase definition.",
+      rawValue,
+    };
+  }
+  if (record.value === null) {
+    return {
+      value: "Unknown",
+      note: "The approved records do not define an exact value.",
+      rawValue: null,
+    };
+  }
+  return {
+    value: rawValue,
+    note: effect ? "Explicit effect from an active approved fault." : "Explicit command from the approved phase definition.",
+    rawValue: null,
+  };
+}
+
 function renderStatus(status) {
   const styles = {
     IDLE: ["Idle", "status-idle"],
@@ -136,14 +176,27 @@ function renderStatus(status) {
 }
 
 function commandCard(record, effect = false) {
+  const referenceId = effect ? record.target_id : record.component_id;
+  const presentation = commandPresentation(record, effect);
   const card = node("article", `command-card${effect ? " effect-card" : ""}`);
-  card.append(node("span", "component-id", effect ? record.target_id : record.component_id));
+  const heading = node("div", "command-card-heading");
+  const identity = node("div", "command-identity");
+  identity.append(
+    node("strong", "command-component-name", componentName(referenceId)),
+    node("code", "component-id", referenceId),
+  );
+  heading.append(identity, node("span", "command-kind", effect ? "Fault effect" : "Phase command"));
   const detail = node("div", "command-value");
   detail.append(
-    node("span", "", record.property.replaceAll("_", " ")),
-    node("strong", "", formatValue(record.value, record.unit)),
+    node("span", "command-property", humanize(record.property)),
+    node("strong", "", presentation.value),
   );
-  card.append(detail);
+  card.append(heading, detail, node("p", "command-note", presentation.note));
+  if (presentation.rawValue) {
+    const rawDefinition = node("p", "raw-definition");
+    rawDefinition.append(node("span", "", "Approved source value"), node("code", "", presentation.rawValue));
+    card.append(rawDefinition);
+  }
   return card;
 }
 
@@ -184,10 +237,6 @@ function formatSources(sources) {
   return sources.map((source) => `${source.document_id} · p. ${source.page}`).join("; ") || "No source listed";
 }
 
-function humanize(value) {
-  return value.replaceAll("_", " ").toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
-
 function validationLabel(source) {
   if (!source) return "Validation unavailable";
   if (source.validation_level === "LEVEL_4_TECHNICIAN_REVIEWED") return "Technician reviewed · accepted";
@@ -208,7 +257,7 @@ function renderMeter(measurement) {
     elements.meterValidation.textContent = "Validation unavailable";
     elements.meterManufacturer.textContent = "Manufacturer verification pending";
     elements.meterManufacturer.className = "pending-pill";
-    elements.meterProcedure.textContent = "Choose a diagnostic definition from the table.";
+    elements.meterProcedure.textContent = "Choose an approved diagnostic test above.";
     elements.meterSource.textContent = "No source selected.";
     return;
   }
@@ -232,6 +281,29 @@ function renderMeter(measurement) {
   elements.meterSource.textContent = formatSources(measurement.sources);
 }
 
+function syncDiagnosticSelect(measurements) {
+  elements.diagnosticSelect.replaceChildren();
+  const prompt = document.createElement("option");
+  prompt.value = "";
+  prompt.textContent = measurements.length === 0 ? "No tests apply to this phase" : "Choose an approved test…";
+  elements.diagnosticSelect.append(prompt);
+  for (const measurement of measurements) {
+    const option = document.createElement("option");
+    option.value = measurement.measurement_id;
+    option.textContent = measurement.name;
+    elements.diagnosticSelect.append(option);
+  }
+  elements.diagnosticSelect.value = state.selectedMeasurementId || "";
+  elements.diagnosticSelect.disabled = measurements.length === 0;
+}
+
+function selectMeasurement(measurementId) {
+  state.selectedMeasurementId = state.availableMeasurements.some(
+    (measurement) => measurement.measurement_id === measurementId,
+  ) ? measurementId : null;
+  renderDiagnostics(state.availableMeasurements);
+}
+
 function renderDiagnostics(measurements) {
   state.availableMeasurements = measurements;
   if (!measurements.some((measurement) => measurement.measurement_id === state.selectedMeasurementId)) {
@@ -239,6 +311,7 @@ function renderDiagnostics(measurements) {
   }
   elements.diagnosticCount.textContent = measurements.length;
   elements.diagnosticBody.replaceChildren();
+  syncDiagnosticSelect(measurements);
   if (measurements.length === 0) {
     const row = document.createElement("tr");
     const cell = node("td", "table-empty", "No diagnostic definition applies to this phase.");
@@ -250,15 +323,18 @@ function renderDiagnostics(measurements) {
   }
   for (const measurement of measurements) {
     const row = document.createElement("tr");
-    if (measurement.measurement_id === state.selectedMeasurementId) row.className = "selected-diagnostic";
+    const selected = measurement.measurement_id === state.selectedMeasurementId;
+    if (selected) row.className = "selected-diagnostic";
     const name = document.createElement("td");
-    const inspectButton = node("button", "diagnostic-name-button", measurement.name);
+    const inspectButton = node("button", "diagnostic-name-button");
     inspectButton.type = "button";
     inspectButton.setAttribute("aria-label", `Inspect ${measurement.name}`);
-    inspectButton.addEventListener("click", () => {
-      state.selectedMeasurementId = measurement.measurement_id;
-      renderDiagnostics(state.availableMeasurements);
-    });
+    inspectButton.setAttribute("aria-pressed", String(selected));
+    inspectButton.append(
+      node("span", "diagnostic-test-name", measurement.name),
+      node("span", "inspect-action", selected ? "Loaded ✓" : "Inspect test →"),
+    );
+    inspectButton.addEventListener("click", () => selectMeasurement(measurement.measurement_id));
     name.append(inspectButton, node("small", "", `${measurement.quantity} · ${measurement.signal_type}`));
     const points = document.createElement("td");
     points.append(node("strong", "", measurement.meter_mode), node("small", "", `${formatPoint(measurement.point_a)} ↔ ${formatPoint(measurement.point_b)}`));
@@ -318,6 +394,7 @@ async function initialize() {
     elements.powerToggle.addEventListener("change", updateSnapshot);
     elements.requestToggle.addEventListener("change", updateSnapshot);
     elements.faultSearch.addEventListener("input", () => renderFaults(elements.faultSearch.value));
+    elements.diagnosticSelect.addEventListener("change", () => selectMeasurement(elements.diagnosticSelect.value));
     updatePhaseDescription();
     await updateSnapshot();
   } catch (error) {

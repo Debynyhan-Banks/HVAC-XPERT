@@ -80,6 +80,9 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Package 3 uses product-specification page 50 as primary provenance and visually cross-checks the accepted equivalent diagrams on service page 76 and installation page 36
 - Unlabeled X108A and M1F terminals remain positional `LEFT`, `CENTER`, and `RIGHT` identifiers; wire colors remain `null` where the diagram does not label them
 - All 48 Package 3 topology assertions remain `LEVEL_1_AI_EXTRACTED` and `PENDING` until a separate HVAC technical decision
+- Topology extraction and review tooling pull request #11 merged as commit `8b79be3`
+- Private simulator command cards now translate approved enum values into technician-readable behavior while preserving the raw source definition and explicitly identifying unspecified exact settings
+- Diagnostic meter now provides a direct applicable-test selector, and diagnostic table rows expose visible inspect actions instead of relying on text that only appears clickable
 
 ## In progress
 
@@ -114,4 +117,4 @@ After the work unit passes validation, update this file, commit only the intende
 
 ## Last updated
 
-2026-08-02
+2026-08-04

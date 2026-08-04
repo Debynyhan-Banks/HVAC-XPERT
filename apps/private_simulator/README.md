@@ -19,7 +19,8 @@ The interface supports:
 - exact manual operating-phase selection
 - explicit power-available and operation-requested inputs
 - exact approved fault-code activation
-- explicit component commands and fault effects
+- technician-readable component commands and fault effects that preserve raw approved values without inventing exact setpoints
+- a direct diagnostic-test selector plus visibly actionable test rows
 - applicable diagnostic definitions with source-page references
 - reference-only virtual meter display with approved mode, points, values, procedures, and safety category
 - technician-validation labels and explicit manufacturer-verification status
