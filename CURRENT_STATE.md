@@ -83,6 +83,10 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Topology extraction and review tooling pull request #11 merged as commit `8b79be3`
 - Private simulator command cards now translate approved enum values into technician-readable behavior while preserving the raw source definition and explicitly identifying unspecified exact settings
 - Diagnostic meter now provides a direct applicable-test selector, and diagnostic table rows expose visible inspect actions instead of relying on text that only appears clickable
+- Private simulator UI improvement pull request #12 merged as commit `90d2de3`
+- AI-assisted Package 3 pre-review visually compared product-specification page 50, service page 76, and installation page 36 and found no discrepancy in the bounded supply, compressor, fan, protective-earth, or exclusion assertions
+- Package 3 reviewer guide now records the 48-assertion decision boundary without copying private PDFs, rendered pages, or private records into the repository
+- Approval tooling now replaces Package 3's pending review actions with a complete accepted decision summary instead of leaving stale reviewer instructions after approval
 
 ## In progress
 
@@ -90,7 +94,7 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Copyright, storage, factual-extraction, and derivative-use determination
 - Confirmation of exact official service, parts, and specification asset URLs
 - Manual-upload ingestion design using authorized documents or synthetic fixtures
-- HVAC technical review of private topology extension `RUN-ASXS6-20260804-003`
+- Explicit decision from assigned HVAC technical reviewer `Debynyhan-Banks` for private topology extension `RUN-ASXS6-20260804-003`
 
 ## Blockers
 
@@ -104,7 +108,7 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 
 ## Next action
 
-Review private topology extension `RUN-ASXS6-20260804-003` against product-specification page 50 and the equivalent service/install drawings. Confirm the X1M L1/L2 mapping, A1P UO/VO/WO to M1C U/V/W mapping, positional X108A-to-M1F mapping, signal classifications, unknown wire colors, and bounded exclusions before creating a complete technical decision.
+Obtain an explicit decision from assigned reviewer `Debynyhan-Banks` using `docs/PACKAGE_3_TECHNICAL_REVIEW.md`. Apply a complete approval only if the reviewer accepts all 48 assertions, positional identifiers, unknown wire colors, signal classifications, and bounded exclusions while keeping publication unauthorized.
 
 After the work unit passes validation, update this file, commit only the intended non-private files, and push the current branch to `origin`.
 

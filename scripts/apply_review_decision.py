@@ -7,6 +7,13 @@ from pathlib import Path
 
 PENDING_STATUS = "PENDING_TECHNICAL_REVIEW"
 APPROVED_STATUS = "TECHNICALLY_APPROVED_LEGAL_HOLD"
+TOPOLOGY_REVIEW_ACTIONS = """## Review actions
+
+1. Compare every connector, pin, node, and connection to the cited private page 50.
+2. Confirm the black/red supply mapping and red/yellow/blue compressor mapping.
+3. Confirm positional fan-terminal mapping is acceptable while numeric identifiers remain unknown.
+4. Reject or revise any record that overstates the diagram.
+5. Keep `publication_authorized` false because the source-rights hold remains."""
 
 
 def load_json(path):
@@ -52,7 +59,7 @@ def apply_validation(assertion, reviewer_id, reviewed_at, notes):
     )
 
 
-def update_summary(package_root, reviewer_id, reviewed_at):
+def update_summary(package_root, reviewer_id, reviewed_at, assertion_count):
     summary_path = package_root / "REVIEW_SUMMARY.md"
     summary = summary_path.read_text(encoding="utf-8")
     summary = summary.replace("- Status: `PENDING_TECHNICAL_REVIEW`", "- Status: `TECHNICALLY_APPROVED_LEGAL_HOLD`")
@@ -72,6 +79,10 @@ def update_summary(package_root, reviewer_id, reviewed_at):
     summary = summary.replace(
         "## Review actions\n\n1. Compare every record to its cited PDF page.\n2. Confirm the cooling phase/component mapping applies to `ASXS6S4810AA` revision `AA`.\n3. Confirm measurement points, values, units, procedures, and safety categories.\n4. Mark the complete package accepted only if every assertion is correct; otherwise record revisions or rejections before approval.\n5. Keep `publication_authorized` false because the legal and source-rights hold remains.",
         f"## Review decision\n\nAll assertions were accepted by `{reviewer_id}` at `{reviewed_at}`. Publication remains unauthorized.",
+    )
+    summary = summary.replace(
+        TOPOLOGY_REVIEW_ACTIONS,
+        f"## Review decision\n\nAll {assertion_count} topology assertions were accepted by `{reviewer_id}` at `{reviewed_at}` and advanced to `LEVEL_4_TECHNICIAN_REVIEWED`. Positional fan-terminal identifiers and unknown wire colors remain explicitly bounded. Publication remains unauthorized under the legal and source-rights hold.",
     )
     summary_path.write_text(summary, encoding="utf-8")
 
@@ -133,7 +144,7 @@ def apply(package_root, decision_path):
         }
     )
     write_json(manifest_path, manifest)
-    update_summary(package_root, reviewer_id, reviewed_at)
+    update_summary(package_root, reviewer_id, reviewed_at, assertion_count)
     print(f"Applied technical approval to {assertion_count} assertions in {manifest['package_id']}; publication remains blocked.")
 
 

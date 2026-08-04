@@ -244,6 +244,22 @@ class ReviewPackageExtensionTests(unittest.TestCase):
                 "provenance": [provenance("FACT-SYNTHETIC-CONNECTION", CONNECTION_ID)],
             },
         )
+        (self.package_root / "REVIEW_SUMMARY.md").write_text(
+            """# Synthetic Topology Review
+
+- Status: `PENDING_TECHNICAL_REVIEW`
+- Publication allowed: No
+
+## Review actions
+
+1. Compare every connector, pin, node, and connection to the cited private page 50.
+2. Confirm the black/red supply mapping and red/yellow/blue compressor mapping.
+3. Confirm positional fan-terminal mapping is acceptable while numeric identifiers remain unknown.
+4. Reject or revise any record that overstates the diagram.
+5. Keep `publication_authorized` false because the source-rights hold remains.
+""",
+            encoding="utf-8",
+        )
 
     def test_validates_pending_extension_and_complete_approval(self):
         self.write_topology_fixture()
@@ -279,6 +295,8 @@ class ReviewPackageExtensionTests(unittest.TestCase):
         )
         approved_summary = (self.package_root / "REVIEW_SUMMARY.md").read_text(encoding="utf-8")
         self.assertNotIn("PENDING_TECHNICAL_REVIEW", approved_summary)
+        self.assertNotIn("## Review actions", approved_summary)
+        self.assertIn("All 8 topology assertions were accepted", approved_summary)
 
     def test_rejects_unknown_component_command(self):
         state_path = self.package_root / "operating-states" / "idle.json"
