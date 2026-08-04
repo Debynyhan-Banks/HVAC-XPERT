@@ -6,6 +6,10 @@ HVAC XPERT is an evidence-grounded HVAC/R lead-technician assistant and training
 
 The field experience helps a technician decide what to inspect or measure next. The training experience lets a learner practice the same reasoning against clearly labeled simulated equipment behavior. Neither experience may present unsupported AI output as manufacturer fact.
 
+## Pilot product wedge
+
+The pilot is a model- and revision-specific diagnostic copilot for technically complex inverter equipment. It must prove one complete, evidence-backed diagnostic case before prioritizing broad document coverage, hardware integrations, or a large training catalog. Training remains in scope and reuses the same approved diagnostic path after the field workflow is validated. `COMPETITIVE_POSITIONING.md` records the market analysis and priority rationale.
+
 ## Product outcomes
 
 HVAC XPERT must help users:
@@ -48,6 +52,7 @@ HVAC XPERT must help users:
 - Complaint, observation, fault-code, and prior-work intake
 - Safety screening before diagnostic instructions
 - Evidence-backed next-test recommendations
+- One-next-test-at-a-time field presentation
 - Manual entry of real measurements and observations
 - Deterministic comparison with approved expectations
 - Ranked hypotheses labeled by supporting and contradicting evidence
@@ -97,6 +102,8 @@ The deterministic engine, not AI, establishes simulated operational truth.
 ### Field mode
 
 Field mode works with actual technician observations. HVAC XPERT does not claim to connect to, control, or automatically read the equipment. A value is an actual field reading only when the technician explicitly records it as such. The application may compare that value with an approved reference but must preserve the distinction between manufacturer fact, technician observation, deterministic evaluation, and AI hypothesis.
+
+The default field view presents one primary next test with its reason, safety boundary, points, meter mode, expected result, and result-entry control. Detailed provenance and reviewer metadata remain directly available without dominating the field workflow.
 
 ### Training mode
 
@@ -164,7 +171,7 @@ The following do not belong in the pilot unless a later approved scope change es
 - general photorealistic 3D equipment models;
 - a complete thermodynamic or refrigerant-cycle physics engine;
 - AR equipment recognition;
-- live equipment control, automatic sensor collection, or IoT commissioning;
+- live equipment control, unattended sensor collection, or IoT commissioning;
 - automatic repair authorization;
 - technician dispatching, invoicing, payment, or inventory-management systems;
 - broad multi-manufacturer ingestion before the pilot quality gates pass;
@@ -178,10 +185,13 @@ After the pilot demonstrates diagnostic accuracy and safe use, candidates includ
 
 - additional equipment families and manufacturers;
 - offline-capable field access;
+- nameplate model and serial OCR with mandatory technician confirmation;
+- user-authorized read-only import from compatible meters and probes;
 - authorized equipment and component photographs;
 - voice-assisted case intake with visible confirmation;
 - approved parts applicability and service-bulletin alerts;
 - team escalation and remote lead-technician review;
+- historical case and known-good comparison with exact equipment applicability;
 - additional virtual instruments;
 - instructor analytics and competency reporting; and
 - narrowly targeted 3D or AR teaching aids with a validated learning benefit.

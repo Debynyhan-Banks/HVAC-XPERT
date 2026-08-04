@@ -120,3 +120,10 @@ This file records accepted cross-project decisions. Revisions must preserve prio
 - Date: 2026-08-04
 - Decision: Field mode accepts explicitly identified technician observations and actual readings. Training mode uses clearly labeled deterministic simulator results. Simulated values cannot enter a field case as actual observations, and AI cannot fabricate either type.
 - Reason: A user must always know whether a value came from physical equipment, an approved reference definition, deterministic simulation, or AI explanation.
+
+## ADR-018: Pilot depth precedes market breadth
+
+- Status: Accepted
+- Date: 2026-08-04
+- Decision: The pilot proves one complete model- and revision-specific diagnostic case before prioritizing broad manufacturer coverage, connected-instrument integrations, general 3D content, or a large training catalog. The primary field interface presents one next test at a time while keeping evidence directly available.
+- Reason: A complete, safe, and reviewable diagnostic loop demonstrates the product's intended value more clearly than a wide collection of incomplete reference or visualization features.

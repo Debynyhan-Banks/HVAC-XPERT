@@ -73,6 +73,7 @@ Deliverables:
 - Instructor authoring and review portal
 - Field diagnostic case intake and safety screening
 - Approved next-test selection and technician result entry
+- Field-first presentation of one primary next test with evidence available on demand
 - Deterministic result evaluation and hypothesis evidence tracking
 - Escalation packet and traceable case summary
 
@@ -92,6 +93,10 @@ Deliverables:
 - Source partnerships or licensed data feeds
 - Field troubleshooting experience
 - Offline-capable field access after safety and synchronization review
+- Nameplate OCR with technician-confirmed model and serial identity
+- User-authorized read-only meter and probe import
+- Remote lead-technician review and historical case comparison
+- Approved service-bulletin and parts-applicability alerts
 - Quality, reliability, and content-operations metrics
 
 Exit gate:
