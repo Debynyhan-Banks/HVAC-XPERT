@@ -47,6 +47,15 @@ python3 scripts/run_simulator.py \
 The command emits JSON for local internal development. It does not publish private
 records or source documents.
 
+## Diagnostic case engine
+
+`diagnostics/engine.py` composes separately approved diagnostic paths with these
+reference definitions. It requires exact fault-code entry conditions and safety
+acknowledgement, presents one approved test at a time, accepts only technician-entered
+field results, and deterministically selects the reviewed branch. Unsupported or
+unknown outcomes stop or escalate; the engine does not perform a measurement or
+authorize a repair.
+
 ## Deliberate limit
 
 The approved pilot extension contains six cooling-phase records and six diagnostic

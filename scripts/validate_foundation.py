@@ -40,6 +40,8 @@ REQUIRED_SCHEMAS = {
     "operating-state.schema.json",
     "measurement.schema.json",
     "fault.schema.json",
+    "diagnostic-path.schema.json",
+    "diagnostic-case.schema.json",
     "scenario.schema.json",
     "provenance.schema.json",
     "source-registry.schema.json",

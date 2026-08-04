@@ -19,6 +19,14 @@ SIGNAL_TYPES = {
 }
 NODE_TYPES = {"POWER", "NEUTRAL", "GROUND", "SIGNAL", "COMMUNICATION", "SENSOR", "SWITCHED", "REFERENCE", "OTHER", "UNKNOWN"}
 CONNECTION_TYPES = {"WIRE", "TRACE", "CONTACT", "SWITCH", "FUSE", "LOAD", "BUS", "VIRTUAL", "OTHER", "UNKNOWN"}
+SAFETY_CATEGORIES = {
+    "DEENERGIZED_ONLY", "ENERGIZED_LOW_VOLTAGE", "ENERGIZED_LINE_VOLTAGE",
+    "HIGH_VOLTAGE_DC", "REFRIGERANT_PRESSURE", "OTHER", "UNKNOWN",
+}
+RESULT_KINDS = {"NUMERIC", "QUALITATIVE"}
+QUALITATIVE_VALUES = {"CONTINUITY", "NO_CONTINUITY", "OPEN", "CLOSED", "PRESENT", "ABSENT", "OTHER", "UNKNOWN"}
+CASE_EVALUATIONS = {"MATCHES_EXPECTED", "DOES_NOT_MATCH_EXPECTED", "UNKNOWN"}
+CASE_DISPOSITIONS = {"NEXT_TEST", "COMPLETE", "ESCALATE", "STOP"}
 
 
 def load_json(path, failures):
@@ -141,6 +149,7 @@ def validate_complete_snapshot(package_root, manifest, context, failures):
         failures.append(f"Record counts differ: manifest={manifest.get('record_counts', {})}, actual={actual_counts}")
 
     component_ids = set()
+    base_fault_ids = set()
     for path in component_paths:
         component = load_json(path, failures)
         if component is None:
@@ -193,12 +202,14 @@ def validate_extension(package_root, manifest, context, failures):
         base_root = PRIVATE_REVIEW_ROOT / base_package_id / "package"
 
     component_ids = set()
+    base_fault_ids = set()
     base_state_ids = set()
     base_measurement_ids = set()
     base_connector_ids = set()
     base_pin_ids = set()
     base_node_ids = set()
     base_connection_ids = set()
+    base_diagnostic_path_ids = set()
     if base_root is not None:
         base_manifest = load_json(base_root / "package-manifest.json", failures)
         if base_manifest is not None:
@@ -210,6 +221,10 @@ def validate_extension(package_root, manifest, context, failures):
             component = load_json(path, failures)
             if component is not None and component.get("component_id"):
                 component_ids.add(component["component_id"])
+        for path in sorted((base_root / "faults").glob("*.json")):
+            fault = load_json(path, failures)
+            if fault is not None and fault.get("fault_id"):
+                base_fault_ids.add(fault["fault_id"])
         for path in sorted((base_root / "operating-states").glob("*.json")):
             state = load_json(path, failures)
             if state is not None and state.get("state_id"):
@@ -228,6 +243,35 @@ def validate_extension(package_root, manifest, context, failures):
                 record = load_json(path, failures)
                 if record is not None and record.get(id_field):
                     target.add(record[id_field])
+        for path in sorted((base_root / "diagnostic-paths").glob("*.json")):
+            record = load_json(path, failures)
+            if record is not None and record.get("path_id"):
+                base_diagnostic_path_ids.add(record["path_id"])
+
+    required_extension_ids = manifest.get("required_extension_package_ids", [])
+    if not validate_id_array(required_extension_ids, failures, "required_extension_package_ids"):
+        required_extension_ids = []
+    for required_extension_id in required_extension_ids:
+        required_root = PRIVATE_REVIEW_ROOT / required_extension_id / "package"
+        required_manifest = load_json(required_root / "package-manifest.json", failures)
+        if required_manifest is None:
+            continue
+        if required_manifest.get("package_kind") != EXTENSION_PACKAGE_KIND:
+            failures.append(f"Required package {required_extension_id} is not a knowledge extension")
+        if required_manifest.get("base_package_id") != base_package_id:
+            failures.append(f"Required package {required_extension_id} has a different base package")
+        if required_manifest.get("model_id") != model_id or required_manifest.get("revision_id") != revision_id:
+            failures.append(f"Required package {required_extension_id} has a different model or revision")
+        if required_manifest.get("status") != "TECHNICALLY_APPROVED_LEGAL_HOLD":
+            failures.append(f"Required package {required_extension_id} is not technically approved")
+        for path in sorted((required_root / "measurements").glob("*.json")):
+            record = load_json(path, failures)
+            if record is not None and record.get("measurement_id"):
+                base_measurement_ids.add(record["measurement_id"])
+        for path in sorted((required_root / "diagnostic-paths").glob("*.json")):
+            record = load_json(path, failures)
+            if record is not None and record.get("path_id"):
+                base_diagnostic_path_ids.add(record["path_id"])
 
     state_paths = sorted((package_root / "operating-states").glob("*.json"))
     measurement_paths = sorted((package_root / "measurements").glob("*.json"))
@@ -235,6 +279,7 @@ def validate_extension(package_root, manifest, context, failures):
     pin_paths = sorted((package_root / "pins").glob("*.json"))
     node_paths = sorted((package_root / "nodes").glob("*.json"))
     connection_paths = sorted((package_root / "connections").glob("*.json"))
+    diagnostic_path_paths = sorted((package_root / "diagnostic-paths").glob("*.json"))
     all_actual_counts = {
         "operating_states": len(state_paths),
         "measurements": len(measurement_paths),
@@ -242,6 +287,7 @@ def validate_extension(package_root, manifest, context, failures):
         "pins": len(pin_paths),
         "nodes": len(node_paths),
         "connections": len(connection_paths),
+        "diagnostic_paths": len(diagnostic_path_paths),
     }
     declared_counts = manifest.get("record_counts", {})
     actual_counts = {
@@ -331,6 +377,130 @@ def validate_extension(package_root, manifest, context, failures):
                 failures.append(f"{path}: {point_name} must be an object or null")
             elif point.get("reference_type") == "COMPONENT_TERMINAL" and point.get("reference_id") not in component_ids:
                 failures.append(f"{path}: {point_name} references unknown component {point.get('reference_id')}")
+
+    diagnostic_path_ids = set()
+    diagnostic_path_required_keys = {
+        "schema_version", "path_id", "model_id", "revision_id", "title", "complaint_summary",
+        "entry_fault_ids", "safety_acknowledgements", "steps", "provenance",
+    }
+    for path in diagnostic_path_paths:
+        diagnostic_path = load_json(path, failures)
+        if diagnostic_path is None:
+            continue
+        require_record_keys(diagnostic_path, diagnostic_path_required_keys, failures, str(path))
+        path_id = diagnostic_path.get("path_id")
+        if path_id in diagnostic_path_ids or path_id in base_diagnostic_path_ids:
+            failures.append(f"Duplicate diagnostic-path ID: {path_id}")
+        diagnostic_path_ids.add(path_id)
+        assertion_count += len(diagnostic_path.get("provenance", []))
+        validate_entity(
+            diagnostic_path,
+            "path_id",
+            model_id,
+            revision_id,
+            package_id,
+            package_status,
+            assigned_reviewer,
+            expected_reviewed_at,
+            document_pages,
+            failures,
+            str(path),
+        )
+        entry_fault_ids = diagnostic_path.get("entry_fault_ids")
+        if not validate_id_array(entry_fault_ids, failures, f"{path}: entry_fault_ids") or not entry_fault_ids:
+            failures.append(f"{path}: at least one entry fault is required")
+        elif not set(entry_fault_ids) <= base_fault_ids:
+            failures.append(f"{path}: entry_fault_ids contain an unknown fault")
+
+        acknowledgements = diagnostic_path.get("safety_acknowledgements")
+        if not isinstance(acknowledgements, list) or not acknowledgements:
+            failures.append(f"{path}: at least one safety acknowledgement is required")
+        else:
+            acknowledgement_ids = set()
+            for acknowledgement in acknowledgements:
+                if not isinstance(acknowledgement, dict):
+                    failures.append(f"{path}: safety acknowledgements must be objects")
+                    continue
+                acknowledgement_id = acknowledgement.get("acknowledgement_id")
+                if not acknowledgement_id or acknowledgement_id in acknowledgement_ids:
+                    failures.append(f"{path}: safety acknowledgement IDs must be present and unique")
+                acknowledgement_ids.add(acknowledgement_id)
+                if not isinstance(acknowledgement.get("label"), str) or not acknowledgement["label"]:
+                    failures.append(f"{path}: safety acknowledgement label must be non-empty")
+                if acknowledgement.get("safety_category") not in SAFETY_CATEGORIES:
+                    failures.append(f"{path}: unsupported safety category {acknowledgement.get('safety_category')}")
+                if acknowledgement.get("required") is not True:
+                    failures.append(f"{path}: every safety acknowledgement must be required")
+
+        steps = diagnostic_path.get("steps")
+        if not isinstance(steps, list) or not steps:
+            failures.append(f"{path}: at least one diagnostic step is required")
+            continue
+        step_ids = [step.get("step_id") for step in steps if isinstance(step, dict)]
+        if len(step_ids) != len(steps) or not all(step_ids) or len(step_ids) != len(set(step_ids)):
+            failures.append(f"{path}: diagnostic step IDs must be present and unique")
+            continue
+        sequences = [step.get("sequence") for step in steps]
+        if sequences != list(range(1, len(steps) + 1)):
+            failures.append(f"{path}: diagnostic step sequence must be contiguous and ordered")
+        sequence_by_id = {step["step_id"]: step["sequence"] for step in steps}
+        for step in steps:
+            step_id = step["step_id"]
+            if step.get("measurement_id") not in available_measurement_ids:
+                failures.append(f"{path}: step {step_id} references unknown measurement {step.get('measurement_id')}")
+            if not isinstance(step.get("rationale"), str) or not step["rationale"]:
+                failures.append(f"{path}: step {step_id} rationale must be non-empty")
+            expected = step.get("expected_result")
+            if not isinstance(expected, dict) or expected.get("result_kind") not in RESULT_KINDS:
+                failures.append(f"{path}: step {step_id} has an invalid expected result")
+            elif expected["result_kind"] == "NUMERIC":
+                numeric_values = [expected.get(name) for name in ("nominal", "minimum", "maximum") if expected.get(name) is not None]
+                if not numeric_values or not all(type(value) in (int, float) for value in numeric_values):
+                    failures.append(f"{path}: step {step_id} numeric expected result is invalid")
+                if not isinstance(expected.get("unit"), str) or not expected["unit"]:
+                    failures.append(f"{path}: step {step_id} numeric expected result requires a unit")
+                if expected.get("qualitative_value") is not None:
+                    failures.append(f"{path}: step {step_id} numeric expected result cannot be qualitative")
+                minimum, maximum = expected.get("minimum"), expected.get("maximum")
+                if minimum is not None and maximum is not None and minimum > maximum:
+                    failures.append(f"{path}: step {step_id} expected minimum exceeds maximum")
+            else:
+                if any(expected.get(name) is not None for name in ("nominal", "minimum", "maximum", "unit")):
+                    failures.append(f"{path}: step {step_id} qualitative expected result cannot contain numeric values")
+                if expected.get("qualitative_value") not in QUALITATIVE_VALUES:
+                    failures.append(f"{path}: step {step_id} has an unsupported qualitative value")
+
+            branches = step.get("branches")
+            if not isinstance(branches, list) or len(branches) != len(CASE_EVALUATIONS):
+                failures.append(f"{path}: step {step_id} must define all evaluation branches")
+                continue
+            branch_ids = set()
+            evaluations = set()
+            for branch in branches:
+                if not isinstance(branch, dict):
+                    failures.append(f"{path}: step {step_id} branches must be objects")
+                    continue
+                branch_id = branch.get("branch_id")
+                if not branch_id or branch_id in branch_ids:
+                    failures.append(f"{path}: step {step_id} branch IDs must be present and unique")
+                branch_ids.add(branch_id)
+                evaluation = branch.get("evaluation")
+                if evaluation not in CASE_EVALUATIONS or evaluation in evaluations:
+                    failures.append(f"{path}: step {step_id} has an invalid or duplicate evaluation branch")
+                evaluations.add(evaluation)
+                disposition = branch.get("disposition")
+                if disposition not in CASE_DISPOSITIONS:
+                    failures.append(f"{path}: step {step_id} has an unsupported disposition")
+                next_step_id = branch.get("next_step_id")
+                if disposition == "NEXT_TEST":
+                    if next_step_id not in sequence_by_id or sequence_by_id[next_step_id] <= step["sequence"]:
+                        failures.append(f"{path}: step {step_id} next branch must reference a later step")
+                elif next_step_id is not None:
+                    failures.append(f"{path}: step {step_id} non-next branch cannot reference a next step")
+                if not isinstance(branch.get("guidance"), str) or not branch["guidance"]:
+                    failures.append(f"{path}: step {step_id} branch guidance must be non-empty")
+            if evaluations != CASE_EVALUATIONS:
+                failures.append(f"{path}: step {step_id} does not cover every evaluation")
 
     connector_records = []
     connector_ids = set()

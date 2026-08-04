@@ -18,12 +18,16 @@ Manufacturer
   -> Operating State
   -> Measurement
   -> Fault
+  -> Approved Diagnostic Path
+  -> Operational Diagnostic Case
   -> Training Scenario
 ```
 
 `common.schema.json` contains shared primitives. `provenance.schema.json` is embedded by every knowledge record so each extracted assertion remains source-visible and reviewable.
 
 `source-registry.schema.json` validates the acquisition allowlist and enforces the fail-closed approval gate.
+
+`diagnostic-path.schema.json` stores reviewed manufacturer-derived complaint, test, expected-result, and branch relationships. `diagnostic-case.schema.json` stores technician observations and deterministic evaluations separately from published equipment knowledge.
 
 ## Contract rules
 
@@ -49,6 +53,8 @@ Manufacturer
 - `operating-state.schema.json`
 - `measurement.schema.json`
 - `fault.schema.json`
+- `diagnostic-path.schema.json`
+- `diagnostic-case.schema.json`
 - `scenario.schema.json`
 - `provenance.schema.json`
 - `source-registry.schema.json`

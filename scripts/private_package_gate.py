@@ -4,6 +4,7 @@ import argparse
 import json
 import sys
 from dataclasses import dataclass, replace
+from math import isfinite
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -20,6 +21,14 @@ SIGNAL_TYPES = {
 }
 NODE_TYPES = {"POWER", "NEUTRAL", "GROUND", "SIGNAL", "COMMUNICATION", "SENSOR", "SWITCHED", "REFERENCE", "OTHER", "UNKNOWN"}
 CONNECTION_TYPES = {"WIRE", "TRACE", "CONTACT", "SWITCH", "FUSE", "LOAD", "BUS", "VIRTUAL", "OTHER", "UNKNOWN"}
+SAFETY_CATEGORIES = {
+    "DEENERGIZED_ONLY", "ENERGIZED_LOW_VOLTAGE", "ENERGIZED_LINE_VOLTAGE",
+    "HIGH_VOLTAGE_DC", "REFRIGERANT_PRESSURE", "OTHER", "UNKNOWN",
+}
+RESULT_KINDS = {"NUMERIC", "QUALITATIVE"}
+QUALITATIVE_VALUES = {"CONTINUITY", "NO_CONTINUITY", "OPEN", "CLOSED", "PRESENT", "ABSENT", "OTHER", "UNKNOWN"}
+CASE_EVALUATIONS = {"MATCHES_EXPECTED", "DOES_NOT_MATCH_EXPECTED", "UNKNOWN"}
+CASE_DISPOSITIONS = {"NEXT_TEST", "COMPLETE", "ESCALATE", "STOP"}
 
 
 class PackageValidationError(ValueError):
@@ -44,6 +53,7 @@ class PrivateKnowledgePackage:
     pins: tuple[dict[str, Any], ...] = ()
     nodes: tuple[dict[str, Any], ...] = ()
     connections: tuple[dict[str, Any], ...] = ()
+    diagnostic_paths: tuple[dict[str, Any], ...] = ()
     extension_package_ids: tuple[str, ...] = ()
 
     @property
@@ -237,6 +247,101 @@ def validate_id_list(value, location):
     require(len(value) == len(set(value)), f"{location} contains duplicate IDs")
 
 
+def validate_expected_result(expected, location):
+    require(isinstance(expected, dict), f"{location} expected result must be an object")
+    result_kind = expected.get("result_kind")
+    require(result_kind in RESULT_KINDS, f"{location} has an unsupported result kind")
+    nominal = expected.get("nominal")
+    minimum = expected.get("minimum")
+    maximum = expected.get("maximum")
+    unit = expected.get("unit")
+    qualitative_value = expected.get("qualitative_value")
+    if result_kind == "NUMERIC":
+        numeric_values = [value for value in (nominal, minimum, maximum) if value is not None]
+        require(numeric_values, f"{location} numeric expected result has no comparison value")
+        require(all(type(value) in (int, float) and isfinite(value) for value in numeric_values), f"{location} has an invalid numeric comparison")
+        require(isinstance(unit, str) and unit, f"{location} numeric expected result is missing unit")
+        require(qualitative_value is None, f"{location} numeric expected result cannot declare a qualitative value")
+        require(minimum is None or maximum is None or minimum <= maximum, f"{location} minimum exceeds maximum")
+    else:
+        require(nominal is None and minimum is None and maximum is None and unit is None, f"{location} qualitative expected result cannot declare numeric values")
+        require(qualitative_value in QUALITATIVE_VALUES, f"{location} has an unsupported qualitative value")
+
+
+def validate_diagnostic_paths(records, measurements, package, manifest):
+    path_ids = set()
+    available_fault_ids = {record["fault_id"] for record in package.faults}
+    available_measurement_ids = {record["measurement_id"] for record in package.measurements}
+    available_measurement_ids.update(record["measurement_id"] for record in measurements)
+    required_keys = {
+        "schema_version", "path_id", "model_id", "revision_id", "title", "complaint_summary",
+        "entry_fault_ids", "safety_acknowledgements", "steps", "provenance",
+    }
+    for record in records:
+        path_id = record.get("path_id")
+        require(path_id and path_id not in path_ids, f"Duplicate or missing diagnostic-path ID: {path_id}")
+        path_ids.add(path_id)
+        require(set(record) == required_keys, f"Diagnostic path {path_id} canonical keys do not match")
+        require(record.get("model_id") == package.model_id, f"Diagnostic path {path_id} model ID mismatch")
+        require(record.get("revision_id") == package.revision_id, f"Diagnostic path {path_id} revision mismatch")
+        require(isinstance(record.get("title"), str) and record["title"], f"Diagnostic path {path_id} is missing title")
+        require(isinstance(record.get("complaint_summary"), str) and record["complaint_summary"], f"Diagnostic path {path_id} is missing complaint summary")
+        entry_fault_ids = record.get("entry_fault_ids")
+        validate_id_list(entry_fault_ids, f"Diagnostic path {path_id} entry fault IDs")
+        require(entry_fault_ids, f"Diagnostic path {path_id} requires at least one entry fault")
+        require(set(entry_fault_ids) <= available_fault_ids, f"Diagnostic path {path_id} references an unknown fault")
+
+        acknowledgements = record.get("safety_acknowledgements")
+        require(isinstance(acknowledgements, list) and acknowledgements, f"Diagnostic path {path_id} requires safety acknowledgements")
+        acknowledgement_ids = set()
+        for acknowledgement in acknowledgements:
+            require(isinstance(acknowledgement, dict), f"Diagnostic path {path_id} has an invalid safety acknowledgement")
+            acknowledgement_id = acknowledgement.get("acknowledgement_id")
+            require(acknowledgement_id and acknowledgement_id not in acknowledgement_ids, f"Diagnostic path {path_id} has a duplicate safety acknowledgement")
+            acknowledgement_ids.add(acknowledgement_id)
+            require(isinstance(acknowledgement.get("label"), str) and acknowledgement["label"], f"Diagnostic path {path_id} has an invalid safety label")
+            require(acknowledgement.get("safety_category") in SAFETY_CATEGORIES, f"Diagnostic path {path_id} has an unsupported safety category")
+            require(acknowledgement.get("required") is True, f"Diagnostic path {path_id} safety acknowledgement must be required")
+
+        steps = record.get("steps")
+        require(isinstance(steps, list) and steps, f"Diagnostic path {path_id} requires at least one step")
+        step_ids = [step.get("step_id") for step in steps if isinstance(step, dict)]
+        require(len(step_ids) == len(steps) and all(step_ids), f"Diagnostic path {path_id} has an invalid step")
+        require(len(step_ids) == len(set(step_ids)), f"Diagnostic path {path_id} has duplicate step IDs")
+        sequences = [step.get("sequence") for step in steps]
+        require(sequences == list(range(1, len(steps) + 1)), f"Diagnostic path {path_id} step sequence must be contiguous and ordered")
+        sequence_by_id = {step["step_id"]: step["sequence"] for step in steps}
+        for step in steps:
+            step_id = step["step_id"]
+            measurement_id = step.get("measurement_id")
+            require(measurement_id in available_measurement_ids, f"Diagnostic step {step_id} references an unknown measurement")
+            require(isinstance(step.get("rationale"), str) and step["rationale"], f"Diagnostic step {step_id} is missing rationale")
+            validate_expected_result(step.get("expected_result"), f"Diagnostic step {step_id}")
+            branches = step.get("branches")
+            require(isinstance(branches, list) and len(branches) == len(CASE_EVALUATIONS), f"Diagnostic step {step_id} must define all evaluation branches")
+            branch_ids = set()
+            evaluations = set()
+            for branch in branches:
+                require(isinstance(branch, dict), f"Diagnostic step {step_id} has an invalid branch")
+                branch_id = branch.get("branch_id")
+                require(branch_id and branch_id not in branch_ids, f"Diagnostic step {step_id} has a duplicate branch ID")
+                branch_ids.add(branch_id)
+                evaluation = branch.get("evaluation")
+                require(evaluation in CASE_EVALUATIONS and evaluation not in evaluations, f"Diagnostic step {step_id} has an invalid or duplicate evaluation branch")
+                evaluations.add(evaluation)
+                disposition = branch.get("disposition")
+                require(disposition in CASE_DISPOSITIONS, f"Diagnostic step {step_id} has an unsupported disposition")
+                next_step_id = branch.get("next_step_id")
+                if disposition == "NEXT_TEST":
+                    require(next_step_id in sequence_by_id, f"Diagnostic step {step_id} next branch references an unknown step")
+                    require(sequence_by_id[next_step_id] > step["sequence"], f"Diagnostic step {step_id} cannot branch backward or to itself")
+                else:
+                    require(next_step_id is None, f"Diagnostic step {step_id} non-next branch cannot identify a next step")
+                require(isinstance(branch.get("guidance"), str) and branch["guidance"], f"Diagnostic step {step_id} branch is missing guidance")
+            require(evaluations == CASE_EVALUATIONS, f"Diagnostic step {step_id} does not cover every evaluation")
+        validate_provenance(record.get("provenance"), path_id, manifest, f"diagnostic path {path_id}")
+
+
 def validate_topology(connectors, pins, nodes, connections, measurements, package, manifest):
     component_ids = {record["component_id"] for record in package.components}
     measurement_ids = {record["measurement_id"] for record in package.measurements}
@@ -367,6 +472,9 @@ def load_private_approved_extension(extension_path, package, private_root=DEFAUL
     require(manifest.get("publication_allowed") is False, "Internal extension cannot be marked for publication")
     require(manifest.get("contains_source_binaries") is False, "Extension manifest cannot claim embedded source binaries")
     require(isinstance(manifest.get("document_ids"), list) and manifest["document_ids"], "Extension document list is missing")
+    required_extension_ids = manifest.get("required_extension_package_ids", [])
+    validate_id_list(required_extension_ids, "Extension required package IDs")
+    require(set(required_extension_ids) <= set(package.extension_package_ids), "Extension required package is not loaded")
 
     technical_review = manifest.get("technical_review", {})
     require(technical_review.get("outcome") == "ACCEPTED", "Extension technical review outcome must be ACCEPTED")
@@ -383,6 +491,7 @@ def load_private_approved_extension(extension_path, package, private_root=DEFAUL
         "pins": load_records(extension_root / "pins"),
         "nodes": load_records(extension_root / "nodes"),
         "connections": load_records(extension_root / "connections"),
+        "diagnostic_paths": load_records(extension_root / "diagnostic-paths"),
     }
     actual_counts = {name: len(values) for name, values in records.items() if values}
     require(actual_counts, "Extension contains no supported records")
@@ -395,6 +504,7 @@ def load_private_approved_extension(extension_path, package, private_root=DEFAUL
         records["connectors"], records["pins"], records["nodes"], records["connections"],
         measurements, package, manifest,
     )
+    validate_diagnostic_paths(records["diagnostic_paths"], measurements, package, manifest)
     validate_no_binaries(extension_root)
 
     assertion_count = sum(
@@ -418,6 +528,9 @@ def load_private_approved_package_with_extensions(package_path, extension_paths,
         existing_measurement_ids = {record["measurement_id"] for record in package.measurements}
         new_measurement_ids = {record["measurement_id"] for record in measurements}
         require(existing_measurement_ids.isdisjoint(new_measurement_ids), "Extension measurement IDs overlap a loaded extension")
+        existing_path_ids = {record["path_id"] for record in package.diagnostic_paths}
+        new_path_ids = {record["path_id"] for record in records["diagnostic_paths"]}
+        require(existing_path_ids.isdisjoint(new_path_ids), "Extension diagnostic-path IDs overlap a loaded extension")
         package = replace(
             package,
             operating_states=package.operating_states + operating_states,
@@ -426,6 +539,7 @@ def load_private_approved_package_with_extensions(package_path, extension_paths,
             pins=package.pins + records["pins"],
             nodes=package.nodes + records["nodes"],
             connections=package.connections + records["connections"],
+            diagnostic_paths=package.diagnostic_paths + records["diagnostic_paths"],
             extension_package_ids=package.extension_package_ids + (manifest["package_id"],),
         )
     return package
@@ -473,6 +587,7 @@ def package_summary(package):
         "pins": len(package.pins),
         "nodes": len(package.nodes),
         "connections": len(package.connections),
+        "diagnostic_paths": len(package.diagnostic_paths),
         "extension_package_ids": package.extension_package_ids,
     }
 

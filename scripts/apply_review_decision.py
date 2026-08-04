@@ -14,6 +14,13 @@ TOPOLOGY_REVIEW_ACTIONS = """## Review actions
 3. Confirm positional fan-terminal mapping is acceptable while numeric identifiers remain unknown.
 4. Reject or revise any record that overstates the diagram.
 5. Keep `publication_authorized` false because the source-rights hold remains."""
+DIAGNOSTIC_PATH_REVIEW_ACTIONS = """## Review actions
+
+1. Confirm the entry fault and complaint description against the cited troubleshooting table.
+2. Confirm the selected measurement, de-energized safety requirement, test points, and expected result against the cited servicing procedure.
+3. Confirm each result branch states only what the approved evidence supports and stops or escalates when the bounded path ends.
+4. Reject or revise any relationship that overstates the manufacturer procedure.
+5. Keep `publication_authorized` false because the source-rights hold remains."""
 
 
 def load_json(path):
@@ -40,6 +47,7 @@ def record_paths(package_root):
         "pins",
         "nodes",
         "connections",
+        "diagnostic-paths",
     ):
         yield from sorted((package_root / directory).glob("*.json"))
 
@@ -83,6 +91,10 @@ def update_summary(package_root, reviewer_id, reviewed_at, assertion_count):
     summary = summary.replace(
         TOPOLOGY_REVIEW_ACTIONS,
         f"## Review decision\n\nAll {assertion_count} topology assertions were accepted by `{reviewer_id}` at `{reviewed_at}` and advanced to `LEVEL_4_TECHNICIAN_REVIEWED`. Positional fan-terminal identifiers and unknown wire colors remain explicitly bounded. Publication remains unauthorized under the legal and source-rights hold.",
+    )
+    summary = summary.replace(
+        DIAGNOSTIC_PATH_REVIEW_ACTIONS,
+        f"## Review decision\n\nAll {assertion_count} diagnostic-path assertions were accepted by `{reviewer_id}` at `{reviewed_at}` and advanced to `LEVEL_4_TECHNICIAN_REVIEWED`. The case path remains private, does not authorize repair, and remains under the legal and source-rights hold.",
     )
     summary_path.write_text(summary, encoding="utf-8")
 

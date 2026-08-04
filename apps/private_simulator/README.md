@@ -17,6 +17,10 @@ python3 scripts/run_local_app.py \
 The interface supports:
 
 - model and approved-definition counts
+- a bounded field diagnostic case panel with exact complaint and fault-code entry conditions
+- required safety acknowledgement before the next approved test is shown
+- technician-entered actual results with deterministic comparison and fail-closed completion, stop, or escalation outcomes
+- traceable case state, package IDs, reviewer status, and source pages without implying that the application measured the equipment
 - exact manual operating-phase selection
 - explicit power-available and operation-requested inputs
 - exact approved fault-code activation
@@ -28,7 +32,14 @@ The interface supports:
 - reference-only virtual meter display with approved mode, points, values, procedures, and safety category
 - technician-validation labels and explicit manufacturer-verification status
 
+The first real `E24` diagnostic path is held in private Package 4 pending HVAC
+technical review. Until that review is explicitly accepted, the approved-package
+command above correctly shows no real diagnostic path. Synthetic fixtures validate
+the interface and deterministic behavior without promoting the pending assertion.
+
 The server creates a fresh deterministic simulator for every snapshot request.
 It does not infer or persist equipment state, automate phase transitions, publish
 private records, generate live or simulated meter readings, propagate voltage,
 infer current flow or switching, or serve on a network-accessible interface.
+Field mode currently accepts only explicit technician entry. Connected or imported
+instrument results remain deferred.

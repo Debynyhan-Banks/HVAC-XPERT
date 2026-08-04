@@ -5,6 +5,11 @@ const state = {
   activeFaults: new Set(),
   availableMeasurements: [],
   selectedMeasurementId: null,
+  selectedPathId: null,
+  caseId: null,
+  caseCreatedAt: null,
+  caseResults: [],
+  caseSnapshot: null,
 };
 
 const elements = {
@@ -40,6 +45,33 @@ const elements = {
   meterSource: document.querySelector("#meter-source"),
   diagnosticCount: document.querySelector("#diagnostic-count"),
   diagnosticBody: document.querySelector("#diagnostic-body"),
+  caseStatus: document.querySelector("#case-status"),
+  caseEmpty: document.querySelector("#case-empty"),
+  caseWorkspace: document.querySelector("#case-workspace"),
+  casePathSelect: document.querySelector("#case-path-select"),
+  caseTitle: document.querySelector("#case-title"),
+  caseComplaint: document.querySelector("#case-complaint"),
+  caseFaults: document.querySelector("#case-faults"),
+  caseSafetyList: document.querySelector("#case-safety-list"),
+  caseSafetyAck: document.querySelector("#case-safety-ack"),
+  caseTestName: document.querySelector("#case-test-name"),
+  caseTestSafety: document.querySelector("#case-test-safety"),
+  caseRationale: document.querySelector("#case-rationale"),
+  caseTestDetails: document.querySelector("#case-test-details"),
+  caseMeterMode: document.querySelector("#case-meter-mode"),
+  caseTestPoints: document.querySelector("#case-test-points"),
+  caseExpected: document.querySelector("#case-expected"),
+  caseProcedureBlock: document.querySelector("#case-procedure-block"),
+  caseProcedure: document.querySelector("#case-procedure"),
+  caseResultEntry: document.querySelector("#case-result-entry"),
+  caseResultSelect: document.querySelector("#case-result-select"),
+  caseResultNumber: document.querySelector("#case-result-number"),
+  caseTechnician: document.querySelector("#case-technician"),
+  caseEvaluate: document.querySelector("#case-evaluate"),
+  caseOutcome: document.querySelector("#case-outcome"),
+  caseEvaluation: document.querySelector("#case-evaluation"),
+  caseGuidance: document.querySelector("#case-guidance"),
+  caseSource: document.querySelector("#case-source"),
   errorBanner: document.querySelector("#error-banner"),
   errorMessage: document.querySelector("#error-message"),
 };
@@ -520,6 +552,253 @@ function renderDiagnostics(measurements) {
   );
 }
 
+function selectedCasePath() {
+  return state.definitions?.diagnostic_paths.find((path) => path.path_id === state.selectedPathId) || null;
+}
+
+function caseStep(path, stepId) {
+  return path?.steps.find((step) => step.step_id === stepId) || null;
+}
+
+function caseExpected(expected) {
+  if (expected.result_kind === "QUALITATIVE") return humanize(expected.qualitative_value);
+  if (expected.minimum !== null || expected.maximum !== null) {
+    const minimum = expected.minimum ?? "—";
+    const maximum = expected.maximum ?? "—";
+    return `${minimum}–${maximum} ${expected.unit}`;
+  }
+  return formatValue(expected.nominal, expected.unit);
+}
+
+function caseResultOptions(expectedValue) {
+  const pairs = {
+    CONTINUITY: ["CONTINUITY", "NO_CONTINUITY", "UNKNOWN"],
+    NO_CONTINUITY: ["NO_CONTINUITY", "CONTINUITY", "UNKNOWN"],
+    OPEN: ["OPEN", "CLOSED", "UNKNOWN"],
+    CLOSED: ["CLOSED", "OPEN", "UNKNOWN"],
+    PRESENT: ["PRESENT", "ABSENT", "UNKNOWN"],
+    ABSENT: ["ABSENT", "PRESENT", "UNKNOWN"],
+  };
+  return pairs[expectedValue] || [expectedValue, "OTHER", "UNKNOWN"];
+}
+
+function renderCaseStatus(caseState) {
+  const presentations = {
+    SAFETY_ACKNOWLEDGEMENT_REQUIRED: ["Safety acknowledgement required", "status-power"],
+    AWAITING_RESULT: ["Awaiting technician result", "status-operation"],
+    NEXT_TEST_AVAILABLE: ["Next approved test available", "status-operation"],
+    COMPLETE: ["Bounded path complete", "status-idle"],
+    ESCALATION_REQUIRED: ["Escalation required", "status-fault"],
+    STOPPED: ["Case stopped", "status-fault"],
+  };
+  const [label, className] = presentations[caseState] || ["Case unavailable", "status-loading"];
+  elements.caseStatus.textContent = label;
+  elements.caseStatus.className = `status-badge ${className}`;
+}
+
+function populateCasePaths(paths) {
+  elements.casePathSelect.replaceChildren();
+  const prompt = document.createElement("option");
+  prompt.value = "";
+  prompt.textContent = "Choose an approved path…";
+  elements.casePathSelect.append(prompt);
+  for (const path of paths) {
+    const option = document.createElement("option");
+    option.value = path.path_id;
+    option.textContent = path.title;
+    elements.casePathSelect.append(option);
+  }
+  const hasPaths = paths.length > 0;
+  elements.caseEmpty.hidden = hasPaths;
+  elements.caseWorkspace.hidden = !hasPaths;
+  elements.casePathSelect.disabled = !hasPaths;
+  if (!hasPaths) {
+    elements.caseStatus.textContent = "No approved path loaded";
+    elements.caseStatus.className = "status-badge status-loading";
+  }
+}
+
+function renderCasePath(path) {
+  elements.caseTitle.textContent = path?.title || "Select a path";
+  elements.caseComplaint.textContent = path?.complaint_summary || "No complaint selected.";
+  elements.caseFaults.replaceChildren();
+  elements.caseSafetyList.replaceChildren();
+  if (!path) return;
+  for (const code of path.entry_fault_codes) {
+    elements.caseFaults.append(node("span", "case-fault-chip", code));
+  }
+  for (const acknowledgement of path.safety_acknowledgements) {
+    const item = node("div", "case-safety-item");
+    item.append(
+      node("strong", "", humanize(acknowledgement.safety_category)),
+      node("span", "", acknowledgement.label),
+    );
+    elements.caseSafetyList.append(item);
+  }
+  elements.caseSource.textContent = formatSources(path.sources);
+}
+
+function prepareResultControl(step) {
+  const expected = step.expected_result;
+  elements.caseResultSelect.replaceChildren();
+  if (expected.result_kind === "QUALITATIVE") {
+    const prompt = document.createElement("option");
+    prompt.value = "";
+    prompt.textContent = "Choose the actual observed result…";
+    elements.caseResultSelect.append(prompt);
+    for (const value of caseResultOptions(expected.qualitative_value)) {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = humanize(value);
+      elements.caseResultSelect.append(option);
+    }
+    elements.caseResultSelect.hidden = false;
+    elements.caseResultNumber.hidden = true;
+    elements.caseResultNumber.value = "";
+  } else {
+    elements.caseResultSelect.hidden = true;
+    elements.caseResultNumber.hidden = false;
+    elements.caseResultNumber.value = "";
+    elements.caseResultNumber.placeholder = `Enter actual ${expected.unit}`;
+  }
+}
+
+function renderCaseStep(path, step, allowEntry) {
+  if (!step) {
+    elements.caseTestDetails.hidden = true;
+    elements.caseProcedureBlock.hidden = true;
+    elements.caseResultEntry.hidden = true;
+    return;
+  }
+  const measurement = step.measurement;
+  elements.caseTestName.textContent = measurement.name;
+  elements.caseTestSafety.textContent = humanize(measurement.safety_category);
+  elements.caseRationale.textContent = step.rationale;
+  elements.caseMeterMode.textContent = measurement.meter_mode;
+  elements.caseTestPoints.textContent = `${formatPoint(measurement.point_a)} ↔ ${formatPoint(measurement.point_b)}`;
+  elements.caseExpected.textContent = caseExpected(step.expected_result);
+  elements.caseProcedure.textContent = measurement.procedure || "No approved procedure is available.";
+  elements.caseTestDetails.hidden = false;
+  elements.caseProcedureBlock.hidden = false;
+  elements.caseResultEntry.hidden = !allowEntry;
+  elements.caseSource.textContent = [formatSources(path.sources), formatSources(measurement.sources)].join("; ");
+  if (allowEntry) prepareResultControl(step);
+}
+
+function renderCaseSnapshot(snapshot) {
+  state.caseSnapshot = snapshot;
+  const path = selectedCasePath();
+  renderCaseStatus(snapshot.state);
+  elements.caseOutcome.hidden = snapshot.evaluation === null;
+  if (snapshot.evaluation !== null) {
+    elements.caseEvaluation.textContent = humanize(snapshot.evaluation.outcome);
+    elements.caseGuidance.textContent = snapshot.guidance || "No additional guidance is available.";
+  }
+  if (snapshot.state === "SAFETY_ACKNOWLEDGEMENT_REQUIRED") {
+    elements.caseTestName.textContent = "Safety acknowledgement required";
+    elements.caseTestSafety.textContent = "Unavailable";
+    elements.caseRationale.textContent = "The procedure remains hidden until the required safety acknowledgement is recorded.";
+    renderCaseStep(path, null, false);
+    return;
+  }
+  const currentStep = caseStep(path, snapshot.current_step_id);
+  const evaluatedStep = caseStep(path, snapshot.evaluation?.step_id);
+  renderCaseStep(path, currentStep || evaluatedStep, currentStep !== null);
+}
+
+function newCaseIdentity() {
+  const createdAt = new Date().toISOString();
+  state.caseId = `CASE-${Date.now()}`;
+  state.caseCreatedAt = createdAt;
+  state.caseResults = [];
+  state.caseSnapshot = null;
+}
+
+async function updateCase(results = state.caseResults) {
+  const path = selectedCasePath();
+  if (!path || !state.caseId) return;
+  clearError();
+  const request = {
+    case_id: state.caseId,
+    path_id: path.path_id,
+    mode: "FIELD",
+    fault_codes: path.entry_fault_codes,
+    safety_acknowledged: elements.caseSafetyAck.checked,
+    results,
+    created_at: state.caseCreatedAt,
+    updated_at: new Date().toISOString(),
+  };
+  try {
+    const snapshot = await requestJson("/api/case", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(request),
+    });
+    state.caseResults = results;
+    renderCaseSnapshot(snapshot);
+  } catch (error) {
+    showError(error.message);
+    elements.caseStatus.textContent = "Case stopped";
+    elements.caseStatus.className = "status-badge status-fault";
+  }
+}
+
+async function selectCasePath(pathId) {
+  state.selectedPathId = pathId || null;
+  newCaseIdentity();
+  elements.caseSafetyAck.checked = false;
+  elements.caseSafetyAck.disabled = !state.selectedPathId;
+  elements.caseOutcome.hidden = true;
+  const path = selectedCasePath();
+  renderCasePath(path);
+  if (path) await updateCase();
+}
+
+async function submitCaseResult() {
+  const path = selectedCasePath();
+  const step = caseStep(path, state.caseSnapshot?.current_step_id);
+  const technician = elements.caseTechnician.value.trim();
+  if (!path || !step) return;
+  if (!technician) {
+    showError("Recorded by is required before evaluating a technician-entered result.");
+    elements.caseTechnician.focus();
+    return;
+  }
+  const expected = step.expected_result;
+  let numericValue = null;
+  let qualitativeValue = null;
+  if (expected.result_kind === "QUALITATIVE") {
+    qualitativeValue = elements.caseResultSelect.value;
+    if (!qualitativeValue) {
+      showError("Choose the actual observed result before evaluation.");
+      elements.caseResultSelect.focus();
+      return;
+    }
+  } else {
+    if (elements.caseResultNumber.value === "") {
+      showError("Enter the actual numeric result before evaluation.");
+      elements.caseResultNumber.focus();
+      return;
+    }
+    numericValue = Number(elements.caseResultNumber.value);
+  }
+  const recordedAt = new Date().toISOString();
+  const result = {
+    result_id: `${state.caseId}:result:${state.caseResults.length + 1}`,
+    step_id: step.step_id,
+    measurement_id: step.measurement_id,
+    source_type: "TECHNICIAN_ENTRY",
+    result_kind: expected.result_kind,
+    numeric_value: numericValue,
+    qualitative_value: qualitativeValue,
+    unit: expected.unit,
+    recorded_by: technician,
+    recorded_at: recordedAt,
+    notes: null,
+  };
+  await updateCase([...state.caseResults, result]);
+}
+
 async function updateSnapshot() {
   if (!state.definitions) return;
   clearError();
@@ -554,8 +833,12 @@ async function initialize() {
     if (state.definitions.topology_behavior !== "REFERENCE_DEFINITION_ONLY") {
       throw new Error("Unsupported topology behavior; simulator stopped.");
     }
+    if (state.definitions.diagnostic_case_behavior !== "TECHNICIAN_ENTRY_DETERMINISTIC_EVALUATION") {
+      throw new Error("Unsupported diagnostic case behavior; application stopped.");
+    }
     populateModel(state.definitions.model);
     populatePhases(state.definitions.operating_states);
+    populateCasePaths(state.definitions.diagnostic_paths);
     renderFaults();
     renderTopology(state.definitions.topology);
     for (const control of [elements.phaseSelect, elements.powerToggle, elements.requestToggle, elements.faultSearch]) {
@@ -569,6 +852,12 @@ async function initialize() {
     elements.requestToggle.addEventListener("change", updateSnapshot);
     elements.faultSearch.addEventListener("input", () => renderFaults(elements.faultSearch.value));
     elements.diagnosticSelect.addEventListener("change", () => selectMeasurement(elements.diagnosticSelect.value));
+    elements.casePathSelect.addEventListener("change", () => selectCasePath(elements.casePathSelect.value));
+    elements.caseSafetyAck.addEventListener("change", () => {
+      state.caseResults = [];
+      updateCase();
+    });
+    elements.caseEvaluate.addEventListener("click", submitCaseResult);
     updatePhaseDescription();
     await updateSnapshot();
   } catch (error) {
