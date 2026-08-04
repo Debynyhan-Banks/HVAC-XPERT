@@ -18,6 +18,28 @@ REVISION_ID = "SYNTHETIC-REVISION"
 COMPONENT_ID = f"{MODEL_ID}:component:compressor"
 STATE_ID = f"{MODEL_ID}:state:cooling"
 MEASUREMENT_ID = f"{MODEL_ID}:measurement:control-voltage"
+CONNECTOR_ID = f"{MODEL_ID}:connector:compressor"
+PIN_A_ID = f"{MODEL_ID}:pin:compressor-a"
+PIN_B_ID = f"{MODEL_ID}:pin:compressor-b"
+NODE_A_ID = f"{MODEL_ID}:node:compressor-a"
+NODE_B_ID = f"{MODEL_ID}:node:compressor-b"
+CONNECTION_ID = f"{MODEL_ID}:connection:compressor-a-to-b"
+
+
+def topology_provenance(fact_id, entity_id):
+    return [
+        {
+            "fact_id": fact_id,
+            "entity_id": entity_id,
+            "source": {"document_id": "DOC-SYNTHETIC", "page": 3, "section": "Topology"},
+            "validation": {
+                "level": "LEVEL_4_TECHNICIAN_REVIEWED",
+                "outcome": "ACCEPTED",
+                "reviewed_by": "SYNTHETIC-REVIEWER",
+                "reviewed_at": "2026-01-01T00:00:00Z",
+            },
+        }
+    ]
 
 
 def package():
@@ -106,6 +128,69 @@ def package():
                 ],
             },
         ),
+        connectors=(
+            {
+                "connector_id": CONNECTOR_ID,
+                "component_id": COMPONENT_ID,
+                "label": "Compressor terminals",
+                "connector_type": "TERMINAL_BLOCK",
+                "pin_ids": [PIN_A_ID, PIN_B_ID],
+                "provenance": topology_provenance("FACT-SYNTHETIC-CONNECTOR", CONNECTOR_ID),
+            },
+        ),
+        pins=(
+            {
+                "pin_id": PIN_A_ID,
+                "connector_id": CONNECTOR_ID,
+                "pin_number": "A",
+                "label": "A",
+                "node_id": NODE_A_ID,
+                "signal_type": "INVERTER_3_PHASE_AC",
+                "wire_color": "RED",
+                "measurement_ids": [],
+                "provenance": topology_provenance("FACT-SYNTHETIC-PIN-A", PIN_A_ID),
+            },
+            {
+                "pin_id": PIN_B_ID,
+                "connector_id": CONNECTOR_ID,
+                "pin_number": "B",
+                "label": "B",
+                "node_id": NODE_B_ID,
+                "signal_type": "INVERTER_3_PHASE_AC",
+                "wire_color": "RED",
+                "measurement_ids": [],
+                "provenance": topology_provenance("FACT-SYNTHETIC-PIN-B", PIN_B_ID),
+            },
+        ),
+        nodes=(
+            {
+                "node_id": NODE_A_ID,
+                "label": "Compressor terminal A",
+                "node_type": "POWER",
+                "reference_node_id": None,
+                "pin_ids": [PIN_A_ID],
+                "provenance": topology_provenance("FACT-SYNTHETIC-NODE-A", NODE_A_ID),
+            },
+            {
+                "node_id": NODE_B_ID,
+                "label": "Compressor terminal B",
+                "node_type": "POWER",
+                "reference_node_id": None,
+                "pin_ids": [PIN_B_ID],
+                "provenance": topology_provenance("FACT-SYNTHETIC-NODE-B", NODE_B_ID),
+            },
+        ),
+        connections=(
+            {
+                "connection_id": CONNECTION_ID,
+                "from_node_id": NODE_A_ID,
+                "to_node_id": NODE_B_ID,
+                "connection_type": "WIRE",
+                "controlled_by_component_id": None,
+                "normally_closed": None,
+                "provenance": topology_provenance("FACT-SYNTHETIC-CONNECTION", CONNECTION_ID),
+            },
+        ),
     )
 
 
@@ -130,10 +215,13 @@ class PrivateSimulatorApplicationTests(unittest.TestCase):
         self.assertEqual(definitions["classification"], "PRIVATE_LOCAL_ONLY")
         self.assertIs(definitions["automatic_transitions_enabled"], False)
         self.assertEqual(definitions["measurement_behavior"], "REFERENCE_DEFINITION_ONLY")
+        self.assertEqual(definitions["topology_behavior"], "REFERENCE_DEFINITION_ONLY")
         self.assertEqual(definitions["model"]["model_id"], MODEL_ID)
         self.assertEqual(definitions["model"]["component_count"], 1)
         self.assertEqual(definitions["fault_codes"], ["F01"])
         self.assertEqual(definitions["operating_states"][0]["state_id"], STATE_ID)
+        self.assertEqual(definitions["model"]["connection_count"], 1)
+        self.assertEqual(definitions["topology"]["connections"][0]["connection_id"], CONNECTION_ID)
         self.assertNotIn("package_root", definitions)
 
     def test_creates_manual_deterministic_snapshot(self):
@@ -222,6 +310,16 @@ class PrivateSimulatorApplicationTests(unittest.TestCase):
         self.assertIn("Exact compressor demand percentage is not specified", javascript)
         self.assertIn("Inspect test", javascript)
         self.assertIn("diagnostic-name-button", stylesheet)
+
+    def test_topology_interface_is_reference_only_and_non_simulating(self):
+        html = (STATIC_ROOT / "index.html").read_text(encoding="utf-8")
+        javascript = (STATIC_ROOT / "app.js").read_text(encoding="utf-8")
+
+        self.assertIn('id="topology-view"', html)
+        self.assertIn("No voltage propagation, switching, current flow, or live state is calculated", html)
+        self.assertIn("topology_behavior", javascript)
+        self.assertIn("REFERENCE_DEFINITION_ONLY", javascript)
+        self.assertIn("renderTopology", javascript)
 
 
 if __name__ == "__main__":

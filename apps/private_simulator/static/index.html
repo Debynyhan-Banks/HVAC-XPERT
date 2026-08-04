@@ -28,7 +28,7 @@
         <div>
           <p class="eyebrow">Approved knowledge runtime</p>
           <h1 id="model-name">Loading model…</h1>
-          <p class="hero-copy">Manually inspect reviewed operating phases, component commands, fault effects, and diagnostic procedures.</p>
+          <p class="hero-copy">Manually inspect reviewed operating phases, component commands, electrical topology, fault effects, and diagnostic procedures.</p>
         </div>
         <div class="model-facts" aria-label="Model summary">
           <div><span>Revision</span><strong id="revision-id">—</strong></div>
@@ -42,7 +42,7 @@
         <span class="guardrail-icon">!</span>
         <div>
           <strong>Manual simulation boundary</strong>
-          <p>Phases never advance automatically. Displayed measurements are approved test definitions, not live readings.</p>
+          <p>Phases never advance automatically. Measurements and topology are approved reference definitions, not live electrical state.</p>
         </div>
       </section>
 
@@ -118,10 +118,26 @@
             <div id="unknown-summary" class="unknown-summary">No component state is inferred.</div>
           </section>
 
+          <section class="panel topology-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">04 · Approved topology</p>
+                <h2>Electrical connection map</h2>
+              </div>
+              <span id="topology-count" class="count-badge">0</span>
+            </div>
+            <p class="section-explainer">
+              Explicit technician-reviewed connectors, terminals, nodes, and wires. No voltage propagation, switching, current flow, or live state is calculated.
+            </p>
+            <div id="topology-view" class="topology-view empty-state">
+              <p>No approved topology extension loaded.</p>
+            </div>
+          </section>
+
           <section class="panel meter-panel">
             <div class="panel-heading">
               <div>
-                <p class="eyebrow">04 · Virtual test instrument</p>
+                <p class="eyebrow">05 · Virtual test instrument</p>
                 <h2>Diagnostic meter</h2>
               </div>
               <span class="reference-badge">Reference only</span>
@@ -185,7 +201,7 @@
           <section class="panel">
             <div class="panel-heading">
               <div>
-                <p class="eyebrow">05 · Service verification</p>
+                <p class="eyebrow">06 · Service verification</p>
                 <h2>Diagnostic definitions</h2>
               </div>
               <span id="diagnostic-count" class="count-badge">0</span>

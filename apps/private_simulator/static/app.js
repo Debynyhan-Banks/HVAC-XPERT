@@ -24,6 +24,8 @@ const elements = {
   commandCount: document.querySelector("#command-count"),
   commandGrid: document.querySelector("#command-grid"),
   unknownSummary: document.querySelector("#unknown-summary"),
+  topologyCount: document.querySelector("#topology-count"),
+  topologyView: document.querySelector("#topology-view"),
   diagnosticSelect: document.querySelector("#diagnostic-select"),
   meterMode: document.querySelector("#meter-mode"),
   meterReading: document.querySelector("#meter-reading"),
@@ -217,6 +219,174 @@ function renderCommands(snapshot) {
   elements.unknownSummary.textContent = `${unknownCount} of ${snapshot.components.length} components remain UNKNOWN; no state is inferred for them.`;
 }
 
+const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+const WIRE_COLORS = {
+  BLACK: "#8fa4ae",
+  RED: "#ff7d7d",
+  YELLOW: "#f4d35e",
+  BLUE: "#6ca8ff",
+  GREEN: "#8ee5a4",
+  WHITE: "#dce8eb",
+};
+
+function svgNode(tagName, attributes = {}, text) {
+  const value = document.createElementNS(SVG_NAMESPACE, tagName);
+  for (const [name, attributeValue] of Object.entries(attributes)) {
+    value.setAttribute(name, String(attributeValue));
+  }
+  if (text !== undefined) value.textContent = text;
+  return value;
+}
+
+function truncate(value, maximum = 38) {
+  if (!value || value.length <= maximum) return value || "Unknown";
+  return `${value.slice(0, maximum - 1)}…`;
+}
+
+function topologySources(topology) {
+  const sources = new Map();
+  for (const group of Object.values(topology)) {
+    for (const record of group) {
+      for (const assertion of record.provenance || []) {
+        const source = assertion.source || {};
+        const validation = assertion.validation || {};
+        const key = `${source.document_id}:${source.page}`;
+        sources.set(key, {
+          label: `${source.document_id || "Unknown document"} · p. ${source.page || "—"}`,
+          reviewer: validation.reviewed_by,
+          level: validation.level,
+          outcome: validation.outcome,
+        });
+      }
+    }
+  }
+  return [...sources.values()];
+}
+
+function endpointDefinition(nodeId, pinsByNode, connectorsById, nodesById) {
+  const pin = pinsByNode.get(nodeId);
+  const connector = pin ? connectorsById.get(pin.connector_id) : null;
+  const nodeRecord = nodesById.get(nodeId);
+  return {
+    title: connector ? connector.label : nodeRecord?.label || nodeId,
+    terminal: pin ? `Terminal ${pin.pin_number}` : humanize(nodeRecord?.node_type || "unknown node"),
+    signalType: pin?.signal_type || nodeRecord?.node_type || "UNKNOWN",
+    wireColor: pin?.wire_color || null,
+  };
+}
+
+function topologyStat(label, value) {
+  const item = node("span", "topology-stat");
+  item.append(node("strong", "", value), node("small", "", label));
+  return item;
+}
+
+function renderTopology(topology) {
+  const connectors = topology.connectors || [];
+  const pins = topology.pins || [];
+  const nodes = topology.nodes || [];
+  const connections = topology.connections || [];
+  elements.topologyCount.textContent = connections.length;
+  elements.topologyView.replaceChildren();
+  if (connectors.length === 0 && pins.length === 0 && nodes.length === 0 && connections.length === 0) {
+    elements.topologyView.className = "topology-view empty-state";
+    elements.topologyView.append(node("p", "", "No approved topology extension loaded."));
+    return;
+  }
+
+  elements.topologyView.className = "topology-view";
+  const summary = node("div", "topology-summary");
+  summary.append(
+    topologyStat("connectors", connectors.length),
+    topologyStat("terminals", pins.length),
+    topologyStat("nodes", nodes.length),
+    topologyStat("explicit wires", connections.length),
+  );
+
+  const connectorsById = new Map(connectors.map((record) => [record.connector_id, record]));
+  const nodesById = new Map(nodes.map((record) => [record.node_id, record]));
+  const pinsByNode = new Map(pins.filter((record) => record.node_id).map((record) => [record.node_id, record]));
+  const endpointNodeIds = new Set();
+  const rowHeight = 86;
+  const svgHeight = Math.max(180, connections.length * rowHeight + 30);
+  const svg = svgNode("svg", {
+    viewBox: `0 0 960 ${svgHeight}`,
+    role: "img",
+    "aria-labelledby": "topology-svg-title topology-svg-description",
+  });
+  svg.append(
+    svgNode("title", {id: "topology-svg-title"}, "Approved electrical connection topology"),
+    svgNode(
+      "desc",
+      {id: "topology-svg-description"},
+      "Reference-only map of explicit technician-reviewed node-to-node connections. It does not calculate electrical state.",
+    ),
+  );
+
+  connections.forEach((connection, index) => {
+    endpointNodeIds.add(connection.from_node_id);
+    endpointNodeIds.add(connection.to_node_id);
+    const from = endpointDefinition(connection.from_node_id, pinsByNode, connectorsById, nodesById);
+    const to = endpointDefinition(connection.to_node_id, pinsByNode, connectorsById, nodesById);
+    const y = index * rowHeight + 15;
+    const lineY = y + 29;
+    const wireColor = WIRE_COLORS[from.wireColor] || WIRE_COLORS[to.wireColor] || "#8fa4ae";
+    const group = svgNode("g", {class: "topology-wire-row"});
+    group.append(
+      svgNode("title", {}, `${connection.connection_id}: ${connection.from_node_id} to ${connection.to_node_id}`),
+      svgNode("rect", {x: 20, y, width: 280, height: 58, rx: 10, class: "topology-endpoint"}),
+      svgNode("rect", {x: 660, y, width: 280, height: 58, rx: 10, class: "topology-endpoint"}),
+      svgNode("line", {x1: 300, y1: lineY, x2: 660, y2: lineY, stroke: wireColor, class: "topology-wire"}),
+      svgNode("circle", {cx: 300, cy: lineY, r: 5, fill: wireColor}),
+      svgNode("circle", {cx: 660, cy: lineY, r: 5, fill: wireColor}),
+      svgNode("text", {x: 34, y: y + 22, class: "topology-endpoint-title"}, truncate(from.title)),
+      svgNode("text", {x: 34, y: y + 43, class: "topology-endpoint-detail"}, from.terminal),
+      svgNode("text", {x: 674, y: y + 22, class: "topology-endpoint-title"}, truncate(to.title)),
+      svgNode("text", {x: 674, y: y + 43, class: "topology-endpoint-detail"}, to.terminal),
+      svgNode("text", {x: 480, y: y + 20, class: "topology-signal", "text-anchor": "middle"}, humanize(from.signalType)),
+      svgNode(
+        "text",
+        {x: 480, y: y + 48, class: "topology-wire-label", "text-anchor": "middle"},
+        from.wireColor ? `${humanize(from.wireColor)} conductor` : "Color not documented",
+      ),
+    );
+    svg.append(group);
+  });
+
+  const stage = node("div", "topology-stage");
+  stage.append(svg);
+  const metadata = node("div", "topology-metadata");
+  const unconnected = nodes.filter((record) => !endpointNodeIds.has(record.node_id));
+  const boundary = node("div", "topology-boundary");
+  boundary.append(node("span", "detail-label", "Bounded nodes without mapped connection"));
+  if (unconnected.length === 0) {
+    boundary.append(node("p", "", "No explicit standalone node is present in this bounded slice."));
+  } else {
+    const list = node("div", "topology-node-list");
+    for (const record of unconnected) {
+      const definition = endpointDefinition(record.node_id, pinsByNode, connectorsById, nodesById);
+      const item = node("span", "topology-node-chip");
+      item.append(node("strong", "", definition.title), node("small", "", definition.terminal));
+      list.append(item);
+    }
+    boundary.append(list, node("p", "topology-boundary-note", "No unreviewed bonding or downstream connectivity is inferred."));
+  }
+
+  const traceability = node("div", "topology-traceability");
+  traceability.append(node("span", "detail-label", "Approval and traceability"));
+  const sources = topologySources(topology);
+  if (sources.length === 0) {
+    traceability.append(node("p", "", "Approved source metadata unavailable."));
+  } else {
+    traceability.append(
+      node("p", "", sources.map((source) => source.label).join("; ")),
+      node("small", "", `${humanize(sources[0].level)} · ${humanize(sources[0].outcome)} · ${sources[0].reviewer || "Reviewer unavailable"}`),
+    );
+  }
+  metadata.append(boundary, traceability);
+  elements.topologyView.append(summary, stage, metadata);
+}
+
 function formatPoint(point) {
   if (!point) return "—";
   const label = point.label ? ` · ${point.label}` : "";
@@ -381,9 +551,13 @@ async function initialize() {
     if (state.definitions.measurement_behavior !== "REFERENCE_DEFINITION_ONLY") {
       throw new Error("Unsupported measurement behavior; simulator stopped.");
     }
+    if (state.definitions.topology_behavior !== "REFERENCE_DEFINITION_ONLY") {
+      throw new Error("Unsupported topology behavior; simulator stopped.");
+    }
     populateModel(state.definitions.model);
     populatePhases(state.definitions.operating_states);
     renderFaults();
+    renderTopology(state.definitions.topology);
     for (const control of [elements.phaseSelect, elements.powerToggle, elements.requestToggle, elements.faultSearch]) {
       control.disabled = false;
     }

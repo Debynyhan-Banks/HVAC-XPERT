@@ -79,7 +79,6 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Private pending extension `RUN-ASXS6-20260804-003` created with 6 connectors, 17 pins, 17 nodes, and 8 explicit connections for the X1M supply, M1C compressor, and M1F fan paths
 - Package 3 uses product-specification page 50 as primary provenance and visually cross-checks the accepted equivalent diagrams on service page 76 and installation page 36
 - Unlabeled X108A and M1F terminals remain positional `LEFT`, `CENTER`, and `RIGHT` identifiers; wire colors remain `null` where the diagram does not label them
-- All 48 Package 3 topology assertions remain `LEVEL_1_AI_EXTRACTED` and `PENDING` until a separate HVAC technical decision
 - Topology extraction and review tooling pull request #11 merged as commit `8b79be3`
 - Private simulator command cards now translate approved enum values into technician-readable behavior while preserving the raw source definition and explicitly identifying unspecified exact settings
 - Diagnostic meter now provides a direct applicable-test selector, and diagnostic table rows expose visible inspect actions instead of relying on text that only appears clickable
@@ -90,6 +89,12 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Assigned HVAC/R technical reviewer `Debynyhan-Banks` explicitly accepted all 48 Package 3 topology assertions and the documented bounded exclusions at `2026-08-04T14:29:12Z`
 - All Package 3 assertions advanced to `LEVEL_4_TECHNICIAN_REVIEWED` with outcome `ACCEPTED`; the private package now has status `TECHNICALLY_APPROVED_LEGAL_HOLD`
 - Package 3 retains `publication_allowed: false`, and the approval does not authorize source redistribution, automated collection, or public publication
+- Package 3 technical-review pull request #13 merged as commit `019fc02`
+- Private package gate now composes approved operating-state, measurement, connector, pin, node, and connection records across both extensions with duplicate, enum, component, endpoint, and bidirectional membership validation
+- Real three-package composition loads 16 components, 51 faults, 6 operating states, 6 measurements, 6 connectors, 17 pins, 17 nodes, and 8 explicit connections
+- Private browser definitions expose topology only as `REFERENCE_DEFINITION_ONLY`
+- Reference-only SVG topology map renders all eight explicit wires using documented conductor colors, preserves unknown fan-wire colors, identifies the standalone X1M PE bounded node, and displays reviewer and source-page traceability
+- Real-package browser verification found eight rendered connection rows, one standalone bounded node, correct Package 3 counts, and no browser warnings or errors
 
 ## In progress
 
@@ -97,8 +102,6 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Copyright, storage, factual-extraction, and derivative-use determination
 - Confirmation of exact official service, parts, and specification asset URLs
 - Manual-upload ingestion design using authorized documents or synthetic fixtures
-- Private runtime composition of approved topology extension `RUN-ASXS6-20260804-003`
-- Reference-only SVG topology rendering without inferred voltage propagation or current flow
 
 ## Blockers
 
@@ -111,7 +114,7 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 
 ## Next action
 
-Compose approved private topology extension `RUN-ASXS6-20260804-003` through the private package gate, then expose only its explicit connectors, pins, nodes, and connections in a reference-only SVG schematic. Do not infer voltage propagation, switching, timing, current flow, or unreviewed connectivity.
+Have the assigned HVAC reviewer visually confirm the reference-only topology presentation. Any future connection inspector may expose existing IDs and provenance, but diagnostic points must not be linked to topology pins until an approved extension supplies explicit measurement-to-pin references.
 
 After the work unit passes validation, update this file, commit only the intended non-private files, and push the current branch to `origin`.
 
