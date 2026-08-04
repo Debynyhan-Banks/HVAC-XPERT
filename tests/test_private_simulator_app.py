@@ -211,6 +211,18 @@ class PrivateSimulatorApplicationTests(unittest.TestCase):
         self.assertIn("validation_level", javascript)
         self.assertIn("reviewed_by", javascript)
 
+    def test_commands_and_diagnostics_have_explicit_controls(self):
+        html = (STATIC_ROOT / "index.html").read_text(encoding="utf-8")
+        javascript = (STATIC_ROOT / "app.js").read_text(encoding="utf-8")
+        stylesheet = (STATIC_ROOT / "app.css").read_text(encoding="utf-8")
+
+        self.assertIn('id="diagnostic-select"', html)
+        self.assertIn("Load approved diagnostic test", html)
+        self.assertIn("Variable steps 0–8", javascript)
+        self.assertIn("Exact compressor demand percentage is not specified", javascript)
+        self.assertIn("Inspect test", javascript)
+        self.assertIn("diagnostic-name-button", stylesheet)
+
 
 if __name__ == "__main__":
     unittest.main()

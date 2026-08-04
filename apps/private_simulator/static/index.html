@@ -109,6 +109,9 @@
               </div>
               <span id="command-count" class="count-badge">0</span>
             </div>
+            <p class="section-explainer">
+              Approved compressor, fan, and other component commands for the selected phase. Exact settings are shown only when the source defines them.
+            </p>
             <div id="command-grid" class="command-grid empty-state">
               <p>Select an approved phase to inspect explicit commands.</p>
             </div>
@@ -122,6 +125,17 @@
                 <h2>Diagnostic meter</h2>
               </div>
               <span class="reference-badge">Reference only</span>
+            </div>
+            <div class="diagnostic-picker">
+              <label for="diagnostic-select">
+                <span>Load approved diagnostic test</span>
+                <small>Choose any applicable test directly; this does not create a live reading.</small>
+              </label>
+              <div class="select-wrap">
+                <select id="diagnostic-select" disabled>
+                  <option value="">Choose an approved test…</option>
+                </select>
+              </div>
             </div>
             <div class="meter-layout">
               <div class="meter-shell" aria-label="Approved diagnostic reference display">
@@ -158,7 +172,7 @@
                 </div>
                 <div class="procedure-block">
                   <span class="detail-label">Approved procedure</span>
-                  <p id="meter-procedure">Choose a diagnostic definition from the table.</p>
+                  <p id="meter-procedure">Choose an approved diagnostic test above.</p>
                 </div>
                 <div class="source-block">
                   <span class="detail-label">Traceability</span>
