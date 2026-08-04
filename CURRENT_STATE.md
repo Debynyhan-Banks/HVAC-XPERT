@@ -105,6 +105,10 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Competitive review positions the pilot around one complete model- and revision-specific diagnostic case rather than document breadth, connected hardware, general 3D content, or a large course catalog
 - Field experience priorities now require one primary next test at a time while keeping detailed evidence directly available
 - Nameplate OCR, offline access, read-only instrument import, remote lead-technician review, historical comparison, and approved bulletin or parts alerts are explicitly deferred until after pilot proof
+- Competitive positioning and priority amendment merged through pull request #16 as commit `2ca4a10`
+- Roadmap execution now uses steel threads while preserving the existing phases as governance and maturity gates
+- Before-thread access checklists now identify required documents, user decisions, credentials, external services, legal approvals, reviewer actions, expected costs, and blockers without requesting secrets in chat
+- `ST-001` records the completed bounded model-to-reference-simulator workflow; `ST-002` is the next field diagnostic case loop and requires no external API
 
 ## In progress
 
@@ -124,7 +128,7 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 
 ## Next action
 
-Review and approve the competitive positioning and priority amendment. After approval, define the canonical case data contracts and select one pilot complaint whose complete diagnostic path can be supported by approved records. Diagnostic points must not be linked to topology pins until an approved extension supplies explicit measurement-to-pin references.
+Review and approve the steel-thread delivery protocol and roadmap. After approval, begin `ST-002` by defining canonical case data contracts, then select one pilot complaint whose complete diagnostic path can be supported by approved records. Diagnostic points must not be linked to topology pins until an approved extension supplies explicit measurement-to-pin references.
 
 After the work unit passes validation, update this file, commit only the intended non-private files, and push the current branch to `origin`.
 
