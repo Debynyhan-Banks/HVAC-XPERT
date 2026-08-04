@@ -72,6 +72,14 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Meter interface exposes human-readable technician validation and explicit manufacturer-verification-pending status
 - The meter fails closed if the server does not declare reference-definition-only measurement behavior and never generates a live or simulated reading
 - Real approved-package browser test verified the `197–253 VAC` L1/L2 supply-voltage definition, energized-line-voltage category, approved procedure, technician reviewer, and service-manual page 15 traceability
+- Reference-only diagnostic meter pull request #10 merged as commit `ea2ba67`
+- Assigned HVAC technical reviewer confirmed the private interface and diagnostic meter were fully reviewed and approved
+- Topology review tooling now validates canonical connector, pin, node, and connection fields, IDs, enums, counts, component references, bidirectional connector/pin and pin/node membership, node endpoints, and approval metadata
+- Canonical pin signal types now distinguish inverter-generated three-phase motor output from incoming line-voltage AC
+- Private pending extension `RUN-ASXS6-20260804-003` created with 6 connectors, 17 pins, 17 nodes, and 8 explicit connections for the X1M supply, M1C compressor, and M1F fan paths
+- Package 3 uses product-specification page 50 as primary provenance and visually cross-checks the accepted equivalent diagrams on service page 76 and installation page 36
+- Unlabeled X108A and M1F terminals remain positional `LEFT`, `CENTER`, and `RIGHT` identifiers; wire colors remain `null` where the diagram does not label them
+- All 48 Package 3 topology assertions remain `LEVEL_1_AI_EXTRACTED` and `PENDING` until a separate HVAC technical decision
 
 ## In progress
 
@@ -79,7 +87,7 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Copyright, storage, factual-extraction, and derivative-use determination
 - Confirmation of exact official service, parts, and specification asset URLs
 - Manual-upload ingestion design using authorized documents or synthetic fixtures
-- HVAC technical review of the reference-only virtual diagnostic meter
+- HVAC technical review of private topology extension `RUN-ASXS6-20260804-003`
 
 ## Blockers
 
@@ -89,10 +97,11 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Exact official URLs for the service manual and parts catalog are unconfirmed
 - Technically approved records cannot enter the public repository while the legal hold remains
 - Transition timing and automatic transition conditions remain unknown because the cooling-flow chart does not specify them
+- Package 3 topology cannot enter simulator runtime or drive an SVG schematic until all 48 assertions receive a separate technical decision
 
 ## Next action
 
-Run and technically review the reference-only virtual diagnostic meter against the approved pilot package. Confirm that meter modes, lead points, expected references, safety categories, procedures, technician-validation labels, and source pages match the reviewed records without implying a live measurement.
+Review private topology extension `RUN-ASXS6-20260804-003` against product-specification page 50 and the equivalent service/install drawings. Confirm the X1M L1/L2 mapping, A1P UO/VO/WO to M1C U/V/W mapping, positional X108A-to-M1F mapping, signal classifications, unknown wire colors, and bounded exclusions before creating a complete technical decision.
 
 After the work unit passes validation, update this file, commit only the intended non-private files, and push the current branch to `origin`.
 

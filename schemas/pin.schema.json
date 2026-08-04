@@ -31,6 +31,7 @@
       "type": "string",
       "enum": [
         "LINE_VOLTAGE_AC",
+        "INVERTER_3_PHASE_AC",
         "LOW_VOLTAGE_AC",
         "HIGH_VOLTAGE_DC",
         "LOW_VOLTAGE_DC",

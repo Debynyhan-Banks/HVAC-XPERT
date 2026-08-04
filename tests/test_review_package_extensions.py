@@ -19,6 +19,12 @@ REVIEWED_AT = "2026-08-02T00:00:00Z"
 COMPONENT_ID = f"{MODEL_ID}:component:one"
 STATE_ID = f"{MODEL_ID}:state:idle"
 MEASUREMENT_ID = f"{MODEL_ID}:measurement:supply"
+CONNECTOR_ID = f"{MODEL_ID}:connector:terminal-block"
+PIN_A_ID = f"{MODEL_ID}:pin:terminal-a"
+PIN_B_ID = f"{MODEL_ID}:pin:terminal-b"
+NODE_A_ID = f"{MODEL_ID}:node:terminal-a"
+NODE_B_ID = f"{MODEL_ID}:node:terminal-b"
+CONNECTION_ID = f"{MODEL_ID}:connection:terminal-a-to-b"
 
 
 def write_json(path, value):
@@ -167,7 +173,80 @@ class ReviewPackageExtensionTests(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
             return validate_review_package.validate(self.package_root)
 
+    def write_topology_fixture(self):
+        manifest_path = self.package_root / "package-manifest.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest["record_counts"].update({"connectors": 1, "pins": 2, "nodes": 2, "connections": 1})
+        manifest["technical_review"]["assertion_count"] = 8
+        write_json(manifest_path, manifest)
+        write_json(
+            self.package_root / "connectors" / "terminal-block.json",
+            {
+                "schema_version": "1.0.0",
+                "connector_id": CONNECTOR_ID,
+                "model_id": MODEL_ID,
+                "revision_id": REVISION_ID,
+                "component_id": COMPONENT_ID,
+                "label": "Synthetic terminal block",
+                "connector_type": "TERMINAL_BLOCK",
+                "keying": None,
+                "pin_ids": [PIN_A_ID, PIN_B_ID],
+                "provenance": [provenance("FACT-SYNTHETIC-CONNECTOR", CONNECTOR_ID)],
+            },
+        )
+        for pin_id, pin_number, node_id in (
+            (PIN_A_ID, "A", NODE_A_ID),
+            (PIN_B_ID, "B", NODE_B_ID),
+        ):
+            write_json(
+                self.package_root / "pins" / f"{pin_number.lower()}.json",
+                {
+                    "schema_version": "1.0.0",
+                    "pin_id": pin_id,
+                    "model_id": MODEL_ID,
+                    "revision_id": REVISION_ID,
+                    "connector_id": CONNECTOR_ID,
+                    "pin_number": pin_number,
+                    "label": pin_number,
+                    "node_id": node_id,
+                    "signal_type": "LINE_VOLTAGE_AC" if pin_number == "A" else "INVERTER_3_PHASE_AC",
+                    "wire_color": None,
+                    "measurement_ids": [],
+                    "provenance": [provenance(f"FACT-SYNTHETIC-PIN-{pin_number}", pin_id)],
+                },
+            )
+            write_json(
+                self.package_root / "nodes" / f"{pin_number.lower()}.json",
+                {
+                    "schema_version": "1.0.0",
+                    "node_id": node_id,
+                    "model_id": MODEL_ID,
+                    "revision_id": REVISION_ID,
+                    "label": f"Terminal {pin_number}",
+                    "node_type": "POWER",
+                    "reference_node_id": None,
+                    "pin_ids": [pin_id],
+                    "provenance": [provenance(f"FACT-SYNTHETIC-NODE-{pin_number}", node_id)],
+                },
+            )
+        write_json(
+            self.package_root / "connections" / "terminal-a-to-b.json",
+            {
+                "schema_version": "1.0.0",
+                "connection_id": CONNECTION_ID,
+                "model_id": MODEL_ID,
+                "revision_id": REVISION_ID,
+                "from_node_id": NODE_A_ID,
+                "to_node_id": NODE_B_ID,
+                "connection_type": "WIRE",
+                "controlled_by_component_id": None,
+                "normally_closed": None,
+                "provenance": [provenance("FACT-SYNTHETIC-CONNECTION", CONNECTION_ID)],
+            },
+        )
+
     def test_validates_pending_extension_and_complete_approval(self):
+        self.write_topology_fixture()
         self.assertEqual(self.validate(), 0)
         decision_path = self.package_root / "review-decision.json"
         write_json(
@@ -191,6 +270,13 @@ class ReviewPackageExtensionTests(unittest.TestCase):
             (self.package_root / "operating-states" / "idle.json").read_text(encoding="utf-8")
         )
         self.assertEqual(approved_state["provenance"][0]["validation"]["level"], "LEVEL_4_TECHNICIAN_REVIEWED")
+        approved_connector = json.loads(
+            (self.package_root / "connectors" / "terminal-block.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            approved_connector["provenance"][0]["validation"]["level"],
+            "LEVEL_4_TECHNICIAN_REVIEWED",
+        )
         approved_summary = (self.package_root / "REVIEW_SUMMARY.md").read_text(encoding="utf-8")
         self.assertNotIn("PENDING_TECHNICAL_REVIEW", approved_summary)
 
@@ -206,6 +292,24 @@ class ReviewPackageExtensionTests(unittest.TestCase):
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         manifest["technical_review"]["assertion_count"] = 1
         write_json(manifest_path, manifest)
+        self.assertEqual(self.validate(), 1)
+
+    def test_rejects_unknown_topology_reference(self):
+        self.write_topology_fixture()
+        pin_path = self.package_root / "pins" / "a.json"
+        pin = json.loads(pin_path.read_text(encoding="utf-8"))
+        pin["node_id"] = "UNKNOWN-NODE"
+        write_json(pin_path, pin)
+
+        self.assertEqual(self.validate(), 1)
+
+    def test_rejects_invalid_topology_enum(self):
+        self.write_topology_fixture()
+        connector_path = self.package_root / "connectors" / "terminal-block.json"
+        connector = json.loads(connector_path.read_text(encoding="utf-8"))
+        connector["connector_type"] = "INVENTED"
+        write_json(connector_path, connector)
+
         self.assertEqual(self.validate(), 1)
 
 

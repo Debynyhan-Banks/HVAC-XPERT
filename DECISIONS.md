@@ -99,3 +99,10 @@ This file records accepted cross-project decisions. Revisions must preserve prio
 - Date: 2026-08-02
 - Decision: New facts added after a package is technically approved enter a separate pending `KNOWLEDGE_EXTENSION` that references the approved base package. Runtime composition is allowed only after the extension receives its own complete technical decision.
 - Reason: Editing an approved package would silently broaden the scope of its prior review and weaken the audit trail.
+
+## ADR-015: Unlabeled terminals use positional identifiers
+
+- Status: Accepted
+- Date: 2026-08-04
+- Decision: When an applicable source drawing shows terminal positions without manufacturer pin numbers, extraction records may use explicit positional identifiers such as `LEFT`, `CENTER`, and `RIGHT`. The records must state that the identifiers describe drawing position, preserve manufacturer numbering as unknown, and remain pending until technical review.
+- Reason: Positional identifiers preserve visible connectivity without inventing manufacturer pin assignments or discarding usable topology evidence.
