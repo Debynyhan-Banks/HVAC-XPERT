@@ -101,6 +101,10 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Field, training, deterministic, reference, and AI evidence classes are explicitly separated
 - Bounded diagnostic case states, next-test requirements, result evaluation, hypothesis handling, escalation, case summary, and pilot acceptance criteria are documented
 - Existing pilot documents do not require duplicate upload; additional private documents are required only to close identified evidence gaps
+- Combined product scope and diagnostic workflow merged through pull request #15 as commit `07d2a02`
+- Competitive review positions the pilot around one complete model- and revision-specific diagnostic case rather than document breadth, connected hardware, general 3D content, or a large course catalog
+- Field experience priorities now require one primary next test at a time while keeping detailed evidence directly available
+- Nameplate OCR, offline access, read-only instrument import, remote lead-technician review, historical comparison, and approved bulletin or parts alerts are explicitly deferred until after pilot proof
 
 ## In progress
 
@@ -120,7 +124,7 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 
 ## Next action
 
-Review and approve the combined product scope and bounded diagnostic case workflow. After scope approval, define the canonical case data contracts and select one pilot complaint whose complete diagnostic path can be supported by approved records. Diagnostic points must not be linked to topology pins until an approved extension supplies explicit measurement-to-pin references.
+Review and approve the competitive positioning and priority amendment. After approval, define the canonical case data contracts and select one pilot complaint whose complete diagnostic path can be supported by approved records. Diagnostic points must not be linked to topology pins until an approved extension supplies explicit measurement-to-pin references.
 
 After the work unit passes validation, update this file, commit only the intended non-private files, and push the current branch to `origin`.
 
