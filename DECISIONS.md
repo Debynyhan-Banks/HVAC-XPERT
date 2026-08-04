@@ -106,3 +106,17 @@ This file records accepted cross-project decisions. Revisions must preserve prio
 - Date: 2026-08-04
 - Decision: When an applicable source drawing shows terminal positions without manufacturer pin numbers, extraction records may use explicit positional identifiers such as `LEFT`, `CENTER`, and `RIGHT`. The records must state that the identifiers describe drawing position, preserve manufacturer numbering as unknown, and remain pending until technical review.
 - Reason: Positional identifiers preserve visible connectivity without inventing manufacturer pin assignments or discarding usable topology evidence.
+
+## ADR-016: AI retrieves approved evidence instead of becoming the evidence store
+
+- Status: Accepted
+- Date: 2026-08-04
+- Decision: AI troubleshooting and instruction retrieve applicable, approved, versioned knowledge records at request time and expose their provenance. Foundation-model memory and unreviewed extraction cannot establish manufacturer facts. Fine-tuning is not required for the pilot and cannot replace retrieval, deterministic rules, or review gates.
+- Reason: Retrieval preserves model and document revisions, supports corrections and citations, reduces unsupported answers, and keeps technical truth outside a probabilistic model.
+
+## ADR-017: Field and training evidence remain separate
+
+- Status: Accepted
+- Date: 2026-08-04
+- Decision: Field mode accepts explicitly identified technician observations and actual readings. Training mode uses clearly labeled deterministic simulator results. Simulated values cannot enter a field case as actual observations, and AI cannot fabricate either type.
+- Reason: A user must always know whether a value came from physical equipment, an approved reference definition, deterministic simulation, or AI explanation.

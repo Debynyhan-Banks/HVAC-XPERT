@@ -95,6 +95,12 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Private browser definitions expose topology only as `REFERENCE_DEFINITION_ONLY`
 - Reference-only SVG topology map renders all eight explicit wires using documented conductor colors, preserves unknown fan-wire colors, identifies the standalone X1M PE bounded node, and displays reviewer and source-page traceability
 - Real-package browser verification found eight rendered connection rows, one standalone bounded node, correct Package 3 counts, and no browser warnings or errors
+- Combined product scope now preserves the original training and simulation mission while adding an evidence-grounded lead-technician field workflow
+- Product priorities now favor reviewed two-dimensional diagnostic diagrams, manual field observations, deterministic evaluation, and traceable case summaries over general 3D rendering or autonomous equipment control
+- AI grounding is defined as retrieval from applicable approved knowledge packages; foundation-model training on manufacturer PDFs is not required and cannot replace provenance or review
+- Field, training, deterministic, reference, and AI evidence classes are explicitly separated
+- Bounded diagnostic case states, next-test requirements, result evaluation, hypothesis handling, escalation, case summary, and pilot acceptance criteria are documented
+- Existing pilot documents do not require duplicate upload; additional private documents are required only to close identified evidence gaps
 
 ## In progress
 
@@ -114,7 +120,7 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 
 ## Next action
 
-Have the assigned HVAC reviewer visually confirm the reference-only topology presentation. Any future connection inspector may expose existing IDs and provenance, but diagnostic points must not be linked to topology pins until an approved extension supplies explicit measurement-to-pin references.
+Review and approve the combined product scope and bounded diagnostic case workflow. After scope approval, define the canonical case data contracts and select one pilot complaint whose complete diagnostic path can be supported by approved records. Diagnostic points must not be linked to topology pins until an approved extension supplies explicit measurement-to-pin references.
 
 After the work unit passes validation, update this file, commit only the intended non-private files, and push the current branch to `origin`.
 
