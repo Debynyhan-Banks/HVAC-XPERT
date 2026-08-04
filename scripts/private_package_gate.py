@@ -12,6 +12,14 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_PRIVATE_ROOT = PROJECT_ROOT / "sources" / "private"
 INTERNAL_APPROVED_STATUS = "TECHNICALLY_APPROVED_LEGAL_HOLD"
 PUBLIC_APPROVED_STATUS = "APPROVED_FOR_PUBLICATION"
+CONNECTOR_TYPES = {"PLUG", "RECEPTACLE", "HEADER", "TERMINAL_BLOCK", "SPLICE", "OTHER", "UNKNOWN"}
+SIGNAL_TYPES = {
+    "LINE_VOLTAGE_AC", "INVERTER_3_PHASE_AC", "LOW_VOLTAGE_AC", "HIGH_VOLTAGE_DC",
+    "LOW_VOLTAGE_DC", "GROUND", "COMMUNICATION", "ANALOG_SENSOR", "DIGITAL_INPUT",
+    "DIGITAL_OUTPUT", "PWM", "CURRENT_LOOP", "OTHER", "UNKNOWN",
+}
+NODE_TYPES = {"POWER", "NEUTRAL", "GROUND", "SIGNAL", "COMMUNICATION", "SENSOR", "SWITCHED", "REFERENCE", "OTHER", "UNKNOWN"}
+CONNECTION_TYPES = {"WIRE", "TRACE", "CONTACT", "SWITCH", "FUSE", "LOAD", "BUS", "VIRTUAL", "OTHER", "UNKNOWN"}
 
 
 class PackageValidationError(ValueError):
@@ -32,6 +40,10 @@ class PrivateKnowledgePackage:
     wiring_assertions: tuple[dict[str, Any], ...]
     operating_states: tuple[dict[str, Any], ...] = ()
     measurements: tuple[dict[str, Any], ...] = ()
+    connectors: tuple[dict[str, Any], ...] = ()
+    pins: tuple[dict[str, Any], ...] = ()
+    nodes: tuple[dict[str, Any], ...] = ()
+    connections: tuple[dict[str, Any], ...] = ()
     extension_package_ids: tuple[str, ...] = ()
 
     @property
@@ -209,6 +221,92 @@ def validate_measurements(records, operating_states, package, manifest):
         validate_provenance(record.get("provenance"), measurement_id, manifest, f"measurement {measurement_id}")
 
 
+def record_map(existing, records, id_field, label):
+    values = {record[id_field]: record for record in existing}
+    require(len(values) == len(existing), f"Loaded package contains duplicate {label} IDs")
+    for record in records:
+        record_id = record.get(id_field)
+        require(record_id and record_id not in values, f"Duplicate or missing {label} ID: {record_id}")
+        values[record_id] = record
+    return values
+
+
+def validate_id_list(value, location):
+    require(isinstance(value, list), f"{location} must be an array")
+    require(all(isinstance(item, str) and item for item in value), f"{location} contains an invalid ID")
+    require(len(value) == len(set(value)), f"{location} contains duplicate IDs")
+
+
+def validate_topology(connectors, pins, nodes, connections, measurements, package, manifest):
+    component_ids = {record["component_id"] for record in package.components}
+    measurement_ids = {record["measurement_id"] for record in package.measurements}
+    measurement_ids.update(record["measurement_id"] for record in measurements)
+    connectors_by_id = record_map(package.connectors, connectors, "connector_id", "connector")
+    pins_by_id = record_map(package.pins, pins, "pin_id", "pin")
+    nodes_by_id = record_map(package.nodes, nodes, "node_id", "node")
+    record_map(package.connections, connections, "connection_id", "connection")
+
+    for connector in connectors:
+        connector_id = connector["connector_id"]
+        require(connector.get("model_id") == package.model_id, f"Connector {connector_id} model ID mismatch")
+        require(connector.get("revision_id") == package.revision_id, f"Connector {connector_id} revision mismatch")
+        require(connector.get("component_id") in component_ids, f"Connector {connector_id} references an unknown component")
+        require(connector.get("connector_type") in CONNECTOR_TYPES, f"Connector {connector_id} has an unsupported type")
+        validate_id_list(connector.get("pin_ids"), f"Connector {connector_id} pin IDs")
+        require(set(connector["pin_ids"]) <= set(pins_by_id), f"Connector {connector_id} references an unknown pin")
+        validate_provenance(connector.get("provenance"), connector_id, manifest, f"connector {connector_id}")
+
+    for pin in pins:
+        pin_id = pin["pin_id"]
+        require(pin.get("model_id") == package.model_id, f"Pin {pin_id} model ID mismatch")
+        require(pin.get("revision_id") == package.revision_id, f"Pin {pin_id} revision mismatch")
+        require(pin.get("connector_id") in connectors_by_id, f"Pin {pin_id} references an unknown connector")
+        node_id = pin.get("node_id")
+        require(node_id is None or node_id in nodes_by_id, f"Pin {pin_id} references an unknown node")
+        require(pin.get("signal_type") in SIGNAL_TYPES, f"Pin {pin_id} has an unsupported signal type")
+        validate_id_list(pin.get("measurement_ids"), f"Pin {pin_id} measurement IDs")
+        require(set(pin["measurement_ids"]) <= measurement_ids, f"Pin {pin_id} references an unknown measurement")
+        validate_provenance(pin.get("provenance"), pin_id, manifest, f"pin {pin_id}")
+
+    for node in nodes:
+        node_id = node["node_id"]
+        require(node.get("model_id") == package.model_id, f"Node {node_id} model ID mismatch")
+        require(node.get("revision_id") == package.revision_id, f"Node {node_id} revision mismatch")
+        require(node.get("node_type") in NODE_TYPES, f"Node {node_id} has an unsupported node type")
+        reference_node_id = node.get("reference_node_id")
+        require(reference_node_id is None or reference_node_id in nodes_by_id, f"Node {node_id} references an unknown reference node")
+        validate_id_list(node.get("pin_ids"), f"Node {node_id} pin IDs")
+        require(set(node["pin_ids"]) <= set(pins_by_id), f"Node {node_id} references an unknown pin")
+        validate_provenance(node.get("provenance"), node_id, manifest, f"node {node_id}")
+
+    for connection in connections:
+        connection_id = connection["connection_id"]
+        require(connection.get("model_id") == package.model_id, f"Connection {connection_id} model ID mismatch")
+        require(connection.get("revision_id") == package.revision_id, f"Connection {connection_id} revision mismatch")
+        from_node_id = connection.get("from_node_id")
+        to_node_id = connection.get("to_node_id")
+        require(from_node_id in nodes_by_id, f"Connection {connection_id} references an unknown from node")
+        require(to_node_id in nodes_by_id, f"Connection {connection_id} references an unknown to node")
+        require(from_node_id != to_node_id, f"Connection {connection_id} endpoints must differ")
+        require(connection.get("connection_type") in CONNECTION_TYPES, f"Connection {connection_id} has an unsupported type")
+        controlled_by = connection.get("controlled_by_component_id")
+        require(controlled_by is None or controlled_by in component_ids, f"Connection {connection_id} references an unknown controller")
+        require(type(connection.get("normally_closed")) in (bool, type(None)), f"Connection {connection_id} normally_closed must be boolean or null")
+        validate_provenance(connection.get("provenance"), connection_id, manifest, f"connection {connection_id}")
+
+    for connector in connectors:
+        for pin_id in connector["pin_ids"]:
+            require(pins_by_id[pin_id].get("connector_id") == connector["connector_id"], f"Connector {connector['connector_id']} lists a pin assigned elsewhere")
+    for pin in pins:
+        connector = connectors_by_id[pin["connector_id"]]
+        require(pin["pin_id"] in connector.get("pin_ids", []), f"Pin {pin['pin_id']} is absent from its connector")
+        if pin.get("node_id") is not None:
+            require(pin["pin_id"] in nodes_by_id[pin["node_id"]].get("pin_ids", []), f"Pin {pin['pin_id']} is absent from its node")
+    for node in nodes:
+        for pin_id in node["pin_ids"]:
+            require(pins_by_id[pin_id].get("node_id") == node["node_id"], f"Node {node['node_id']} lists a pin assigned elsewhere")
+
+
 def validate_no_binaries(package_root):
     forbidden_suffixes = {".pdf", ".png", ".jpg", ".jpeg"}
     forbidden_files = [path for path in package_root.rglob("*") if path.is_file() and path.suffix.lower() in forbidden_suffixes]
@@ -278,27 +376,42 @@ def load_private_approved_extension(extension_path, package, private_root=DEFAUL
     require(isinstance(technical_review.get("reviewed_at"), str), "Extension technical review timestamp is missing")
     validate_decision(extension_root, manifest)
 
-    operating_states = load_records(extension_root / "operating-states")
-    measurements = load_records(extension_root / "measurements")
-    actual_counts = {
-        "operating_states": len(operating_states),
-        "measurements": len(measurements),
+    records = {
+        "operating_states": load_records(extension_root / "operating-states"),
+        "measurements": load_records(extension_root / "measurements"),
+        "connectors": load_records(extension_root / "connectors"),
+        "pins": load_records(extension_root / "pins"),
+        "nodes": load_records(extension_root / "nodes"),
+        "connections": load_records(extension_root / "connections"),
     }
+    actual_counts = {name: len(values) for name, values in records.items() if values}
+    require(actual_counts, "Extension contains no supported records")
     require(manifest.get("record_counts") == actual_counts, f"Extension record counts do not match manifest: {actual_counts}")
+    operating_states = records["operating_states"]
+    measurements = records["measurements"]
     validate_measurements(measurements, operating_states, package, manifest)
     validate_operating_states(operating_states, measurements, package, manifest)
+    validate_topology(
+        records["connectors"], records["pins"], records["nodes"], records["connections"],
+        measurements, package, manifest,
+    )
     validate_no_binaries(extension_root)
 
-    assertion_count = sum(len(record["provenance"]) for record in operating_states)
-    assertion_count += sum(len(record["provenance"]) for record in measurements)
+    assertion_count = sum(
+        len(record["provenance"])
+        for record_group in records.values()
+        for record in record_group
+    )
     require(technical_review.get("assertion_count") == assertion_count, "Extension technical-review assertion count does not match package")
-    return manifest, operating_states, measurements
+    return manifest, records
 
 
 def load_private_approved_package_with_extensions(package_path, extension_paths, private_root=DEFAULT_PRIVATE_ROOT):
     package = load_private_approved_package(package_path, private_root)
     for extension_path in extension_paths:
-        manifest, operating_states, measurements = load_private_approved_extension(extension_path, package, private_root)
+        manifest, records = load_private_approved_extension(extension_path, package, private_root)
+        operating_states = records["operating_states"]
+        measurements = records["measurements"]
         existing_state_ids = {record["state_id"] for record in package.operating_states}
         new_state_ids = {record["state_id"] for record in operating_states}
         require(existing_state_ids.isdisjoint(new_state_ids), "Extension operating-state IDs overlap a loaded extension")
@@ -309,6 +422,10 @@ def load_private_approved_package_with_extensions(package_path, extension_paths,
             package,
             operating_states=package.operating_states + operating_states,
             measurements=package.measurements + measurements,
+            connectors=package.connectors + records["connectors"],
+            pins=package.pins + records["pins"],
+            nodes=package.nodes + records["nodes"],
+            connections=package.connections + records["connections"],
             extension_package_ids=package.extension_package_ids + (manifest["package_id"],),
         )
     return package
@@ -352,6 +469,10 @@ def package_summary(package):
         "wiring_assertions": len(package.wiring_assertions),
         "operating_states": len(package.operating_states),
         "measurements": len(package.measurements),
+        "connectors": len(package.connectors),
+        "pins": len(package.pins),
+        "nodes": len(package.nodes),
+        "connections": len(package.connections),
         "extension_package_ids": package.extension_package_ids,
     }
 

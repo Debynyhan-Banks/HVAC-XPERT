@@ -48,6 +48,7 @@ class PrivateSimulatorApplication:
             "classification": "PRIVATE_LOCAL_ONLY",
             "automatic_transitions_enabled": False,
             "measurement_behavior": "REFERENCE_DEFINITION_ONLY",
+            "topology_behavior": "REFERENCE_DEFINITION_ONLY",
             "model": {
                 "model_id": self._definitions.model_id,
                 "revision_id": self._definitions.revision_id,
@@ -55,9 +56,19 @@ class PrivateSimulatorApplication:
                 "fault_count": len(self._package.faults),
                 "operating_state_count": len(self._definitions.operating_states),
                 "measurement_count": len(self._definitions.diagnostic_measurements),
+                "connector_count": len(self._package.connectors),
+                "pin_count": len(self._package.pins),
+                "node_count": len(self._package.nodes),
+                "connection_count": len(self._package.connections),
             },
             "operating_states": json_value(self._definitions.operating_states),
             "fault_codes": list(self._definitions.known_fault_codes),
+            "topology": {
+                "connectors": json_value(self._package.connectors),
+                "pins": json_value(self._package.pins),
+                "nodes": json_value(self._package.nodes),
+                "connections": json_value(self._package.connections),
+            },
         }
 
     def snapshot(self, request):
