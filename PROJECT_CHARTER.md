@@ -6,7 +6,7 @@ Build a highly accurate interactive HVAC/R schematic, troubleshooting, and techn
 
 ## Product outcome
 
-HVAC XPERT transforms source documents into structured equipment knowledge, animated schematics, deterministic diagnostic simulations, guided service calls, and instructor-managed training content.
+HVAC XPERT transforms source documents into structured equipment knowledge, animated schematics, deterministic diagnostic simulations, evidence-grounded field diagnostic cases, guided service calls, and instructor-managed training content. `docs/PRODUCT_SCOPE.md` is the canonical capability and product-boundary specification.
 
 ## Primary users
 
@@ -29,6 +29,7 @@ Manufacturer documentation is transformed into traceable, validated, interactive
 - Virtual multimeter behavior
 - Service-call simulations
 - AI-guided troubleshooting explanations
+- Evidence-grounded field diagnostic case workflow
 - Instructor review workflows
 - One manufacturer-family pilot
 
@@ -47,6 +48,9 @@ Manufacturer documentation is transformed into traceable, validated, interactive
 - Live technician dispatching
 - Automatic repair authorization
 - Unreviewed AI publication
+- AI answers based only on model memory or unreviewed extraction
+- General photorealistic 3D equipment rendering
+- Live equipment control or fabricated field readings
 - Redistribution of complete copyrighted manuals without permission
 
 ## Product principles
@@ -58,6 +62,8 @@ Manufacturer documentation is transformed into traceable, validated, interactive
 5. Unknown, ambiguous, and conflicting values remain explicit.
 6. Human review is required before public publication.
 7. Legal, licensing, security, and source controls are product requirements.
+8. Field observations, simulated readings, deterministic evaluations, and AI hypotheses remain distinct.
+9. Two-dimensional semantic diagrams take priority over 3D presentation unless a validated learning need requires 3D.
 
 ## Success criteria for the pilot
 

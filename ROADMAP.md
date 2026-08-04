@@ -71,12 +71,18 @@ Deliverables:
 - AI instructor grounded in approved records
 - Technician workflow, scoring, hints, and remediation
 - Instructor authoring and review portal
+- Field diagnostic case intake and safety screening
+- Approved next-test selection and technician result entry
+- Deterministic result evaluation and hypothesis evidence tracking
+- Escalation packet and traceable case summary
 
 Exit gate:
 
 - Training scenarios are technically reviewed
 - AI answers expose provenance and validation status
 - Safety-sensitive guidance passes acceptance review
+- One pilot complaint completes the bounded diagnostic case loop
+- Actual, reference, simulated, and AI-generated information remain visibly distinct
 
 ## Phase 5 — Controlled expansion
 
@@ -85,6 +91,7 @@ Deliverables:
 - Additional equipment families and manufacturer adapters
 - Source partnerships or licensed data feeds
 - Field troubleshooting experience
+- Offline-capable field access after safety and synchronization review
 - Quality, reliability, and content-operations metrics
 
 Exit gate:

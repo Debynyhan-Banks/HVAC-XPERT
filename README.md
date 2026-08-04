@@ -1,6 +1,6 @@
 # HVAC XPERT
 
-HVAC XPERT is a governed HVAC/R knowledge, simulation, and training platform. It converts manufacturer documentation into validated equipment knowledge, interactive schematics, troubleshooting simulations, and AI-guided service workflows.
+HVAC XPERT is a governed HVAC/R lead-technician, knowledge, simulation, and training platform. It converts manufacturer documentation into validated equipment knowledge, interactive schematics, evidence-grounded diagnostic cases, troubleshooting simulations, and AI-guided service workflows. See `docs/PRODUCT_SCOPE.md` for the canonical capability boundaries.
 
 ## Current status
 
