@@ -24,7 +24,16 @@ def record_paths(package_root):
     model_path = package_root / "equipment-model.json"
     if model_path.is_file():
         yield model_path
-    for directory in ("components", "faults", "operating-states", "measurements"):
+    for directory in (
+        "components",
+        "faults",
+        "operating-states",
+        "measurements",
+        "connectors",
+        "pins",
+        "nodes",
+        "connections",
+    ):
         yield from sorted((package_root / directory).glob("*.json"))
 
 

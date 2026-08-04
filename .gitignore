@@ -16,5 +16,6 @@ __pycache__/
 *.py[cod]
 *.log
 *.tmp
+tmp/
 sources/private/*
 !sources/private/.gitkeep

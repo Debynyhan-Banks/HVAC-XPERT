@@ -10,6 +10,15 @@ PRIVATE_REVIEW_ROOT = PROJECT_ROOT / "sources" / "private" / "review"
 MANIFEST_ROOT = PROJECT_ROOT / "sources" / "manifests"
 COMPLETE_PACKAGE_KIND = "COMPLETE_SNAPSHOT"
 EXTENSION_PACKAGE_KIND = "KNOWLEDGE_EXTENSION"
+CONNECTOR_TYPES = {"PLUG", "RECEPTACLE", "HEADER", "TERMINAL_BLOCK", "SPLICE", "OTHER", "UNKNOWN"}
+SIGNAL_TYPES = {
+    "LINE_VOLTAGE_AC", "INVERTER_3_PHASE_AC", "LOW_VOLTAGE_AC", "HIGH_VOLTAGE_DC",
+    "LOW_VOLTAGE_DC", "GROUND",
+    "COMMUNICATION", "ANALOG_SENSOR", "DIGITAL_INPUT", "DIGITAL_OUTPUT", "PWM", "CURRENT_LOOP",
+    "OTHER", "UNKNOWN",
+}
+NODE_TYPES = {"POWER", "NEUTRAL", "GROUND", "SIGNAL", "COMMUNICATION", "SENSOR", "SWITCHED", "REFERENCE", "OTHER", "UNKNOWN"}
+CONNECTION_TYPES = {"WIRE", "TRACE", "CONTACT", "SWITCH", "FUSE", "LOAD", "BUS", "VIRTUAL", "OTHER", "UNKNOWN"}
 
 
 def load_json(path, failures):
@@ -94,6 +103,19 @@ def require_record_keys(record, required_keys, failures, location):
     missing_keys = required_keys - set(record)
     if missing_keys:
         failures.append(f"{location}: missing canonical keys {sorted(missing_keys)}")
+    unexpected_keys = set(record) - required_keys
+    if unexpected_keys:
+        failures.append(f"{location}: unexpected canonical keys {sorted(unexpected_keys)}")
+
+
+def validate_id_array(value, failures, location):
+    if not isinstance(value, list) or not all(isinstance(item, str) and item for item in value):
+        failures.append(f"{location}: must be an array of non-empty IDs")
+        return False
+    if len(value) != len(set(value)):
+        failures.append(f"{location}: IDs must be unique")
+        return False
+    return True
 
 
 def validate_complete_snapshot(package_root, manifest, context, failures):
@@ -173,6 +195,10 @@ def validate_extension(package_root, manifest, context, failures):
     component_ids = set()
     base_state_ids = set()
     base_measurement_ids = set()
+    base_connector_ids = set()
+    base_pin_ids = set()
+    base_node_ids = set()
+    base_connection_ids = set()
     if base_root is not None:
         base_manifest = load_json(base_root / "package-manifest.json", failures)
         if base_manifest is not None:
@@ -192,14 +218,38 @@ def validate_extension(package_root, manifest, context, failures):
             measurement = load_json(path, failures)
             if measurement is not None and measurement.get("measurement_id"):
                 base_measurement_ids.add(measurement["measurement_id"])
+        for directory, id_field, target in (
+            ("connectors", "connector_id", base_connector_ids),
+            ("pins", "pin_id", base_pin_ids),
+            ("nodes", "node_id", base_node_ids),
+            ("connections", "connection_id", base_connection_ids),
+        ):
+            for path in sorted((base_root / directory).glob("*.json")):
+                record = load_json(path, failures)
+                if record is not None and record.get(id_field):
+                    target.add(record[id_field])
 
     state_paths = sorted((package_root / "operating-states").glob("*.json"))
     measurement_paths = sorted((package_root / "measurements").glob("*.json"))
-    actual_counts = {
+    connector_paths = sorted((package_root / "connectors").glob("*.json"))
+    pin_paths = sorted((package_root / "pins").glob("*.json"))
+    node_paths = sorted((package_root / "nodes").glob("*.json"))
+    connection_paths = sorted((package_root / "connections").glob("*.json"))
+    all_actual_counts = {
         "operating_states": len(state_paths),
         "measurements": len(measurement_paths),
+        "connectors": len(connector_paths),
+        "pins": len(pin_paths),
+        "nodes": len(node_paths),
+        "connections": len(connection_paths),
     }
-    if manifest.get("record_counts", {}) != actual_counts:
+    declared_counts = manifest.get("record_counts", {})
+    actual_counts = {
+        key: count
+        for key, count in all_actual_counts.items()
+        if count or key in declared_counts
+    }
+    if declared_counts != actual_counts:
         failures.append(f"Record counts differ: manifest={manifest.get('record_counts', {})}, actual={actual_counts}")
 
     state_records = []
@@ -281,6 +331,218 @@ def validate_extension(package_root, manifest, context, failures):
                 failures.append(f"{path}: {point_name} must be an object or null")
             elif point.get("reference_type") == "COMPONENT_TERMINAL" and point.get("reference_id") not in component_ids:
                 failures.append(f"{path}: {point_name} references unknown component {point.get('reference_id')}")
+
+    connector_records = []
+    connector_ids = set()
+    connector_required_keys = {
+        "schema_version", "connector_id", "model_id", "revision_id", "component_id", "label",
+        "connector_type", "keying", "pin_ids", "provenance",
+    }
+    for path in connector_paths:
+        connector = load_json(path, failures)
+        if connector is None:
+            continue
+        require_record_keys(connector, connector_required_keys, failures, str(path))
+        connector_id = connector.get("connector_id")
+        if connector_id in connector_ids or connector_id in base_connector_ids:
+            failures.append(f"Duplicate connector ID: {connector_id}")
+        connector_ids.add(connector_id)
+        connector_records.append((path, connector))
+        assertion_count += len(connector.get("provenance", []))
+        validate_entity(
+            connector,
+            "connector_id",
+            model_id,
+            revision_id,
+            package_id,
+            package_status,
+            assigned_reviewer,
+            expected_reviewed_at,
+            document_pages,
+            failures,
+            str(path),
+        )
+        if connector.get("component_id") not in component_ids:
+            failures.append(f"{path}: connector references unknown component {connector.get('component_id')}")
+        if not isinstance(connector.get("label"), str) or not connector["label"]:
+            failures.append(f"{path}: label must be a non-empty string")
+        if connector.get("connector_type") not in CONNECTOR_TYPES:
+            failures.append(f"{path}: unsupported connector_type {connector.get('connector_type')}")
+        if connector.get("keying") is not None and not isinstance(connector.get("keying"), str):
+            failures.append(f"{path}: keying must be a string or null")
+        validate_id_array(connector.get("pin_ids"), failures, f"{path}: pin_ids")
+
+    pin_records = []
+    pin_ids = set()
+    pin_required_keys = {
+        "schema_version", "pin_id", "model_id", "revision_id", "connector_id", "pin_number",
+        "label", "node_id", "signal_type", "wire_color", "measurement_ids", "provenance",
+    }
+    for path in pin_paths:
+        pin = load_json(path, failures)
+        if pin is None:
+            continue
+        require_record_keys(pin, pin_required_keys, failures, str(path))
+        pin_id = pin.get("pin_id")
+        if pin_id in pin_ids or pin_id in base_pin_ids:
+            failures.append(f"Duplicate pin ID: {pin_id}")
+        pin_ids.add(pin_id)
+        pin_records.append((path, pin))
+        assertion_count += len(pin.get("provenance", []))
+        validate_entity(
+            pin,
+            "pin_id",
+            model_id,
+            revision_id,
+            package_id,
+            package_status,
+            assigned_reviewer,
+            expected_reviewed_at,
+            document_pages,
+            failures,
+            str(path),
+        )
+        if not isinstance(pin.get("pin_number"), str) or not pin["pin_number"]:
+            failures.append(f"{path}: pin_number must be a non-empty string")
+        if pin.get("label") is not None and (not isinstance(pin.get("label"), str) or not pin["label"]):
+            failures.append(f"{path}: label must be a non-empty string or null")
+        if pin.get("signal_type") not in SIGNAL_TYPES:
+            failures.append(f"{path}: unsupported signal_type {pin.get('signal_type')}")
+        if pin.get("wire_color") is not None and (
+            not isinstance(pin.get("wire_color"), str) or not pin["wire_color"]
+        ):
+            failures.append(f"{path}: wire_color must be a non-empty string or null")
+        validate_id_array(pin.get("measurement_ids"), failures, f"{path}: measurement_ids")
+
+    node_records = []
+    node_ids = set()
+    node_required_keys = {
+        "schema_version", "node_id", "model_id", "revision_id", "label", "node_type",
+        "reference_node_id", "pin_ids", "provenance",
+    }
+    for path in node_paths:
+        node = load_json(path, failures)
+        if node is None:
+            continue
+        require_record_keys(node, node_required_keys, failures, str(path))
+        node_id = node.get("node_id")
+        if node_id in node_ids or node_id in base_node_ids:
+            failures.append(f"Duplicate node ID: {node_id}")
+        node_ids.add(node_id)
+        node_records.append((path, node))
+        assertion_count += len(node.get("provenance", []))
+        validate_entity(
+            node,
+            "node_id",
+            model_id,
+            revision_id,
+            package_id,
+            package_status,
+            assigned_reviewer,
+            expected_reviewed_at,
+            document_pages,
+            failures,
+            str(path),
+        )
+        if not isinstance(node.get("label"), str) or not node["label"]:
+            failures.append(f"{path}: label must be a non-empty string")
+        if node.get("node_type") not in NODE_TYPES:
+            failures.append(f"{path}: unsupported node_type {node.get('node_type')}")
+        if node.get("reference_node_id") is not None and (
+            not isinstance(node.get("reference_node_id"), str) or not node["reference_node_id"]
+        ):
+            failures.append(f"{path}: reference_node_id must be a non-empty ID or null")
+        validate_id_array(node.get("pin_ids"), failures, f"{path}: pin_ids")
+
+    connection_records = []
+    connection_ids = set()
+    connection_required_keys = {
+        "schema_version", "connection_id", "model_id", "revision_id", "from_node_id",
+        "to_node_id", "connection_type", "controlled_by_component_id", "normally_closed", "provenance",
+    }
+    for path in connection_paths:
+        connection = load_json(path, failures)
+        if connection is None:
+            continue
+        require_record_keys(connection, connection_required_keys, failures, str(path))
+        connection_id = connection.get("connection_id")
+        if connection_id in connection_ids or connection_id in base_connection_ids:
+            failures.append(f"Duplicate connection ID: {connection_id}")
+        connection_ids.add(connection_id)
+        connection_records.append((path, connection))
+        assertion_count += len(connection.get("provenance", []))
+        validate_entity(
+            connection,
+            "connection_id",
+            model_id,
+            revision_id,
+            package_id,
+            package_status,
+            assigned_reviewer,
+            expected_reviewed_at,
+            document_pages,
+            failures,
+            str(path),
+        )
+        if connection.get("connection_type") not in CONNECTION_TYPES:
+            failures.append(f"{path}: unsupported connection_type {connection.get('connection_type')}")
+        if type(connection.get("normally_closed")) not in (bool, type(None)):
+            failures.append(f"{path}: normally_closed must be a boolean or null")
+
+    available_connector_ids = base_connector_ids | connector_ids
+    available_pin_ids = base_pin_ids | pin_ids
+    available_node_ids = base_node_ids | node_ids
+    for path, connector in connector_records:
+        referenced_pin_ids = connector.get("pin_ids")
+        if not isinstance(referenced_pin_ids, list) or not set(referenced_pin_ids) <= available_pin_ids:
+            failures.append(f"{path}: pin_ids contain an unknown pin")
+    for path, pin in pin_records:
+        if pin.get("connector_id") not in available_connector_ids:
+            failures.append(f"{path}: connector_id references unknown connector {pin.get('connector_id')}")
+        node_id = pin.get("node_id")
+        if node_id is not None and node_id not in available_node_ids:
+            failures.append(f"{path}: node_id references unknown node {node_id}")
+        referenced_measurements = pin.get("measurement_ids")
+        if not isinstance(referenced_measurements, list) or not set(referenced_measurements) <= available_measurement_ids:
+            failures.append(f"{path}: measurement_ids contain an unknown measurement")
+    for path, node in node_records:
+        referenced_pin_ids = node.get("pin_ids")
+        if not isinstance(referenced_pin_ids, list) or not set(referenced_pin_ids) <= available_pin_ids:
+            failures.append(f"{path}: pin_ids contain an unknown pin")
+        reference_node_id = node.get("reference_node_id")
+        if reference_node_id is not None and reference_node_id not in available_node_ids:
+            failures.append(f"{path}: reference_node_id references unknown node {reference_node_id}")
+    pins_by_id = {record["pin_id"]: record for _, record in pin_records}
+    nodes_by_id = {record["node_id"]: record for _, record in node_records}
+    connectors_by_id = {record["connector_id"]: record for _, record in connector_records}
+    for path, connector in connector_records:
+        for pin_id in connector.get("pin_ids", []):
+            pin = pins_by_id.get(pin_id)
+            if pin is not None and pin.get("connector_id") != connector.get("connector_id"):
+                failures.append(f"{path}: pin {pin_id} belongs to a different connector")
+    for path, pin in pin_records:
+        connector = connectors_by_id.get(pin.get("connector_id"))
+        if connector is not None and pin.get("pin_id") not in connector.get("pin_ids", []):
+            failures.append(f"{path}: connector {pin.get('connector_id')} does not list pin {pin.get('pin_id')}")
+        node_id = pin.get("node_id")
+        node = nodes_by_id.get(node_id)
+        if node is not None and pin.get("pin_id") not in node.get("pin_ids", []):
+            failures.append(f"{path}: node {node_id} does not list pin {pin.get('pin_id')}")
+    for path, node in node_records:
+        for pin_id in node.get("pin_ids", []):
+            pin = pins_by_id.get(pin_id)
+            if pin is not None and pin.get("node_id") != node.get("node_id"):
+                failures.append(f"{path}: pin {pin_id} references a different node")
+    for path, connection in connection_records:
+        if connection.get("from_node_id") not in available_node_ids:
+            failures.append(f"{path}: from_node_id references unknown node {connection.get('from_node_id')}")
+        if connection.get("to_node_id") not in available_node_ids:
+            failures.append(f"{path}: to_node_id references unknown node {connection.get('to_node_id')}")
+        if connection.get("from_node_id") == connection.get("to_node_id"):
+            failures.append(f"{path}: connection endpoints must be different nodes")
+        controlled_by = connection.get("controlled_by_component_id")
+        if controlled_by is not None and controlled_by not in component_ids:
+            failures.append(f"{path}: controlled_by_component_id references unknown component {controlled_by}")
     return assertion_count, actual_counts
 
 
