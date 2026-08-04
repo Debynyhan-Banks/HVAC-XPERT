@@ -127,3 +127,10 @@ This file records accepted cross-project decisions. Revisions must preserve prio
 - Date: 2026-08-04
 - Decision: The pilot proves one complete model- and revision-specific diagnostic case before prioritizing broad manufacturer coverage, connected-instrument integrations, general 3D content, or a large training catalog. The primary field interface presents one next test at a time while keeping evidence directly available.
 - Reason: A complete, safe, and reviewable diagnostic loop demonstrates the product's intended value more clearly than a wide collection of incomplete reference or visualization features.
+
+## ADR-019: Product implementation uses steel threads
+
+- Status: Accepted
+- Date: 2026-08-04
+- Decision: Preserve roadmap phases as governance and maturity gates while implementing product capability as thin end-to-end steel threads. Each thread must cross the applicable evidence, schema, deterministic-logic, interface, validation, HVAC-review, and repository-publication layers and must declare its access requirements before implementation.
+- Reason: Vertical delivery exposes integration, evidence, safety, and usability risks early and prevents isolated horizontal subsystems from creating an appearance of progress without a complete technician outcome.

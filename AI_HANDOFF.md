@@ -14,6 +14,8 @@ Before performing work:
 
 ## Mandatory behavior
 
+- Before starting each steel thread, state an access checklist covering required documents, user decisions, APIs, databases, cloud services, vendor or hardware access, legal approvals, reviewer actions, expected costs, and blockers.
+- Never request credentials in chat or commit them; use ignored local environment files or approved secret storage when access becomes necessary.
 - Never invent manufacturer data.
 - Keep unknown values as `null`.
 - Attach provenance to every extracted fact.
@@ -67,4 +69,4 @@ Before handing off work:
 
 ## Current authorized scope
 
-Governance, schema validation, private approved-package loading, deterministic simulator development, and a private local interface are authorized. Private operating-state extension `RUN-ASXS6-20260802-002` and topology extension `RUN-ASXS6-20260804-003` are technically approved and compose with base package `RUN-ASXS6-20260802-001` at runtime. The local interface renders the 6 connectors, 17 pins, 17 nodes, and 8 explicit connections as a reference-only SVG map with approval and source traceability. It must not invent voltage propagation, switching, timing, current flow, or unreviewed connectivity. The simulator supports exact manual phase selection, explicit component commands, fault injection, and diagnostic definitions. Private records must be loaded at runtime and must not be committed. Automated collection is not authorized until a source reviewer sets `approved_for_collection: true` for the exact source. Public export is not authorized while the package legal hold remains active.
+Governance, schema validation, private approved-package loading, deterministic simulator development, and a private local interface are authorized. Private operating-state extension `RUN-ASXS6-20260802-002` and topology extension `RUN-ASXS6-20260804-003` are technically approved and compose with base package `RUN-ASXS6-20260802-001` at runtime. The local interface renders the 6 connectors, 17 pins, 17 nodes, and 8 explicit connections as a reference-only SVG map with approval and source traceability. It must not invent voltage propagation, switching, timing, current flow, or unreviewed connectivity. The simulator supports exact manual phase selection, explicit component commands, fault injection, and diagnostic definitions. Private records must be loaded at runtime and must not be committed. Automated collection is not authorized until a source reviewer sets `approved_for_collection: true` for the exact source. Public export is not authorized while the package legal hold remains active. `ST-002` diagnostic-case contract design may proceed without an external API, but the selected complaint path must remain bounded by approved evidence and receive its own HVAC acceptance where it adds technical relationships.
