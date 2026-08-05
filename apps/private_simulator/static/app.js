@@ -71,6 +71,11 @@ const elements = {
   caseOutcome: document.querySelector("#case-outcome"),
   caseEvaluation: document.querySelector("#case-evaluation"),
   caseGuidance: document.querySelector("#case-guidance"),
+  caseActualResult: document.querySelector("#case-actual-result"),
+  caseExpectedResult: document.querySelector("#case-expected-result"),
+  caseEvidenceType: document.querySelector("#case-evidence-type"),
+  caseRecordedBy: document.querySelector("#case-recorded-by"),
+  caseRecordMeta: document.querySelector("#case-record-meta"),
   caseSource: document.querySelector("#case-source"),
   errorBanner: document.querySelector("#error-banner"),
   errorMessage: document.querySelector("#error-message"),
@@ -435,8 +440,13 @@ function formatExpected(expected) {
   return "Unknown";
 }
 
-function formatSources(sources) {
-  return sources.map((source) => `${source.document_id} · p. ${source.page}`).join("; ") || "No source listed";
+function formatSources(...sourceGroups) {
+  const labelsBySource = new Map();
+  for (const source of sourceGroups.flat()) {
+    const key = `${source.document_id}:${source.page}`;
+    labelsBySource.set(key, `${source.document_id} · p. ${source.page}`);
+  }
+  return [...labelsBySource.values()].join("; ") || "No source listed";
 }
 
 function validationLabel(source) {
@@ -582,6 +592,11 @@ function caseResultOptions(expectedValue) {
   return pairs[expectedValue] || [expectedValue, "OTHER", "UNKNOWN"];
 }
 
+function formatCaseResult(result) {
+  if (result.result_kind === "QUALITATIVE") return humanize(result.qualitative_value);
+  return formatValue(result.numeric_value, result.unit);
+}
+
 function renderCaseStatus(caseState) {
   const presentations = {
     SAFETY_ACKNOWLEDGEMENT_REQUIRED: ["Safety acknowledgement required", "status-power"],
@@ -681,7 +696,7 @@ function renderCaseStep(path, step, allowEntry) {
   elements.caseTestDetails.hidden = false;
   elements.caseProcedureBlock.hidden = false;
   elements.caseResultEntry.hidden = !allowEntry;
-  elements.caseSource.textContent = [formatSources(path.sources), formatSources(measurement.sources)].join("; ");
+  elements.caseSource.textContent = formatSources(path.sources, measurement.sources);
   if (allowEntry) prepareResultControl(step);
 }
 
@@ -691,8 +706,15 @@ function renderCaseSnapshot(snapshot) {
   renderCaseStatus(snapshot.state);
   elements.caseOutcome.hidden = snapshot.evaluation === null;
   if (snapshot.evaluation !== null) {
+    const evaluatedStep = caseStep(path, snapshot.evaluation.step_id);
+    const latestResult = snapshot.results.at(-1);
     elements.caseEvaluation.textContent = humanize(snapshot.evaluation.outcome);
     elements.caseGuidance.textContent = snapshot.guidance || "No additional guidance is available.";
+    elements.caseActualResult.textContent = formatCaseResult(latestResult);
+    elements.caseExpectedResult.textContent = caseExpected(evaluatedStep.expected_result);
+    elements.caseEvidenceType.textContent = humanize(latestResult.source_type);
+    elements.caseRecordedBy.textContent = latestResult.recorded_by;
+    elements.caseRecordMeta.textContent = `${snapshot.case_id} · ${latestResult.recorded_at} · Packages: ${snapshot.knowledge_package_ids.join(", ")}`;
   }
   if (snapshot.state === "SAFETY_ACKNOWLEDGEMENT_REQUIRED") {
     elements.caseTestName.textContent = "Safety acknowledgement required";

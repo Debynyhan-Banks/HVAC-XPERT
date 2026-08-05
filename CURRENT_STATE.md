@@ -108,15 +108,19 @@ Complete the first bounded field diagnostic case loop while preserving the sourc
 - Competitive positioning and priority amendment merged through pull request #16 as commit `2ca4a10`
 - Roadmap execution now uses steel threads while preserving the existing phases as governance and maturity gates
 - Before-thread access checklists now identify required documents, user decisions, credentials, external services, legal approvals, reviewer actions, expected costs, and blockers without requesting secrets in chat
-- `ST-001` records the completed bounded model-to-reference-simulator workflow; `ST-002` is the next field diagnostic case loop and requires no external API
+- `ST-001` records the completed bounded model-to-reference-simulator workflow; `ST-002` implements the first bounded field diagnostic case loop without an external API
 - Canonical diagnostic-path and diagnostic-case schemas now separate approved path definitions from field or training case records
 - Private-package and review gates now validate diagnostic-path dependencies, exact fault and measurement references, safety acknowledgements, ordered steps, complete deterministic branches, provenance, and independent approval status
 - Stateless diagnostic case engine now requires exact fault-code entry, required safety acknowledgement, one approved test at a time, chronological technician-entered field results, and deterministic fail-closed branch evaluation
 - Field and training result sources remain separated; connected or imported instrument readings stay deferred
 - Private browser interface now provides complaint context, safety screening, next-test rationale and procedure, technician result entry, deterministic outcome, and traceability without implying equipment measurement or repair authority
 - Synthetic engine and application fixtures validate the complete software loop while pending manufacturer-derived paths remain excluded from runtime composition
-- Private pending Package 4 `RUN-ASXS6-20260804-004` defines one bounded `E24` high-pressure-switch-continuity path with four page-cited assertions, one test, and three stop-or-escalate branches
-- Package 4 validates successfully as pending and retains `publication_allowed: false`; assigned HVAC/R technical review is required before runtime use
+- Private Package 4 `RUN-ASXS6-20260804-004` defines one bounded `E24` high-pressure-switch-continuity path with four page-cited assertions, one test, and three stop-or-escalate branches
+- Assigned HVAC/R technical reviewer `Debynyhan-Banks` accepted all four Package 4 assertions and bounded exclusions at `2026-08-05T00:24:19Z`
+- All Package 4 assertions advanced to `LEVEL_4_TECHNICIAN_REVIEWED`; the package status is `TECHNICALLY_APPROVED_LEGAL_HOLD` and `publication_allowed` remains false
+- Real four-package composition loads 16 components, 51 faults, 6 operating states, 6 measurements, 6 connectors, 17 pins, 17 nodes, 8 explicit connections, and 1 diagnostic path
+- Real-package browser acceptance verified the E24 complaint, de-energized safety gate, PCB-side continuity test, continuity/no-continuity/unknown choices, deterministic no-continuity escalation, visible actual-versus-expected evidence, technician identity, package lineage, deduplicated source-page traceability, and a clean browser console
+- `ST-002` is complete for the bounded E24 pilot path; unsupported diagnosis, repair authorization, connected instruments, persistence, and publication remain excluded
 
 ## In progress
 
@@ -124,7 +128,6 @@ Complete the first bounded field diagnostic case loop while preserving the sourc
 - Copyright, storage, factual-extraction, and derivative-use determination
 - Confirmation of exact official service, parts, and specification asset URLs
 - Manual-upload ingestion design using authorized documents or synthetic fixtures
-- HVAC technical review of all four Package 4 E24 diagnostic-path assertions and bounded exclusions
 
 ## Blockers
 
@@ -134,11 +137,10 @@ Complete the first bounded field diagnostic case loop while preserving the sourc
 - Exact official URLs for the service manual and parts catalog are unconfirmed
 - Technically approved records cannot enter the public repository while the legal hold remains
 - Transition timing and automatic transition conditions remain unknown because the cooling-flow chart does not specify them
-- The real E24 diagnostic path cannot load into the private application until Package 4 is technically approved
 
 ## Next action
 
-Merge the `ST-002` foundation pull request, then review Package 4 using `docs/PACKAGE_4_TECHNICAL_REVIEW.md` and the cited private service-manual pages 45 and 16. If every assertion and exclusion is correct, provide explicit complete-package technical approval while keeping publication unauthorized. After that decision is recorded, compose Package 4 into the private application and run the real E24 acceptance path.
+Merge the Package 4 activation record, then begin the `ST-003` access checklist for deterministic training replay of the approved E24 case. No external API is required; instructor acceptance and HVAC review remain required for new scoring or training assertions.
 
 After the work unit passes validation, update this file, commit only the intended non-private files, and push the current branch to `origin`.
 

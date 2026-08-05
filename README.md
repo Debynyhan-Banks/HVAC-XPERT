@@ -54,7 +54,7 @@ Every contributor and AI agent must read these files in order:
 
 ## Immediate gate
 
-The first controlled extraction, its operating-state/measurement extension, and its bounded electrical-topology extension are technically approved in private, ignored packages. Internal development composes approved records through the validated private-package gate; public export remains disabled under the unresolved legal and source-rights hold. The deterministic simulator supports exact manual phase selection, approved component commands, fault injection, approved diagnostic definitions, a reference-only virtual meter, and a reference-only SVG connection map through a private browser interface that binds only to `127.0.0.1`. The `ST-002` case foundation adds complaint and fault intake, required safety acknowledgement, one approved next test at a time, technician result entry, deterministic evaluation, and stop or escalation outcomes. The first real E24 path remains unavailable until private Package 4 receives separate HVAC technical approval. The interface never fabricates live readings, propagates voltage, infers switching or current flow, authorizes repair, or adds unreviewed connectivity. Automatic transitions remain disabled because reviewed timing and transition conditions do not exist. Automated discovery or downloading begins only after `approved_for_collection` is set to `true` by an authorized reviewer in `sources/source-registry.yaml`.
+The first controlled extraction and its operating-state, measurement, electrical-topology, and E24 diagnostic-path extensions are technically approved in private, ignored packages. Internal development composes approved records through the validated private-package gate; public export remains disabled under the unresolved legal and source-rights hold. The deterministic simulator supports exact manual phase selection, approved component commands, fault injection, approved diagnostic definitions, a reference-only virtual meter, and a reference-only SVG connection map through a private browser interface that binds only to `127.0.0.1`. The completed `ST-002` path adds exact E24 complaint and fault intake, required de-energized safety acknowledgement, one approved high-pressure-switch continuity test, technician result entry, deterministic evaluation, and stop or escalation outcomes. The interface never fabricates live readings, propagates voltage, infers switching or current flow, authorizes repair, or adds unreviewed connectivity. Automatic transitions remain disabled because reviewed timing and transition conditions do not exist. Automated discovery or downloading begins only after `approved_for_collection` is set to `true` by an authorized reviewer in `sources/source-registry.yaml`.
 
 ## Private local interface
 
@@ -63,6 +63,7 @@ python3 scripts/run_local_app.py \
   sources/private/review/RUN-ASXS6-20260802-001/package \
   --extension sources/private/review/RUN-ASXS6-20260802-002/package \
   --extension sources/private/review/RUN-ASXS6-20260804-003/package \
+  --extension sources/private/review/RUN-ASXS6-20260804-004/package \
   --open
 ```
 
