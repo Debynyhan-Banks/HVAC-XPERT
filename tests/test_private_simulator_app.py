@@ -350,6 +350,11 @@ class PrivateSimulatorApplicationTests(unittest.TestCase):
         self.assertEqual(completed["state"], "COMPLETE")
         self.assertEqual(completed["evaluation"]["outcome"], "MATCHES_EXPECTED")
         self.assertEqual(completed["results"][0]["source_type"], "TECHNICIAN_ENTRY")
+        self.assertEqual(completed["results"][0]["recorded_by"], "synthetic-technician")
+        self.assertEqual(
+            completed["knowledge_package_ids"],
+            ["RUN-SYNTHETIC-BASE", "RUN-SYNTHETIC-STATE", "RUN-SYNTHETIC-PATH"],
+        )
 
     def test_rejects_invalid_request_shapes(self):
         invalid_requests = (
@@ -434,10 +439,13 @@ class PrivateSimulatorApplicationTests(unittest.TestCase):
         self.assertIn('id="case-path-select"', html)
         self.assertIn("One approved test at a time", html)
         self.assertIn("Technician-entered actual result", html)
+        self.assertIn("Case evidence summary", html)
+        self.assertIn('id="case-actual-result"', html)
         self.assertIn("does not connect to or measure the equipment", html)
         self.assertIn("TECHNICIAN_ENTRY_DETERMINISTIC_EVALUATION", javascript)
         self.assertIn('requestJson("/api/case"', javascript)
         self.assertIn('source_type: "TECHNICIAN_ENTRY"', javascript)
+        self.assertIn("snapshot.knowledge_package_ids", javascript)
 
 
 if __name__ == "__main__":

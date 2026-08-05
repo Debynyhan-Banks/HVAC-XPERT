@@ -20,7 +20,7 @@ Unknown or unsupported steps fail closed. A thread may use synthetic fixtures fo
 | --- | --- | --- | --- |
 | `ST-000` | Governance, source controls, schemas, private ingestion, and approval gates | Foundation available; legal work ongoing | No API; manufacturer permission remains external |
 | `ST-001` | One approved pilot model loads into the deterministic reference simulator, virtual reference meter, and SVG topology | Complete for current bounded records | No API |
-| `ST-002` | One complaint completes the field diagnostic case loop from intake through summary or escalation | In progress; Package 4 technical review pending | No API; requires HVAC review of the selected path |
+| `ST-002` | One complaint completes the field diagnostic case loop from intake through summary or escalation | Complete for bounded E24 pilot path | No API |
 | `ST-003` | The same approved case runs as a scored deterministic training scenario | Pending | No API; requires instructor and HVAC acceptance |
 | `ST-004` | AI explains the approved case evidence with citations and explicit uncertainty | Pending | AI provider access and approved retrieval records |
 | `ST-005` | Reviewers author, review, version, and publish procedures and scenarios through a controlled portal | Pending | Authentication and reviewer-role decisions |

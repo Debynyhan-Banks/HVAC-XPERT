@@ -226,8 +226,14 @@ h2 { margin-bottom: 0; font-size: 1.15rem; letter-spacing: -0.025em; }
 .primary-button:hover { filter: brightness(1.08); }
 .primary-button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 .case-outcome { margin-top: 17px; padding: 15px; border: 1px solid rgba(142, 229, 164, 0.22); border-radius: 11px; background: rgba(142, 229, 164, 0.06); }
-.case-outcome strong { display: block; color: var(--green); font-size: 0.8rem; }
-.case-outcome p { margin: 7px 0 0; color: var(--muted); font-size: 0.72rem; line-height: 1.5; }
+.case-outcome > strong { display: block; color: var(--green); font-size: 0.8rem; }
+.case-outcome > p { margin: 7px 0 0; color: var(--muted); font-size: 0.72rem; line-height: 1.5; }
+.case-outcome-details { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 13px; padding-top: 13px; border-top: 1px solid rgba(142, 229, 164, 0.16); }
+.case-outcome-details div { min-width: 0; }
+.case-outcome-details span, .case-outcome-details strong { display: block; }
+.case-outcome-details span { margin-bottom: 4px; color: var(--quiet); font-size: 0.56rem; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase; }
+.case-outcome-details strong { overflow-wrap: anywhere; color: var(--ink); font-size: 0.68rem; line-height: 1.4; }
+.case-record-meta { display: block; margin-top: 11px; overflow-wrap: anywhere; color: var(--quiet); font-size: 0.57rem; line-height: 1.45; }
 
 .workspace { display: grid; grid-template-columns: minmax(280px, 380px) minmax(0, 1fr); gap: 18px; align-items: start; }
 .control-stack, .results-stack { display: grid; gap: 18px; }
@@ -412,7 +418,7 @@ footer { display: flex; justify-content: space-between; width: min(1460px, calc(
   .control-stack { grid-template-columns: 1fr; }
   .control-panel, .fault-panel, .results-stack > .panel { padding: 20px; }
   .topology-metadata { grid-template-columns: 1fr; }
-  .case-test-details, .case-result-entry { grid-template-columns: 1fr; }
+  .case-test-details, .case-result-entry, .case-outcome-details { grid-template-columns: 1fr; }
   table { min-width: 720px; }
   footer { gap: 20px; flex-direction: column; }
 }

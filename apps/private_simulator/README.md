@@ -4,13 +4,14 @@ This application serves the deterministic simulator through a local browser UI.
 It binds only to `127.0.0.1`, validates the `Host` header, sends no cross-origin
 headers, and loads approved packages at runtime from the ignored private vault.
 
-Run the approved pilot package and both extensions:
+Run the approved pilot package and all approved extensions:
 
 ```bash
 python3 scripts/run_local_app.py \
   sources/private/review/RUN-ASXS6-20260802-001/package \
   --extension sources/private/review/RUN-ASXS6-20260802-002/package \
   --extension sources/private/review/RUN-ASXS6-20260804-003/package \
+  --extension sources/private/review/RUN-ASXS6-20260804-004/package \
   --open
 ```
 
@@ -32,10 +33,10 @@ The interface supports:
 - reference-only virtual meter display with approved mode, points, values, procedures, and safety category
 - technician-validation labels and explicit manufacturer-verification status
 
-The first real `E24` diagnostic path is held in private Package 4 pending HVAC
-technical review. Until that review is explicitly accepted, the approved-package
-command above correctly shows no real diagnostic path. Synthetic fixtures validate
-the interface and deterministic behavior without promoting the pending assertion.
+Private Package 4 is technically approved and adds the first real `E24` diagnostic
+path. It presents the approved de-energized high-pressure-switch continuity test,
+then deterministically stops or escalates for continuity, no-continuity, and unknown
+results. Technical approval does not authorize repair or publication.
 
 The server creates a fresh deterministic simulator for every snapshot request.
 It does not infer or persist equipment state, automate phase transitions, publish
