@@ -11,7 +11,7 @@ This file records accepted cross-project decisions. Revisions must preserve prio
 
 ## ADR-002: PostgreSQL is the primary operational database
 
-- Status: Accepted
+- Status: Deferred for shared or commercial use by ADR-021
 - Date: 2026-08-02
 - Decision: Store normalized operational records in PostgreSQL. Store source binaries in controlled object storage and reference them by immutable hash.
 - Reason: Relational constraints, transactions, and auditability suit the knowledge graph's core records.
@@ -141,3 +141,10 @@ This file records accepted cross-project decisions. Revisions must preserve prio
 - Date: 2026-08-04
 - Decision: Develop HVAC XPERT first as a single-owner, local-first field copilot and personal training tool for `Debynyhan-Banks`. Prioritize ten-minute manual entry, searchable local case history, phone-first offline access, and job-driven equipment breadth. Defer multi-tenant SaaS, public manufacturer-content publication, organizational review roles, customer billing, and broad automated ingestion.
 - Reason: Personal use can validate whether the deterministic one-next-test workflow provides repeatable field value without requiring public content rights, cloud infrastructure, or commercial operations. Private-data, exact-applicability, safety, provenance, evidence-separation, and fail-closed export controls remain mandatory.
+
+## ADR-021: Personal entries begin as private local JSON records
+
+- Status: Accepted
+- Date: 2026-08-05
+- Decision: P-001 stores one canonical JSON file per owner-entered equipment, fault, measurement, or diagnostic-branch record under the ignored local knowledge directory. No entry becomes an active deterministic rule automatically. PostgreSQL remains deferred until shared, commercial, scale, or concurrency requirements justify it.
+- Reason: Per-record local JSON provides immediate private personal value, schema visibility, simple backup inputs, and a low-complexity path into P-002 search without introducing a cloud service or database before sustained personal use establishes the need.

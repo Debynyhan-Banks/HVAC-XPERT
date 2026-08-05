@@ -47,9 +47,206 @@
       </section>
 
       <div id="error-banner" class="error-banner" role="alert" hidden>
-        <strong>Simulation stopped</strong>
+        <strong>Request stopped</strong>
         <span id="error-message"></span>
       </div>
+
+      <section class="panel entry-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">P-001 · Personal knowledge entry</p>
+            <h2>Add one private record in ten minutes</h2>
+          </div>
+          <span id="entry-status" class="status-badge status-idle">Ready</span>
+        </div>
+        <p class="section-explainer">
+          Record one equipment, fault, measurement, or diagnostic-branch fact from a private manual or field observation. The record stays local and cannot activate deterministic guidance automatically.
+        </p>
+        <form id="entry-form" class="entry-form">
+          <fieldset>
+            <legend>Equipment applicability</legend>
+            <div class="entry-grid entry-grid-four">
+              <label>
+                <span>Manufacturer</span>
+                <input id="entry-manufacturer" type="text" autocomplete="off" required placeholder="Manufacturer name">
+              </label>
+              <label>
+                <span>Brand</span>
+                <input id="entry-brand" type="text" autocomplete="off" required placeholder="Brand name">
+              </label>
+              <label>
+                <span>Exact model number</span>
+                <input id="entry-model" type="text" autocomplete="off" required placeholder="Nameplate model">
+              </label>
+              <label>
+                <span>Revision / applicability</span>
+                <input id="entry-revision" type="text" autocomplete="off" placeholder="Required for confirmation">
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Entry definition</legend>
+            <div class="entry-grid entry-grid-three">
+              <label>
+                <span>Entry type</span>
+                <select id="entry-kind">
+                  <option value="EQUIPMENT">Equipment identity</option>
+                  <option value="FAULT">Fault code</option>
+                  <option value="MEASUREMENT">Measurement</option>
+                  <option value="DIAGNOSTIC_BRANCH">Diagnostic branch</option>
+                </select>
+              </label>
+              <label>
+                <span>Confidence</span>
+                <select id="entry-confidence">
+                  <option value="UNVERIFIED">Unverified draft</option>
+                  <option value="MANUAL_CONFIRMED">Manual confirmed</option>
+                  <option value="FIELD_CONFIRMED">Field confirmed</option>
+                  <option value="CONFLICTED">Conflicted</option>
+                </select>
+              </label>
+              <label>
+                <span>Safety category</span>
+                <select id="entry-safety" disabled>
+                  <option value="NOT_ACTIONABLE">Not actionable</option>
+                  <option value="DEENERGIZED_ONLY">Deenergized only</option>
+                  <option value="ENERGIZED_LOW_VOLTAGE">Energized low voltage</option>
+                  <option value="ENERGIZED_LINE_VOLTAGE">Energized line voltage</option>
+                  <option value="HIGH_VOLTAGE_DC">High voltage DC</option>
+                  <option value="REFRIGERANT_PRESSURE">Refrigerant pressure</option>
+                  <option value="OTHER">Other / incomplete</option>
+                  <option value="UNKNOWN">Unknown</option>
+                </select>
+              </label>
+            </div>
+            <label class="entry-wide-field">
+              <span>Entry title</span>
+              <input id="entry-title" type="text" autocomplete="off" required placeholder="Short technician-readable title">
+            </label>
+
+            <div id="entry-equipment-fields" class="entry-kind-fields entry-grid entry-grid-two">
+              <label>
+                <span>Equipment type</span>
+                <input id="entry-equipment-type" type="text" autocomplete="off" placeholder="Split AC, furnace, heat pump…">
+              </label>
+              <label>
+                <span>Notes</span>
+                <textarea id="entry-equipment-notes" rows="3" placeholder="Optional identifying notes"></textarea>
+              </label>
+            </div>
+
+            <div id="entry-fault-fields" class="entry-kind-fields entry-grid entry-grid-two" hidden>
+              <label>
+                <span>Fault code</span>
+                <input id="entry-fault-code" type="text" autocomplete="off" placeholder="Exact displayed code">
+              </label>
+              <label>
+                <span>Meaning</span>
+                <textarea id="entry-fault-meaning" rows="3" placeholder="Concise meaning in your own words"></textarea>
+              </label>
+              <label class="entry-grid-span">
+                <span>Notes</span>
+                <textarea id="entry-fault-notes" rows="2" placeholder="Optional limits, symptoms, or exclusions"></textarea>
+              </label>
+            </div>
+
+            <div id="entry-measurement-fields" class="entry-kind-fields" hidden>
+              <div class="entry-grid entry-grid-four">
+                <label><span>Measurement name</span><input id="entry-measurement-name" type="text" autocomplete="off" placeholder="Supply voltage"></label>
+                <label><span>Meter mode</span><input id="entry-meter-mode" type="text" autocomplete="off" placeholder="VAC, VDC, Ω…"></label>
+                <label><span>Point A</span><input id="entry-point-a" type="text" autocomplete="off" placeholder="Exact terminal or lead point"></label>
+                <label><span>Point B</span><input id="entry-point-b" type="text" autocomplete="off" placeholder="Optional second point"></label>
+              </div>
+              <div class="entry-grid entry-grid-four entry-expected-grid">
+                <label>
+                  <span>Expected result type</span>
+                  <select id="entry-result-kind">
+                    <option value="NUMERIC">Numeric</option>
+                    <option value="QUALITATIVE">Qualitative</option>
+                  </select>
+                </label>
+                <label class="entry-numeric-field"><span>Nominal</span><input id="entry-nominal" type="number" step="any" inputmode="decimal"></label>
+                <label class="entry-numeric-field"><span>Minimum</span><input id="entry-minimum" type="number" step="any" inputmode="decimal"></label>
+                <label class="entry-numeric-field"><span>Maximum</span><input id="entry-maximum" type="number" step="any" inputmode="decimal"></label>
+                <label class="entry-numeric-field"><span>Unit</span><input id="entry-unit" type="text" autocomplete="off" placeholder="VAC"></label>
+                <label id="entry-qualitative-field" hidden>
+                  <span>Expected value</span>
+                  <select id="entry-qualitative">
+                    <option value="CONTINUITY">Continuity</option>
+                    <option value="NO_CONTINUITY">No continuity</option>
+                    <option value="OPEN">Open</option>
+                    <option value="CLOSED">Closed</option>
+                    <option value="PRESENT">Present</option>
+                    <option value="ABSENT">Absent</option>
+                    <option value="OTHER">Other</option>
+                    <option value="UNKNOWN">Unknown</option>
+                  </select>
+                </label>
+              </div>
+              <label class="entry-wide-field">
+                <span>Procedure</span>
+                <textarea id="entry-procedure" rows="3" placeholder="Safe test procedure in your own concise words"></textarea>
+              </label>
+            </div>
+
+            <div id="entry-branch-fields" class="entry-kind-fields entry-grid entry-grid-two" hidden>
+              <label><span>Related fault code</span><input id="entry-branch-fault" type="text" autocomplete="off" placeholder="Optional exact code"></label>
+              <label>
+                <span>Disposition</span>
+                <select id="entry-disposition">
+                  <option value="NEXT_TEST">Next test</option>
+                  <option value="COMPLETE">Complete bounded path</option>
+                  <option value="ESCALATE">Escalate</option>
+                  <option value="STOP">Stop</option>
+                </select>
+              </label>
+              <label><span>Observed condition</span><textarea id="entry-condition" rows="3" placeholder="Exact condition that selects this branch"></textarea></label>
+              <label><span>Next action</span><textarea id="entry-next-action" rows="3" placeholder="One bounded next action, stop, or escalation"></textarea></label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Private evidence context</legend>
+            <div class="entry-grid entry-grid-three">
+              <label>
+                <span>Evidence type</span>
+                <select id="entry-context-type">
+                  <option value="MANUAL">Private manual</option>
+                  <option value="FIELD">Private field observation</option>
+                </select>
+              </label>
+              <label id="entry-document-field">
+                <span>Document ID or title</span>
+                <input id="entry-document-id" type="text" autocomplete="off" placeholder="Private document reference">
+              </label>
+              <label id="entry-page-field">
+                <span>Page</span>
+                <input id="entry-page" type="number" min="1" step="1" inputmode="numeric">
+              </label>
+            </div>
+            <label id="entry-field-context-field" class="entry-wide-field" hidden>
+              <span>Private field context</span>
+              <textarea id="entry-field-context" rows="3" placeholder="Observation and applicability context; this remains outside Git"></textarea>
+            </label>
+          </fieldset>
+
+          <div class="entry-submit-row">
+            <p><strong>Fail closed:</strong> unverified, conflicted, revision-unknown, and safety-unknown records cannot drive deterministic guidance.</p>
+            <button id="entry-submit" class="primary-button" type="submit">Save private entry</button>
+          </div>
+        </form>
+        <div id="entry-result" class="entry-result" hidden>
+          <div>
+            <span class="detail-label">Saved locally</span>
+            <strong id="entry-result-title">—</strong>
+            <small id="entry-result-id">—</small>
+          </div>
+          <div><span>Confidence</span><strong id="entry-result-confidence">—</strong></div>
+          <div><span>Guidance gate</span><strong id="entry-result-guidance">—</strong></div>
+          <p id="entry-result-message">—</p>
+        </div>
+      </section>
 
       <section class="panel case-panel">
         <div class="panel-heading">

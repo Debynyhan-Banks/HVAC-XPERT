@@ -1,4 +1,5 @@
 import unittest
+import tempfile
 from pathlib import Path
 
 from apps.private_simulator.server import (
@@ -9,6 +10,7 @@ from apps.private_simulator.server import (
     create_server,
     is_local_host_header,
 )
+from personal_knowledge import PersonalEntryStore
 from scripts.private_package_gate import PrivateKnowledgePackage
 from simulator import UnknownFaultError, UnknownOperatingStateError
 
@@ -317,7 +319,13 @@ def training_request(**overrides):
 
 class PrivateSimulatorApplicationTests(unittest.TestCase):
     def setUp(self):
-        self.application = PrivateSimulatorApplication(package())
+        self.temporary_directory = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary_directory.cleanup)
+        self.personal_entry_root = Path(self.temporary_directory.name) / "personal-entries"
+        self.application = PrivateSimulatorApplication(
+            package(),
+            PersonalEntryStore(self.personal_entry_root),
+        )
 
     def test_lists_only_local_runtime_definitions(self):
         definitions = self.application.definitions()
@@ -328,6 +336,7 @@ class PrivateSimulatorApplicationTests(unittest.TestCase):
         self.assertEqual(definitions["topology_behavior"], "REFERENCE_DEFINITION_ONLY")
         self.assertEqual(definitions["diagnostic_case_behavior"], "TECHNICIAN_ENTRY_DETERMINISTIC_EVALUATION")
         self.assertEqual(definitions["training_behavior"], "DETERMINISTIC_SIMULATED_REPLAY_SCORING")
+        self.assertEqual(definitions["personal_entry_behavior"], "PRIVATE_LOCAL_FILE_FAIL_CLOSED")
         self.assertEqual(definitions["model"]["model_id"], MODEL_ID)
         self.assertEqual(definitions["model"]["component_count"], 1)
         self.assertEqual(definitions["fault_codes"], ["F01"])
@@ -340,6 +349,37 @@ class PrivateSimulatorApplicationTests(unittest.TestCase):
         self.assertNotIn("simulated_observation", definitions["training_replays"][0])
         self.assertEqual(definitions["topology"]["connections"][0]["connection_id"], CONNECTION_ID)
         self.assertNotIn("package_root", definitions)
+
+    def test_creates_private_manual_entry_without_activating_guidance(self):
+        record = self.application.create_personal_entry(
+            {
+                "entry_kind": "FAULT",
+                "equipment": {
+                    "manufacturer": "Synthetic Manufacturer",
+                    "brand": "Synthetic Brand",
+                    "model_number": MODEL_ID,
+                    "revision": REVISION_ID,
+                },
+                "title": "Synthetic F01 fault definition",
+                "details": {
+                    "fault_code": "F01",
+                    "meaning": "Synthetic fault meaning.",
+                    "notes": None,
+                },
+                "evidence": {
+                    "context_type": "MANUAL",
+                    "document_id": "DOC-SYNTHETIC",
+                    "page": 2,
+                    "field_context": None,
+                },
+                "safety_category": "NOT_ACTIONABLE",
+                "confidence_status": "MANUAL_CONFIRMED",
+            }
+        )
+
+        self.assertEqual(record["guidance_status"], "REFERENCE_ONLY_CONFIRMED")
+        self.assertIs(record["deterministic_guidance_active"], False)
+        self.assertTrue((self.personal_entry_root / f"{record['entry_id']}.json").is_file())
 
     def test_creates_manual_deterministic_snapshot(self):
         first = self.application.snapshot(snapshot_request())
@@ -500,6 +540,21 @@ class PrivateSimulatorApplicationTests(unittest.TestCase):
         self.assertIn("DETERMINISTIC_SIMULATED_REPLAY_SCORING", javascript)
         self.assertIn('requestJson("/api/training"', javascript)
         self.assertIn("snapshot.knowledge_package_ids", javascript)
+
+    def test_personal_entry_interface_is_private_and_fails_closed(self):
+        html = (STATIC_ROOT / "index.html").read_text(encoding="utf-8")
+        javascript = (STATIC_ROOT / "app.js").read_text(encoding="utf-8")
+
+        self.assertIn("P-001 · Personal knowledge entry", html)
+        self.assertIn('id="entry-form"', html)
+        self.assertIn("Exact model number", html)
+        self.assertIn("Manual confirmed", html)
+        self.assertIn("Field confirmed", html)
+        self.assertIn("Conflicted", html)
+        self.assertIn("cannot activate deterministic guidance automatically", html)
+        self.assertIn("PRIVATE_LOCAL_FILE_FAIL_CLOSED", javascript)
+        self.assertIn('requestJson("/api/personal-entries"', javascript)
+        self.assertIn("ELIGIBLE_FOR_RULE_REVIEW", javascript)
 
 
 if __name__ == "__main__":

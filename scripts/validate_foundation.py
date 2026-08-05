@@ -44,6 +44,7 @@ REQUIRED_SCHEMAS = {
     "diagnostic-case.schema.json",
     "training-replay.schema.json",
     "training-attempt.schema.json",
+    "personal-knowledge-entry.schema.json",
     "scenario.schema.json",
     "provenance.schema.json",
     "source-registry.schema.json",

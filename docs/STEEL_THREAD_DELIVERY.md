@@ -20,9 +20,9 @@ Unknown or unsupported steps fail closed. A thread may use synthetic fixtures fo
 
 | Thread | Outcome | Status | External access before start |
 | --- | --- | --- | --- |
-| `P-000` | Single-owner local-first scope and simplified governance | Documentation complete; merge pending | No API, database, hardware, upload, or paid service |
-| `P-001` | Ten-minute manual knowledge entry and personal confidence status | Next | Existing private documents or field context only |
-| `P-002` | Searchable private knowledge and local case history | Pending | Local storage decision; no cloud account required |
+| `P-000` | Single-owner local-first scope and simplified governance | Complete; merged in PR #21 | No API, database, hardware, upload, or paid service |
+| `P-001` | Ten-minute manual knowledge entry and personal confidence status | Implementation complete; owner acceptance pending | Existing private documents or field context only |
+| `P-002` | Searchable private knowledge and local case history | Next after P-001 acceptance | Local storage decision; no cloud account required |
 | `P-003` | Phone-first offline field use | Pending | Device/storage/security decisions; no public listener |
 | `P-004` | Job-driven equipment and fault breadth | Pending | Private source or field context for each entry |
 | `P-005` | Optional retrieval-grounded AI explanation | Deferred | Owner-supplied AI provider access if selected |

@@ -1,5 +1,18 @@
 # Knowledge Package Access
 
+## Personal entries
+
+P-001 writes owner-entered equipment, fault, measurement, and diagnostic-branch
+records to the ignored local directory:
+
+```text
+knowledge-base/private/personal-entries/
+```
+
+Each record conforms to `schemas/personal-knowledge-entry.schema.json`. Personal
+entries remain outside Git and do not activate deterministic guidance automatically.
+Confirmed actionable entries are candidates for a separate reviewed rule step.
+
 Technically approved manufacturer records remain private while source-rights and publication authorization are unresolved. Internal tools load them through `scripts/private_package_gate.py`; they must not read private JSON files directly.
 
 ## Internal load

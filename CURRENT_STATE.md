@@ -6,7 +6,7 @@ Personal alpha — local field copilot
 
 ## Current objective
 
-Complete the personal-use scope pivot, then implement the `P-001` ten-minute manual-entry workflow while preserving private-data, safety, applicability, evidence-separation, and export controls.
+Obtain owner acceptance and merge the `P-001` ten-minute manual-entry workflow, then begin `P-002` searchable private knowledge and local case history.
 
 ## Completed
 
@@ -137,24 +137,31 @@ Complete the personal-use scope pivot, then implement the `P-001` ten-minute man
 - Existing private-package, safety, provenance, evidence-separation, and fail-closed export controls remain in force
 - Multi-tenant SaaS, public manufacturer-content publication, organizational roles, customer billing, broad crawling, and AI model training are deferred
 - Repository visibility remains public pending an explicit owner decision; private records, source content, field history, credentials, and customer or site details remain prohibited from Git
+- Personal-use pivot merged through pull request #21
+- P-001 canonical personal-entry schema defines equipment, fault, measurement, and diagnostic-branch records with exact applicability, evidence context, confidence, safety, and derived guidance status
+- P-001 private store writes one owner-only JSON file per entry under ignored `knowledge-base/private/personal-entries/` storage
+- Local browser now provides one manual-entry form with private manual-page or field context and personal confidence selection
+- Confirmed entries require exact revision applicability; manual and field confirmation require matching evidence types
+- Unverified, conflicted, revision-unknown, and safety-unknown entries fail closed; no personal entry activates deterministic guidance automatically
+- Confirmed actionable entries are marked only as `ELIGIBLE_FOR_RULE_REVIEW`, preserving a separate deterministic-rule review step
+- Focused personal-entry and private-browser tests pass with schema-foundation validation
 
 ## In progress
 
-- Owner review and merge of the `P-000` personal-use pivot documentation
+- Owner acceptance and merge of the `P-001` personal manual-entry workflow
 - Repository visibility decision; making the repository private is recommended but is not part of `P-000`
-- `P-001` access checklist and design for fast local manual entry
 - Optional personal acceptance of the merged `ST-003` training behavior and rubric
 
 ## Blockers
 
-- No blocker prevents `P-000` or the code-only portion of `P-001`
+- No implementation blocker prevents P-001 owner acceptance or merge
 - The public repository cannot receive private manufacturer records, source binaries, field history, customer details, site details, or credentials
 - Automated collection and public or customer distribution remain blocked and are not required for the personal workflow
 - Transition timing and automatic transition conditions remain unknown and cannot be invented
 
 ## Next action
 
-Merge the `P-000` personal-use pivot documentation, then begin the `P-001` access checklist and implement the ten-minute local manual-entry workflow. No external API, cloud service, crawler, hardware, new document upload, or paid account is required for the first `P-001` increment.
+Review one representative P-001 entry in the localhost interface, confirm that the form and fail-closed status are understandable, and merge the focused pull request. Then begin P-002 search, correction history, and persistent local case records.
 
 After the work unit passes validation, update this file, commit only the intended non-private files, and push the current branch to `origin`.
 
@@ -167,4 +174,4 @@ After the work unit passes validation, update this file, commit only the intende
 
 ## Last updated
 
-2026-08-04
+2026-08-05
