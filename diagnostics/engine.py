@@ -196,6 +196,10 @@ class DiagnosticCaseEngine:
     def known_path_ids(self):
         return tuple(sorted(self._paths_by_id))
 
+    @property
+    def knowledge_package_ids(self):
+        return self._knowledge_package_ids
+
     def evaluate(self, request):
         values = self._validate_request(request)
         path = self._paths_by_id.get(values["path_id"])

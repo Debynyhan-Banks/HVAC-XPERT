@@ -139,6 +139,141 @@
         </div>
       </section>
 
+      <section class="panel training-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">ST-003 · Deterministic training replay</p>
+            <h2>Practice one reviewed diagnostic decision</h2>
+          </div>
+          <span id="training-status" class="status-badge status-loading">No replay selected</span>
+        </div>
+        <p class="section-explainer">
+          Review a safety-gated simulated observation, compare it with the approved reference, and choose the supported disposition. This exercise does not connect to or measure equipment.
+        </p>
+        <div class="training-rubric" role="note">
+          <strong>Application training rubric</strong>
+          <span>50 interpretation · 50 disposition · −10 hint · pass 80/100</span>
+          <small>This transparent practice score is not a manufacturer rating or certification.</small>
+        </div>
+        <div id="training-empty" class="empty-state">
+          <p>No eligible approved training replay is loaded.</p>
+        </div>
+        <div id="training-workspace" class="training-workspace" hidden>
+          <div class="training-intake">
+            <label class="field-label" for="training-replay-select">Approved replay</label>
+            <div class="select-wrap">
+              <select id="training-replay-select" disabled>
+                <option value="">Choose an approved replay…</option>
+              </select>
+            </div>
+            <div class="training-objective">
+              <span class="detail-label">Learning objective</span>
+              <h3 id="training-title">Select a replay</h3>
+              <p id="training-objective">No learning objective selected.</p>
+            </div>
+            <div class="case-safety-block">
+              <span class="detail-label">Required safety acknowledgement</span>
+              <div id="training-safety-list"></div>
+              <label class="case-safety-check">
+                <input id="training-safety-ack" type="checkbox" disabled>
+                <span>I confirm the listed safety boundary before revealing the simulated observation.</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="training-exercise">
+            <div id="training-locked" class="training-locked">
+              <span aria-hidden="true">!</span>
+              <div>
+                <strong>Simulation locked</strong>
+                <p>The observation, hint, and response controls remain hidden until safety is acknowledged.</p>
+              </div>
+            </div>
+            <div id="training-scenario" hidden>
+              <div class="simulation-banner">
+                <span>SIMULATED</span>
+                <div>
+                  <strong>Training observation—not a live field measurement</strong>
+                  <p>Deterministically generated from the approved diagnostic branch.</p>
+                </div>
+              </div>
+              <div class="training-comparison">
+                <div>
+                  <span>Approved test</span>
+                  <strong id="training-test-name">—</strong>
+                </div>
+                <div>
+                  <span>Approved expected reference</span>
+                  <strong id="training-expected">—</strong>
+                </div>
+                <div class="training-observation-card">
+                  <span>Simulated observation</span>
+                  <strong id="training-observation">—</strong>
+                  <small id="training-source-type">SIMULATED</small>
+                </div>
+              </div>
+              <div class="training-response-grid">
+                <div>
+                  <label class="field-label" for="training-evaluation">Your interpretation</label>
+                  <select id="training-evaluation">
+                    <option value="">Compare observation to expected…</option>
+                    <option value="MATCHES_EXPECTED">Matches expected</option>
+                    <option value="DOES_NOT_MATCH_EXPECTED">Does not match expected</option>
+                    <option value="UNKNOWN">Unknown</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="field-label" for="training-disposition">Your disposition</label>
+                  <select id="training-disposition">
+                    <option value="">Choose the supported action…</option>
+                    <option value="NEXT_TEST">Next approved test</option>
+                    <option value="COMPLETE">Complete bounded path</option>
+                    <option value="ESCALATE">Escalate</option>
+                    <option value="STOP">Stop</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="field-label" for="training-learner">Learner / reviewer</label>
+                  <input id="training-learner" type="text" autocomplete="name" placeholder="Name">
+                </div>
+              </div>
+              <label class="training-hint-control">
+                <input id="training-hint-used" type="checkbox">
+                <span>Show deterministic hint <strong>−10 points</strong></span>
+              </label>
+              <p id="training-hint" class="training-hint" hidden></p>
+              <button id="training-submit" class="primary-button" type="button">Score this response</button>
+
+              <div id="training-outcome" class="training-outcome" hidden>
+                <div class="training-score-row">
+                  <div>
+                    <span class="detail-label">Deterministic score</span>
+                    <strong id="training-score">—</strong>
+                  </div>
+                  <span id="training-pass" class="status-badge">—</span>
+                </div>
+                <div class="training-targets">
+                  <div><span>Supported interpretation</span><strong id="training-target-evaluation">—</strong></div>
+                  <div><span>Supported disposition</span><strong id="training-target-disposition">—</strong></div>
+                </div>
+                <div id="training-scoring" class="training-scoring"></div>
+                <div class="training-feedback">
+                  <span class="detail-label">Approved branch guidance</span>
+                  <p id="training-guidance">—</p>
+                  <span class="detail-label">Remediation</span>
+                  <div id="training-remediation"></div>
+                </div>
+                <small id="training-record-meta" class="case-record-meta">—</small>
+              </div>
+              <div class="source-block">
+                <span class="detail-label">Replay traceability</span>
+                <p id="training-source">Select an approved replay to view evidence.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="workspace">
         <aside class="control-stack">
           <div class="panel control-panel">

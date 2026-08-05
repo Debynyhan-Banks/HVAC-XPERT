@@ -10,6 +10,10 @@ const state = {
   caseCreatedAt: null,
   caseResults: [],
   caseSnapshot: null,
+  selectedReplayId: null,
+  trainingAttemptId: null,
+  trainingCreatedAt: null,
+  trainingSnapshot: null,
 };
 
 const elements = {
@@ -77,6 +81,36 @@ const elements = {
   caseRecordedBy: document.querySelector("#case-recorded-by"),
   caseRecordMeta: document.querySelector("#case-record-meta"),
   caseSource: document.querySelector("#case-source"),
+  trainingStatus: document.querySelector("#training-status"),
+  trainingEmpty: document.querySelector("#training-empty"),
+  trainingWorkspace: document.querySelector("#training-workspace"),
+  trainingReplaySelect: document.querySelector("#training-replay-select"),
+  trainingTitle: document.querySelector("#training-title"),
+  trainingObjective: document.querySelector("#training-objective"),
+  trainingSafetyList: document.querySelector("#training-safety-list"),
+  trainingSafetyAck: document.querySelector("#training-safety-ack"),
+  trainingLocked: document.querySelector("#training-locked"),
+  trainingScenario: document.querySelector("#training-scenario"),
+  trainingTestName: document.querySelector("#training-test-name"),
+  trainingExpected: document.querySelector("#training-expected"),
+  trainingObservation: document.querySelector("#training-observation"),
+  trainingSourceType: document.querySelector("#training-source-type"),
+  trainingEvaluation: document.querySelector("#training-evaluation"),
+  trainingDisposition: document.querySelector("#training-disposition"),
+  trainingLearner: document.querySelector("#training-learner"),
+  trainingHintUsed: document.querySelector("#training-hint-used"),
+  trainingHint: document.querySelector("#training-hint"),
+  trainingSubmit: document.querySelector("#training-submit"),
+  trainingOutcome: document.querySelector("#training-outcome"),
+  trainingScore: document.querySelector("#training-score"),
+  trainingPass: document.querySelector("#training-pass"),
+  trainingTargetEvaluation: document.querySelector("#training-target-evaluation"),
+  trainingTargetDisposition: document.querySelector("#training-target-disposition"),
+  trainingScoring: document.querySelector("#training-scoring"),
+  trainingGuidance: document.querySelector("#training-guidance"),
+  trainingRemediation: document.querySelector("#training-remediation"),
+  trainingRecordMeta: document.querySelector("#training-record-meta"),
+  trainingSource: document.querySelector("#training-source"),
   errorBanner: document.querySelector("#error-banner"),
   errorMessage: document.querySelector("#error-message"),
 };
@@ -821,6 +855,200 @@ async function submitCaseResult() {
   await updateCase([...state.caseResults, result]);
 }
 
+function selectedTrainingReplay() {
+  return state.definitions?.training_replays.find(
+    (replay) => replay.replay_id === state.selectedReplayId,
+  ) || null;
+}
+
+function trainingPath(replay) {
+  return state.definitions?.diagnostic_paths.find((path) => path.path_id === replay?.path_id) || null;
+}
+
+function populateTrainingReplays(replays) {
+  elements.trainingReplaySelect.replaceChildren();
+  const prompt = document.createElement("option");
+  prompt.value = "";
+  prompt.textContent = "Choose an approved replay…";
+  elements.trainingReplaySelect.append(prompt);
+  for (const replay of replays) {
+    const option = document.createElement("option");
+    option.value = replay.replay_id;
+    option.textContent = replay.title;
+    elements.trainingReplaySelect.append(option);
+  }
+  const hasReplays = replays.length > 0;
+  elements.trainingEmpty.hidden = hasReplays;
+  elements.trainingWorkspace.hidden = !hasReplays;
+  elements.trainingReplaySelect.disabled = !hasReplays;
+  if (!hasReplays) {
+    elements.trainingStatus.textContent = "No approved replay loaded";
+    elements.trainingStatus.className = "status-badge status-loading";
+  }
+}
+
+function renderTrainingStatus(trainingState) {
+  const presentations = {
+    SAFETY_ACKNOWLEDGEMENT_REQUIRED: ["Safety acknowledgement required", "status-power"],
+    AWAITING_LEARNER_RESPONSE: ["Awaiting learner response", "status-operation"],
+    SCORED: ["Response scored", "status-idle"],
+  };
+  const [label, className] = presentations[trainingState] || ["Replay unavailable", "status-loading"];
+  elements.trainingStatus.textContent = label;
+  elements.trainingStatus.className = `status-badge ${className}`;
+}
+
+function newTrainingIdentity() {
+  const createdAt = new Date().toISOString();
+  state.trainingAttemptId = `ATTEMPT-${Date.now()}`;
+  state.trainingCreatedAt = createdAt;
+  state.trainingSnapshot = null;
+}
+
+function resetTrainingResponse() {
+  elements.trainingEvaluation.value = "";
+  elements.trainingDisposition.value = "";
+  elements.trainingHintUsed.checked = false;
+  elements.trainingHint.hidden = true;
+  elements.trainingHint.textContent = "";
+  elements.trainingOutcome.hidden = true;
+}
+
+function renderTrainingDefinition(replay) {
+  const path = trainingPath(replay);
+  elements.trainingTitle.textContent = replay?.title || "Select a replay";
+  elements.trainingObjective.textContent = replay?.learning_objective || "No learning objective selected.";
+  elements.trainingSafetyList.replaceChildren();
+  elements.trainingSource.textContent = replay ? formatSources(replay.sources) : "Select an approved replay to view evidence.";
+  if (!path) return;
+  for (const acknowledgement of path.safety_acknowledgements) {
+    const item = node("div", "case-safety-item");
+    item.append(
+      node("strong", "", humanize(acknowledgement.safety_category)),
+      node("span", "", acknowledgement.label),
+    );
+    elements.trainingSafetyList.append(item);
+  }
+}
+
+function formatTrainingObservation(observation) {
+  if (observation.result_kind === "QUALITATIVE") return humanize(observation.qualitative_value);
+  return formatValue(observation.numeric_value, observation.unit);
+}
+
+function renderTrainingSnapshot(snapshot) {
+  state.trainingSnapshot = snapshot;
+  renderTrainingStatus(snapshot.state);
+  const replay = selectedTrainingReplay();
+  const path = trainingPath(replay);
+  const step = path?.steps[0] || null;
+  const observationAvailable = snapshot.simulated_observation !== null;
+  elements.trainingLocked.hidden = observationAvailable;
+  elements.trainingScenario.hidden = !observationAvailable;
+  elements.trainingHint.hidden = snapshot.hint === null;
+  elements.trainingHint.textContent = snapshot.hint || "";
+  elements.trainingOutcome.hidden = snapshot.state !== "SCORED";
+  if (!observationAvailable || !step) return;
+
+  elements.trainingTestName.textContent = step.measurement.name;
+  elements.trainingExpected.textContent = caseExpected(step.expected_result);
+  elements.trainingObservation.textContent = formatTrainingObservation(snapshot.simulated_observation);
+  elements.trainingSourceType.textContent = snapshot.simulated_observation.source_type;
+  elements.trainingSource.textContent = formatSources(replay.sources, path.sources, step.measurement.sources);
+  if (snapshot.state !== "SCORED") return;
+
+  elements.trainingScore.textContent = `${snapshot.score}/${snapshot.max_score}`;
+  elements.trainingPass.textContent = snapshot.passed ? "Pass" : "Review required";
+  elements.trainingPass.className = `status-badge ${snapshot.passed ? "status-idle" : "status-fault"}`;
+  elements.trainingTargetEvaluation.textContent = humanize(snapshot.target_evaluation);
+  elements.trainingTargetDisposition.textContent = humanize(snapshot.target_disposition);
+  elements.trainingScoring.replaceChildren();
+  for (const item of snapshot.scoring) {
+    const row = node("div", `training-score-item ${item.correct ? "is-correct" : "is-incorrect"}`);
+    row.append(
+      node("span", "", humanize(item.criterion)),
+      node("strong", "", `${item.earned_points}/${item.available_points}`),
+    );
+    elements.trainingScoring.append(row);
+  }
+  if (snapshot.hint_used) {
+    const penalty = node("div", "training-score-item is-penalty");
+    penalty.append(node("span", "", "Hint penalty"), node("strong", "", "−10"));
+    elements.trainingScoring.append(penalty);
+  }
+  elements.trainingGuidance.textContent = snapshot.guidance || "No additional approved guidance is available.";
+  elements.trainingRemediation.replaceChildren();
+  if (snapshot.remediation.length === 0) {
+    elements.trainingRemediation.append(node("p", "training-remediation-clear", "No remediation required for this response."));
+  } else {
+    for (const message of snapshot.remediation) {
+      elements.trainingRemediation.append(node("p", "training-remediation-item", message));
+    }
+  }
+  elements.trainingRecordMeta.textContent = `${snapshot.attempt_id} · Learner: ${snapshot.learner_id} · Packages: ${snapshot.knowledge_package_ids.join(", ")}`;
+}
+
+async function updateTraining(includeAnswers = false) {
+  const replay = selectedTrainingReplay();
+  if (!replay || !state.trainingAttemptId) return;
+  clearError();
+  const request = {
+    attempt_id: state.trainingAttemptId,
+    replay_id: replay.replay_id,
+    safety_acknowledged: elements.trainingSafetyAck.checked,
+    hint_used: elements.trainingHintUsed.checked,
+    learner_evaluation: includeAnswers ? elements.trainingEvaluation.value : null,
+    learner_disposition: includeAnswers ? elements.trainingDisposition.value : null,
+    learner_id: includeAnswers ? elements.trainingLearner.value.trim() : null,
+    created_at: state.trainingCreatedAt,
+    updated_at: new Date().toISOString(),
+  };
+  try {
+    const snapshot = await requestJson("/api/training", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(request),
+    });
+    renderTrainingSnapshot(snapshot);
+  } catch (error) {
+    showError(error.message);
+    elements.trainingStatus.textContent = "Replay stopped";
+    elements.trainingStatus.className = "status-badge status-fault";
+  }
+}
+
+async function selectTrainingReplay(replayId) {
+  state.selectedReplayId = replayId || null;
+  newTrainingIdentity();
+  resetTrainingResponse();
+  elements.trainingSafetyAck.checked = false;
+  elements.trainingSafetyAck.disabled = !state.selectedReplayId;
+  elements.trainingLocked.hidden = false;
+  elements.trainingScenario.hidden = true;
+  const replay = selectedTrainingReplay();
+  renderTrainingDefinition(replay);
+  if (replay) await updateTraining();
+}
+
+async function submitTrainingResponse() {
+  if (!elements.trainingEvaluation.value) {
+    showError("Choose how the simulated observation compares with the approved expected reference.");
+    elements.trainingEvaluation.focus();
+    return;
+  }
+  if (!elements.trainingDisposition.value) {
+    showError("Choose the supported disposition before scoring the response.");
+    elements.trainingDisposition.focus();
+    return;
+  }
+  if (!elements.trainingLearner.value.trim()) {
+    showError("Learner / reviewer is required before scoring the response.");
+    elements.trainingLearner.focus();
+    return;
+  }
+  await updateTraining(true);
+}
+
 async function updateSnapshot() {
   if (!state.definitions) return;
   clearError();
@@ -858,9 +1086,13 @@ async function initialize() {
     if (state.definitions.diagnostic_case_behavior !== "TECHNICIAN_ENTRY_DETERMINISTIC_EVALUATION") {
       throw new Error("Unsupported diagnostic case behavior; application stopped.");
     }
+    if (state.definitions.training_behavior !== "DETERMINISTIC_SIMULATED_REPLAY_SCORING") {
+      throw new Error("Unsupported training behavior; application stopped.");
+    }
     populateModel(state.definitions.model);
     populatePhases(state.definitions.operating_states);
     populateCasePaths(state.definitions.diagnostic_paths);
+    populateTrainingReplays(state.definitions.training_replays);
     renderFaults();
     renderTopology(state.definitions.topology);
     for (const control of [elements.phaseSelect, elements.powerToggle, elements.requestToggle, elements.faultSearch]) {
@@ -880,6 +1112,16 @@ async function initialize() {
       updateCase();
     });
     elements.caseEvaluate.addEventListener("click", submitCaseResult);
+    elements.trainingReplaySelect.addEventListener("change", () => selectTrainingReplay(elements.trainingReplaySelect.value));
+    elements.trainingSafetyAck.addEventListener("change", () => {
+      resetTrainingResponse();
+      updateTraining();
+    });
+    elements.trainingHintUsed.addEventListener("change", () => {
+      elements.trainingOutcome.hidden = true;
+      updateTraining();
+    });
+    elements.trainingSubmit.addEventListener("click", submitTrainingResponse);
     updatePhaseDescription();
     await updateSnapshot();
   } catch (error) {

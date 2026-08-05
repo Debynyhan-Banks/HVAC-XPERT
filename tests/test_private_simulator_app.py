@@ -26,6 +26,7 @@ NODE_B_ID = f"{MODEL_ID}:node:compressor-b"
 CONNECTION_ID = f"{MODEL_ID}:connection:compressor-a-to-b"
 PATH_ID = f"{MODEL_ID}:diagnostic-path:F01"
 STEP_ID = f"{PATH_ID}:step:control-voltage"
+REPLAY_ID = f"{PATH_ID}:training-replay:divergent-result"
 
 
 def topology_provenance(fact_id, entity_id):
@@ -298,6 +299,22 @@ def numeric_result(value):
     }
 
 
+def training_request(**overrides):
+    values = {
+        "attempt_id": "ATTEMPT-SYNTHETIC-001",
+        "replay_id": REPLAY_ID,
+        "safety_acknowledged": True,
+        "hint_used": False,
+        "learner_evaluation": None,
+        "learner_disposition": None,
+        "learner_id": None,
+        "created_at": "2026-08-04T12:00:00Z",
+        "updated_at": "2026-08-04T12:00:00Z",
+    }
+    values.update(overrides)
+    return values
+
+
 class PrivateSimulatorApplicationTests(unittest.TestCase):
     def setUp(self):
         self.application = PrivateSimulatorApplication(package())
@@ -310,13 +327,17 @@ class PrivateSimulatorApplicationTests(unittest.TestCase):
         self.assertEqual(definitions["measurement_behavior"], "REFERENCE_DEFINITION_ONLY")
         self.assertEqual(definitions["topology_behavior"], "REFERENCE_DEFINITION_ONLY")
         self.assertEqual(definitions["diagnostic_case_behavior"], "TECHNICIAN_ENTRY_DETERMINISTIC_EVALUATION")
+        self.assertEqual(definitions["training_behavior"], "DETERMINISTIC_SIMULATED_REPLAY_SCORING")
         self.assertEqual(definitions["model"]["model_id"], MODEL_ID)
         self.assertEqual(definitions["model"]["component_count"], 1)
         self.assertEqual(definitions["fault_codes"], ["F01"])
         self.assertEqual(definitions["operating_states"][0]["state_id"], STATE_ID)
         self.assertEqual(definitions["model"]["connection_count"], 1)
         self.assertEqual(definitions["model"]["diagnostic_path_count"], 1)
+        self.assertEqual(definitions["model"]["training_replay_count"], 1)
         self.assertEqual(definitions["diagnostic_paths"][0]["path_id"], PATH_ID)
+        self.assertEqual(definitions["training_replays"][0]["replay_id"], REPLAY_ID)
+        self.assertNotIn("simulated_observation", definitions["training_replays"][0])
         self.assertEqual(definitions["topology"]["connections"][0]["connection_id"], CONNECTION_ID)
         self.assertNotIn("package_root", definitions)
 
@@ -355,6 +376,24 @@ class PrivateSimulatorApplicationTests(unittest.TestCase):
             completed["knowledge_package_ids"],
             ["RUN-SYNTHETIC-BASE", "RUN-SYNTHETIC-STATE", "RUN-SYNTHETIC-PATH"],
         )
+
+    def test_scores_deterministic_simulated_training_replay(self):
+        awaiting = self.application.training_snapshot(training_request())
+        scored = self.application.training_snapshot(
+            training_request(
+                learner_evaluation="DOES_NOT_MATCH_EXPECTED",
+                learner_disposition="ESCALATE",
+                learner_id="synthetic-learner",
+            )
+        )
+
+        self.assertEqual(awaiting["state"], "AWAITING_LEARNER_RESPONSE")
+        self.assertEqual(awaiting["simulated_observation"]["source_type"], "SIMULATED")
+        self.assertEqual(awaiting["simulated_observation"]["numeric_value"], 27)
+        self.assertIsNone(awaiting["target_evaluation"])
+        self.assertEqual(scored["state"], "SCORED")
+        self.assertEqual(scored["score"], 100)
+        self.assertIs(scored["passed"], True)
 
     def test_rejects_invalid_request_shapes(self):
         invalid_requests = (
@@ -445,6 +484,21 @@ class PrivateSimulatorApplicationTests(unittest.TestCase):
         self.assertIn("TECHNICIAN_ENTRY_DETERMINISTIC_EVALUATION", javascript)
         self.assertIn('requestJson("/api/case"', javascript)
         self.assertIn('source_type: "TECHNICIAN_ENTRY"', javascript)
+        self.assertIn("snapshot.knowledge_package_ids", javascript)
+
+    def test_training_interface_is_safety_gated_simulated_and_transparently_scored(self):
+        html = (STATIC_ROOT / "index.html").read_text(encoding="utf-8")
+        javascript = (STATIC_ROOT / "app.js").read_text(encoding="utf-8")
+
+        self.assertIn("ST-003 · Deterministic training replay", html)
+        self.assertIn('id="training-replay-select"', html)
+        self.assertIn("SIMULATED", html)
+        self.assertIn("not a live field measurement", html)
+        self.assertIn("50 interpretation · 50 disposition · −10 hint", html)
+        self.assertIn("not a manufacturer rating or certification", html)
+        self.assertIn("before revealing the simulated observation", html)
+        self.assertIn("DETERMINISTIC_SIMULATED_REPLAY_SCORING", javascript)
+        self.assertIn('requestJson("/api/training"', javascript)
         self.assertIn("snapshot.knowledge_package_ids", javascript)
 
 

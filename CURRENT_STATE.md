@@ -6,7 +6,7 @@ Phase 0 — Governance and foundation
 
 ## Current objective
 
-Complete the first bounded field diagnostic case loop while preserving the source-rights, technical-review, safety, and publication gates.
+Complete instructor and HVAC acceptance of the first deterministic training replay while preserving the source-rights, safety, and publication gates.
 
 ## Completed
 
@@ -121,6 +121,15 @@ Complete the first bounded field diagnostic case loop while preserving the sourc
 - Real four-package composition loads 16 components, 51 faults, 6 operating states, 6 measurements, 6 connectors, 17 pins, 17 nodes, 8 explicit connections, and 1 diagnostic path
 - Real-package browser acceptance verified the E24 complaint, de-energized safety gate, PCB-side continuity test, continuity/no-continuity/unknown choices, deterministic no-continuity escalation, visible actual-versus-expected evidence, technician identity, package lineage, deduplicated source-page traceability, and a clean browser console
 - `ST-002` is complete for the bounded E24 pilot path; unsupported diagnosis, repair authorization, connected instruments, persistence, and publication remain excluded
+- `ST-003` deterministic training contracts define answer-redacted replay definitions and safety-gated attempt snapshots separately from field diagnostic cases
+- Training replay reuses the approved diagnostic case engine in `TRAINING` mode and always labels generated observations as `SIMULATED`
+- The first eligible replay deterministically creates a divergent observation from the approved expected result without AI or randomness
+- Safety acknowledgement is required before the observation, hint, or learner controls are exposed
+- Target interpretation, target disposition, approved branch guidance, score, and remediation remain hidden until both learner answers are submitted
+- The transparent pilot rubric awards 50 points for interpretation, 50 for disposition, subtracts 10 for hint use, and passes at 80 points
+- Focused synthetic tests cover answer redaction, safety gating, qualitative and numeric simulation, full/partial/incorrect scoring, hint penalty, remediation, request validation, and equal-input determinism
+- Private browser interface now presents the training replay, clearly distinguishes simulation from live or technician-entered evidence, and exposes post-submission scoring, remediation, package lineage, and source traceability
+- `ST-003` remains an implementation candidate until the assigned reviewer accepts the documented training behavior assertions and bounded exclusions
 
 ## In progress
 
@@ -128,6 +137,7 @@ Complete the first bounded field diagnostic case loop while preserving the sourc
 - Copyright, storage, factual-extraction, and derivative-use determination
 - Confirmation of exact official service, parts, and specification asset URLs
 - Manual-upload ingestion design using authorized documents or synthetic fixtures
+- Instructor and assigned HVAC/R technical review of the `ST-003` deterministic replay and pilot scoring rubric
 
 ## Blockers
 
@@ -140,7 +150,7 @@ Complete the first bounded field diagnostic case loop while preserving the sourc
 
 ## Next action
 
-Merge the Package 4 activation record, then begin the `ST-003` access checklist for deterministic training replay of the approved E24 case. No external API is required; instructor acceptance and HVAC review remain required for new scoring or training assertions.
+Merge the `ST-003` implementation pull request, run the reviewer exercise in `docs/ST_003_TECHNICAL_REVIEW.md`, and record instructor/HVAC acceptance or requested revisions. No external API, new document upload, cloud service, database, or hardware access is required.
 
 After the work unit passes validation, update this file, commit only the intended non-private files, and push the current branch to `origin`.
 
