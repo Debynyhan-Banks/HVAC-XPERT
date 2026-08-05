@@ -2,24 +2,65 @@
 
 ## Delivery method
 
-HVAC XPERT keeps the phase structure below as governance and maturity gates, but implements product capability through the steel threads defined in `docs/STEEL_THREAD_DELIVERY.md`. A steel thread must produce a thin end-to-end technician outcome instead of completing one horizontal technical layer in isolation.
+HVAC XPERT now implements personal value through the personal threads defined in `docs/STEEL_THREAD_DELIVERY.md`. Each thread must deliver a thin end-to-end outcome for the owner rather than building unused horizontal infrastructure. The original phase structure remains below as a deferred reference for any future commercial or shared-use decision.
 
-| Steel thread | Product outcome | Status |
+| Personal thread | Product outcome | Status |
 | --- | --- | --- |
-| `ST-000` | Governed private evidence and approval foundation | Foundation available; legal work ongoing |
-| `ST-001` | Approved model-to-reference-simulator workflow | Complete for bounded pilot records |
-| `ST-002` | First field diagnostic case loop | Complete for bounded E24 pilot path |
-| `ST-003` | Training replay of the approved case | Implementation candidate; instructor/HVAC acceptance pending |
-| `ST-004` | Grounded AI explanation of approved evidence | Pending |
-| `ST-005` | Reviewer and content-authoring operations | Pending |
-| `ST-006` | Additional pilot-family cases and models | Pending |
-| `ST-007` | Field persistence, mobile readiness, and escalation | Pending |
-| `ST-008` | Confirmed OCR and read-only instrument imports | Deferred until pilot proof |
-| `ST-009` | Controlled manufacturer expansion | Deferred until pilot proof |
+| `P-000` | Adopt the single-owner local-first product scope | Documentation complete; merge pending |
+| `P-001` | Add a model, fault, measurement, or branch manually in ten minutes | Next |
+| `P-002` | Search private knowledge and persist local case history | Pending |
+| `P-003` | Use the copilot phone-first and offline without public exposure | Pending |
+| `P-004` | Expand knowledge from equipment encountered on real jobs | Pending |
+| `P-005` | Add optional retrieval-grounded AI explanation | Deferred until manual workflow proves useful |
+| `P-006` | Encrypt, back up, restore, and export owner-controlled data | Pending |
+| `P-007` | Evaluate customer-supplied-content platform potential | Deferred until sustained personal use |
 
-`ST-002` requires no external API. Its first increment is limited to one exact model and revision, one evidence-supported complaint, one or more approved tests, deterministic result evaluation, and a traceable summary or escalation outcome. The path must stop rather than add tests unsupported by reviewed evidence.
+## Personal thread sequence
 
-`ST-003` also requires no external API. Its first increment reuses the approved E24 path, reveals one clearly labeled deterministic synthetic observation only after safety acknowledgement, scores interpretation and disposition with a published rubric, and exposes supported answers and remediation only after submission. The score is an HVAC XPERT application rubric, not a manufacturer rating or certification.
+### P-000 — Personal scope
+
+- Make the owner the only active user and decision-maker.
+- Preserve private-data, safety, deterministic, provenance, and export boundaries.
+- Defer SaaS, public manufacturer content, organizational roles, and customer operations.
+- Record that repository visibility remains an explicit owner decision.
+
+### P-001 — Ten-minute manual entry
+
+- Create a fast local form for equipment identity, fault code, measurement, expected result, safety boundary, source or field context, and confidence status.
+- Permit draft `UNVERIFIED` entries but prevent them from driving deterministic guidance.
+- Promote entries to `MANUAL_CONFIRMED` or `FIELD_CONFIRMED` explicitly.
+- Validate exact identifiers, model/revision applicability, and required safety data.
+
+### P-002 — Personal memory
+
+- Add local persistence for knowledge, cases, observations, corrections, and field confirmations.
+- Search by model, fault code, symptom, component, and recent case.
+- Keep actual, reference, deterministic, simulated, and AI evidence visibly distinct.
+
+### P-003 — Phone and offline use
+
+- Provide an installable phone-first interface with local/offline data access.
+- Avoid solving phone access by exposing the current localhost service directly to a public network.
+- Complete storage, encryption, backup, and device-loss review before field adoption.
+
+### P-004 — Job-driven breadth
+
+- Add only equipment and problems the owner encounters or expects to service.
+- Measure reuse, time saved, corrections, unsupported stops, and conflicts.
+- Prefer a useful partial personal memory over a broad public ingestion pipeline.
+
+## Completed technical foundations
+
+| Foundation | Outcome |
+| --- | --- |
+| `ST-000` | Private evidence, schema, approval, and export gates available |
+| `ST-001` | Bounded model-to-reference simulator complete |
+| `ST-002` | Bounded E24 field diagnostic case complete |
+| `ST-003` | Deterministic training replay implemented; personal acceptance remains available |
+
+## Deferred public-product roadmap
+
+The maturity phases below are not active delivery commitments. They are retained only to prevent a future commercial decision from bypassing source rights, security, validation, or publication controls.
 
 ## Phase 0 — Governance and foundation
 

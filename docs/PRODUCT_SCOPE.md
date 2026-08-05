@@ -2,13 +2,13 @@
 
 ## Product definition
 
-HVAC XPERT is an evidence-grounded HVAC/R lead-technician assistant and training simulator. It converts authorized manufacturer documentation into reviewed equipment knowledge, deterministic diagnostic behavior, interactive two-dimensional schematics, guided service calls, and instructor-managed training.
+HVAC XPERT is a single-owner, local-first HVAC/R field copilot and personal training simulator. It converts facts manually recorded from legitimately accessed private sources and applicable field observations into searchable equipment knowledge, deterministic diagnostic behavior, interactive two-dimensional references, guided service calls, and personal training.
 
-The field experience helps a technician decide what to inspect or measure next. The training experience lets a learner practice the same reasoning against clearly labeled simulated equipment behavior. Neither experience may present unsupported AI output as manufacturer fact.
+The field experience helps the owner decide what to inspect or measure next. The training experience lets the owner practice the same reasoning against clearly labeled simulated equipment behavior. Neither experience may present unsupported AI output as manufacturer fact. `PERSONAL_USE_PIVOT.md` is the active product-direction amendment.
 
-## Pilot product wedge
+## Personal product wedge
 
-The pilot is a model- and revision-specific diagnostic copilot for technically complex inverter equipment. It must prove one complete, evidence-backed diagnostic case before prioritizing broad document coverage, hardware integrations, or a large training catalog. Training remains in scope and reuses the same approved diagnostic path after the field workflow is validated. `COMPETITIVE_POSITIONING.md` records the market analysis and priority rationale.
+The product is a private diagnostic memory and one-next-test copilot for equipment the owner actually services. The approved model- and revision-specific E24 case remains the deterministic baseline, but new breadth is driven by real jobs and a ten-minute manual-entry target rather than a public content-acquisition program. Training remains in scope and reuses supported diagnostic paths.
 
 ## Product outcomes
 
@@ -26,25 +26,19 @@ HVAC XPERT must help users:
 
 ## Primary users
 
-- HVAC apprentices and students
-- Residential HVAC technicians
-- Commercial HVAC technicians
-- Refrigeration technicians
-- Lead technicians and service managers
-- HVAC instructors and training managers
-- Contractors
-- Source, legal, and HVAC technical reviewers
-- Content authors and platform administrators
+- Primary owner and user: `Debynyhan-Banks`
+- Future technicians, instructors, contractors, reviewers, and administrators are deferred until a separate shared-use or commercial scope decision
 
 ## Product capability pillars
 
-### 1. Governed equipment knowledge
+### 1. Personal equipment knowledge
 
-- Manual upload, authorized acquisition adapters, APIs, partnerships, and licensed feeds
+- Manual private upload and manual fact entry
 - Immutable source identity, hashing, applicability, revision, and provenance
 - Structured equipment, component, connector, fault, sequence, measurement, and procedure records
 - Explicit unknowns and conflicts
-- Separate technical approval and publication-authorization gates
+- Simple owner-facing confidence labels backed by the existing validation metadata
+- A fail-closed export gate that remains separate from personal use
 
 ### 2. Field diagnostic support
 
@@ -80,22 +74,24 @@ Two-dimensional semantic diagrams are the default because they directly support 
 
 The deterministic engine, not AI, establishes simulated operational truth.
 
-### 5. Training and AI instruction
+### 5. Personal training and optional AI
 
 - Reviewed service-call scenarios
-- Learner workflow, hints, scoring, remediation, and progress
+- Personal workflow, hints, scoring, remediation, and progress
 - AI explanations grounded in approved knowledge and simulator state
-- Instructor-authored scenarios with technical review before release
-- Separate apprentice, technician, and advanced diagnostic paths when content supports them
+- Owner-authored scenarios confirmed before they influence scoring or guidance
+- Additional difficulty paths only when personal use demonstrates a need
 
-### 6. Review and content operations
+### 6. Owner knowledge operations
 
-- Extraction review with accept, revise, reject, and conflict states
-- HVAC technical approval
-- Legal and source-rights review
+- Fast manual creation and correction
+- Owner source comparison and field confirmation
+- Conflict and revision handling
 - Scenario and procedure authoring
-- Versioned knowledge-package publication and rollback
-- Audit history and quality metrics
+- Versioned private knowledge and backup/restore
+- Audit history sufficient to understand where a fact came from and why it changed
+
+Multi-role review, publication operations, organization administration, and customer content workflows are deferred.
 
 ## Operational modes
 
@@ -109,30 +105,30 @@ The default field view presents one primary next test with its reason, safety bo
 
 Training mode uses clearly labeled simulated faults, states, and readings produced by the deterministic engine. Simulated outcomes must never appear in field case records or be described as live equipment readings.
 
-### Review mode
+### Owner mode
 
-Review mode manages sources, extracted assertions, conflicts, technical decisions, publication rights, procedures, diagrams, and scenarios. Reviewer identity and decision history remain auditable.
+Owner mode manages manual entries, sources, field confirmations, conflicts, procedures, diagrams, scenarios, and backups. Existing reviewer and decision metadata remains auditable, but separate organizational roles are not required for daily personal use.
 
-## How official documents ground AI
+## How private documents ground optional AI
 
-Official and otherwise authorized documents remain required. They are not used to create an untraceable model memory. The controlled path is:
+Legitimately accessed private documents remain useful. They are not used to create an untraceable model memory. The personal path is:
 
-1. Upload or acquire an authorized document.
-2. Record source, hash, model applicability, document revision, and access rights.
-3. Extract candidate structured facts and bounded supporting text.
+1. Privately upload a document the owner may legitimately access.
+2. Record source, hash, model applicability, and document revision.
+3. Manually enter concise facts in original wording with page references.
 4. Validate schemas, references, units, and model boundaries.
-5. Obtain HVAC technical review and any required legal approval.
-6. Publish an immutable approved knowledge package.
-7. Retrieve only applicable approved facts for the current question or case.
-8. Let AI organize and explain the evidence with visible citations and uncertainty.
+5. Mark the fact `MANUAL_CONFIRMED` only after direct owner comparison.
+6. Keep the resulting knowledge local and private.
+7. Retrieve only applicable confirmed facts for the current question or case.
+8. Let optional AI organize and explain the evidence with visible citations and uncertainty.
 
 Retrieval from approved records is the default AI grounding method. Foundation-model training on manufacturer PDFs is not required. Future fine-tuning may be considered for licensed workflow examples, classification, or response style, but it cannot replace retrieval, provenance, deterministic evaluation, or human approval.
 
 AI output is never a source. If approved evidence is missing or conflicting, the answer must say so and stop or escalate when safety requires it.
 
-## Pilot scope
+## Personal alpha scope
 
-The first pilot remains bounded to the Daikin Comfort Technologies Amana and Goodman S-Series inverter outdoor-unit family, beginning with model `ASXS6S4810AA`.
+The approved Daikin Comfort Technologies Amana and Goodman S-Series records beginning with model `ASXS6S4810AA` remain the deterministic baseline. New entries may cover other equipment encountered by the owner, but each entry must retain exact model, revision, source or field context, and confidence status.
 
 The pilot should prove one complete diagnostic loop:
 
@@ -147,7 +143,7 @@ The pilot should prove one complete diagnostic loop:
 9. Recommend the next approved test, stop, or escalation action.
 10. Produce a traceable case summary.
 
-The pilot also retains V1 electrical schematic training, approved voltage and signal-path visualization, virtual multimeter behavior, service-call simulations, AI-guided explanations, and instructor review workflows.
+The personal alpha retains V1 electrical schematic training, approved voltage and signal-path visualization, virtual multimeter behavior, service-call simulations, and deterministic training replay. AI explanation is optional and deferred until manual search and local case history are useful without it.
 
 ## Required pilot document coverage
 
@@ -162,7 +158,7 @@ The pilot also retains V1 electrical schematic training, approved voltage and si
 | Expected electrical measurements | Manufacturer diagnostic table or approved component data |
 | Component-specific behavior | Original component-manufacturer datasheet when manufacturer equipment documentation is insufficient |
 
-The existing product-specification, installation, service, and repair-parts documents do not need to be uploaded again. The service and repair-parts copies still require exact official-source confirmation. Additional documents should be added only to close a specific evidence gap and must remain in controlled private storage unless publication rights are recorded.
+The existing product-specification, installation, service, and repair-parts documents do not need to be uploaded again. Additional documents should be added only for equipment or evidence gaps relevant to personal service work and must remain in controlled private storage.
 
 ## Explicitly deferred or excluded
 
@@ -175,35 +171,40 @@ The following do not belong in the pilot unless a later approved scope change es
 - automatic repair authorization;
 - technician dispatching, invoicing, payment, or inventory-management systems;
 - broad multi-manufacturer ingestion before the pilot quality gates pass;
+- multi-tenant SaaS, organization management, customer billing, or team permissions;
+- instructor portals, enterprise analytics, and public content operations;
 - unrestricted crawling or collection from unapproved sources;
 - publication of complete restricted manuals or copied source diagrams; and
 - AI answers based only on model memory, general web content, or unreviewed extraction.
 
-## Expansion candidates
+## Personal expansion candidates
 
 After the pilot demonstrates diagnostic accuracy and safe use, candidates include:
 
-- additional equipment families and manufacturers;
+- equipment families and models encountered on real service calls;
 - offline-capable field access;
 - nameplate model and serial OCR with mandatory technician confirmation;
 - user-authorized read-only import from compatible meters and probes;
 - authorized equipment and component photographs;
 - voice-assisted case intake with visible confirmation;
 - approved parts applicability and service-bulletin alerts;
-- team escalation and remote lead-technician review;
 - historical case and known-good comparison with exact equipment applicability;
 - additional virtual instruments;
-- instructor analytics and competency reporting; and
+- encrypted backup and restore; and
 - narrowly targeted 3D or AR teaching aids with a validated learning benefit.
 
-## Product success measures
+## Personal success measures
 
-- Percentage of technical claims with exact provenance and approval state
-- HVAC reviewer acceptance rate and correction rate
+- Time to add a useful model, fault, measurement, or branch
+- Time to find the next applicable test
+- Percentage of technical claims with exact applicability and source or field context
+- Rate of promotion from `UNVERIFIED` to `MANUAL_CONFIRMED` or `FIELD_CONFIRMED`
 - Safety-stop and escalation correctness
 - Time and number of steps required to reach the next discriminating test
 - Diagnostic-path agreement with reviewed manufacturer procedures
-- Rate of unsupported or misapplied guidance, with a target of zero publication
+- Rate of unsupported or misapplied guidance, with a target of zero display as confirmed guidance
 - Case-summary completeness and traceability
-- Learner improvement across reviewed training scenarios
+- Repeat use on actual service calls
+- Personal improvement across deterministic training replays
 - Knowledge-package freshness and revision coverage
+- Successful encrypted backup and restore

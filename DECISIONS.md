@@ -130,7 +130,14 @@ This file records accepted cross-project decisions. Revisions must preserve prio
 
 ## ADR-019: Product implementation uses steel threads
 
-- Status: Accepted
+- Status: Superseded by ADR-020 for active delivery
 - Date: 2026-08-04
 - Decision: Preserve roadmap phases as governance and maturity gates while implementing product capability as thin end-to-end steel threads. Each thread must cross the applicable evidence, schema, deterministic-logic, interface, validation, HVAC-review, and repository-publication layers and must declare its access requirements before implementation.
 - Reason: Vertical delivery exposes integration, evidence, safety, and usability risks early and prevents isolated horizontal subsystems from creating an appearance of progress without a complete technician outcome.
+
+## ADR-020: Personal local-first use is the active product direction
+
+- Status: Accepted
+- Date: 2026-08-04
+- Decision: Develop HVAC XPERT first as a single-owner, local-first field copilot and personal training tool for `Debynyhan-Banks`. Prioritize ten-minute manual entry, searchable local case history, phone-first offline access, and job-driven equipment breadth. Defer multi-tenant SaaS, public manufacturer-content publication, organizational review roles, customer billing, and broad automated ingestion.
+- Reason: Personal use can validate whether the deterministic one-next-test workflow provides repeatable field value without requiring public content rights, cloud infrastructure, or commercial operations. Private-data, exact-applicability, safety, provenance, evidence-separation, and fail-closed export controls remain mandatory.

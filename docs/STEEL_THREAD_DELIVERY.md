@@ -1,47 +1,48 @@
-# Steel-Thread Delivery Protocol
+# Personal-Thread Delivery Protocol
+
+The filename is retained for repository-link continuity; the active protocol is personal-thread delivery under ADR-020.
 
 ## Decision
 
-HVAC XPERT uses steel threads as its implementation method. Each steel thread is a thin, complete, reviewable workflow that crosses the evidence, data-contract, deterministic-logic, application, validation, technical-review, and repository-publication layers.
+HVAC XPERT uses personal threads as its active implementation method. Each personal thread is a thin, complete workflow that crosses the applicable private evidence, data-contract, deterministic logic, application, validation, owner review, and repository synchronization layers.
 
-The phase gates in `ROADMAP.md` remain mandatory governance and maturity controls. Steel threads do not bypass source, legal, safety, validation, or publication requirements. They prevent the project from building large horizontal subsystems that do not yet work together for a technician.
+Personal threads do not bypass source, privacy, safety, validation, or export requirements. They prevent the project from building SaaS or ingestion infrastructure that does not improve the owner's field workflow. The original phase gates remain deferred controls for any future commercial or shared-use scope.
 
 ## Standard thread path
 
-Every product thread follows the applicable portions of this path:
+Every active thread follows the applicable portions of this path:
 
-`authorized evidence -> structured assertion -> HVAC approval -> versioned knowledge package -> deterministic rule -> technician interface -> acceptance test -> reviewed outcome`
+`private source or field context -> structured personal entry -> owner confirmation -> local knowledge -> deterministic rule -> field interface -> acceptance test -> owner outcome`
 
-Unknown or unsupported steps fail closed. A thread may use synthetic fixtures for software validation, but manufacturer-facing behavior requires applicable approved evidence before technical acceptance.
+Unknown or unsupported steps fail closed. A thread may use synthetic fixtures for software validation, but personal manufacturer-facing guidance requires applicable confirmed evidence before owner acceptance.
 
-## Planned steel threads
+## Active personal threads
 
 | Thread | Outcome | Status | External access before start |
 | --- | --- | --- | --- |
-| `ST-000` | Governance, source controls, schemas, private ingestion, and approval gates | Foundation available; legal work ongoing | No API; manufacturer permission remains external |
-| `ST-001` | One approved pilot model loads into the deterministic reference simulator, virtual reference meter, and SVG topology | Complete for current bounded records | No API |
-| `ST-002` | One complaint completes the field diagnostic case loop from intake through summary or escalation | Complete for bounded E24 pilot path | No API |
-| `ST-003` | The same approved case runs as a scored deterministic training scenario | Implementation candidate; instructor/HVAC acceptance pending | No API; requires instructor and HVAC acceptance |
-| `ST-004` | AI explains the approved case evidence with citations and explicit uncertainty | Pending | AI provider access and approved retrieval records |
-| `ST-005` | Reviewers author, review, version, and publish procedures and scenarios through a controlled portal | Pending | Authentication and reviewer-role decisions |
-| `ST-006` | Additional complaints and models in the approved pilot family reuse the same workflow | Pending | Additional authorized evidence as gaps are identified |
-| `ST-007` | The product is hardened for persistent, mobile, offline-capable field use and lead-tech escalation | Pending | Hosting, database, identity, security, and support decisions |
-| `ST-008` | Confirmed nameplate OCR and user-authorized read-only instrument imports reduce manual entry | Deferred until pilot proof | Vendor SDK or API access, test hardware, and privacy review |
-| `ST-009` | Additional manufacturers enter through the same governed acquisition and diagnostic workflow | Deferred until pilot proof | Manufacturer agreements, licensed feeds, or approved collection access |
+| `P-000` | Single-owner local-first scope and simplified governance | Documentation complete; merge pending | No API, database, hardware, upload, or paid service |
+| `P-001` | Ten-minute manual knowledge entry and personal confidence status | Next | Existing private documents or field context only |
+| `P-002` | Searchable private knowledge and local case history | Pending | Local storage decision; no cloud account required |
+| `P-003` | Phone-first offline field use | Pending | Device/storage/security decisions; no public listener |
+| `P-004` | Job-driven equipment and fault breadth | Pending | Private source or field context for each entry |
+| `P-005` | Optional retrieval-grounded AI explanation | Deferred | Owner-supplied AI provider access if selected |
+| `P-006` | Encrypted backup, restore, and owner-controlled export | Pending | Backup destination decision |
+| `P-007` | Future customer-supplied-content platform evaluation | Deferred | New commercial, legal, security, and hosting scope |
 
-## ST-003 bounded objective
+## P-001 bounded objective
 
-This thread is deliberately narrow:
+The next thread is deliberately narrow:
 
-- reuse the exact approved `ST-002` model, revision, complaint, safety boundary, test, expected result, and result branches;
-- generate one deterministic divergent observation labeled `SIMULATED` and never represent it as a field measurement;
-- hide the observation, hint, and response controls until safety acknowledgement;
-- hide target answers and branch guidance until the learner submits both an interpretation and disposition;
-- award 50 points for interpretation and 50 for disposition, subtract 10 points for a requested hint, and pass at 80 points;
-- expose the scoring breakdown, supported answers, approved branch guidance, remediation, package lineage, and source pages after submission; and
-- validate equal-input replay determinism with synthetic and approved private-package acceptance tests.
+- one local manual-entry workflow;
+- equipment identity and revision applicability;
+- one of fault, measurement, or diagnostic-branch entry per submission;
+- source document/page or field-context metadata;
+- safety category where the entry can drive a test;
+- owner-facing `UNVERIFIED`, `MANUAL_CONFIRMED`, `FIELD_CONFIRMED`, or `CONFLICTED` status;
+- deterministic guidance limited to confirmed, non-conflicted entries; and
+- focused schema, engine, privacy-boundary, and browser acceptance tests.
 
-It does not require an AI API, database service, cloud hosting, connected meter, new crawler, new source upload, or public manufacturer records. It is not secure examination software, learner-history storage, a manufacturer certification, or repair authorization. AI explanation and persistent production storage remain later threads.
+It does not require an AI API, cloud hosting, connected meter, crawler, public manufacturer records, or customer accounts. Persistent case history, phone packaging, AI explanation, and commercial workflows remain later personal threads.
 
 ## Thread anatomy
 
@@ -52,9 +53,9 @@ Before implementation begins, the contributor states:
 - documents or evidence required;
 - user technical decisions required;
 - API, database, cloud, vendor, or hardware access required;
-- legal, source-rights, security, or publication approvals required;
+- privacy, source-rights, security, or export decisions required;
 - expected paid accounts or material costs;
-- reviewer actions and acceptance boundary; and
+- owner actions and acceptance boundary; and
 - current blockers.
 
 Credentials are never requested in chat or committed to Git. When required, they are supplied through ignored local environment files, repository secrets, or approved cloud secret storage.
@@ -90,33 +91,33 @@ Credentials are never requested in chat or committed to Git. When required, they
 
 - Add focused unit, integration, private-package, and acceptance tests.
 - Check that no private source binary or record enters Git.
-- Obtain HVAC technical review for new technical assertions or behavior.
-- Preserve legal and publication holds independently from technical acceptance.
+- Obtain explicit owner confirmation for new actionable technical assertions or behavior.
+- Preserve export blocks independently from personal confirmation.
 
-### 7. Repository publication
+### 7. Repository synchronization
 
 - Update `CURRENT_STATE.md`.
 - Commit only the intended files.
 - Push the focused branch.
 - Open a pull request with validation results and the remaining blockers.
-- Provide the reviewer a direct merge link.
+- Provide the owner a direct merge link.
 
 ## Definition of done
 
-A steel thread is complete only when:
+A personal thread is complete only when:
 
 - its bounded user outcome works end to end;
 - every manufacturer-derived fact has exact provenance and approval status;
 - actual, reference, deterministic, simulated, and AI information remain distinguishable;
 - safety and unsupported paths fail closed;
 - the most specific tests and applicable broader tests pass;
-- required HVAC acceptance is recorded;
+- required owner acceptance is recorded;
 - private documents, credentials, and generated private records remain outside Git;
 - continuity documentation is current; and
 - the intended commit is pushed and available through a pull request or recorded merged change.
 
-Completing only a schema, API, UI mockup, extraction script, or AI prompt does not complete a product steel thread unless it is the explicitly bounded enabling thread and its integration consumer is identified.
+Completing only a schema, API, UI mockup, extraction script, or AI prompt does not complete a personal thread unless it is the explicitly bounded enabling thread and its integration consumer is identified.
 
 ## Change control
 
-If a thread discovers missing evidence, access, or safety requirements, narrow or stop the thread rather than inventing a workaround. New horizontal infrastructure is justified only when the active steel thread requires it and the decision is recorded. Deferred integrations stay deferred until the pilot proof measures in `COMPETITIVE_POSITIONING.md` are reviewed.
+If a thread discovers missing evidence, access, privacy, or safety requirements, narrow or stop the thread rather than inventing a workaround. New horizontal infrastructure is justified only when the active personal thread requires it and the decision is recorded. Deferred commercial integrations stay deferred until sustained personal field use supports a new scope decision.

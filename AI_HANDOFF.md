@@ -10,11 +10,12 @@ Before performing work:
 4. Read `DATA_GOVERNANCE.md`.
 5. Read `SOURCE_POLICY.md` and `VALIDATION_POLICY.md`.
 6. Read the schemas and source records relevant to the task.
-7. Check the worktree and preserve unrelated user changes.
+7. Read `docs/PERSONAL_USE_PIVOT.md`.
+8. Check the worktree and preserve unrelated user changes.
 
 ## Mandatory behavior
 
-- Before starting each steel thread, state an access checklist covering required documents, user decisions, APIs, databases, cloud services, vendor or hardware access, legal approvals, reviewer actions, expected costs, and blockers.
+- Before starting each personal thread, state an access checklist covering required documents or field context, user decisions, APIs, databases, cloud services, vendor or hardware access, privacy or export decisions, owner acceptance, expected costs, and blockers.
 - Never request credentials in chat or commit them; use ignored local environment files or approved secret storage when access becomes necessary.
 - Never invent manufacturer data.
 - Keep unknown values as `null`.
@@ -28,7 +29,7 @@ Before performing work:
 - Record cross-project architecture choices in `DECISIONS.md`.
 - Record newly discovered material risks in `RISKS.md`.
 - After each validated work unit, commit the intended changes and push the current branch to `origin`.
-- End every handoff with `Done`, `Next`, and `Blocked` status sections.
+- End every handoff with `Done`, `Next`, `Blocked`, and `Merge Link` status sections.
 
 ## Prohibited behavior
 
@@ -69,4 +70,6 @@ Before handing off work:
 
 ## Current authorized scope
 
-Governance, schema validation, private approved-package loading, deterministic simulator development, and a private local interface are authorized. Private operating-state extension `RUN-ASXS6-20260802-002` and topology extension `RUN-ASXS6-20260804-003` are technically approved and compose with base package `RUN-ASXS6-20260802-001` at runtime. The local interface renders the 6 connectors, 17 pins, 17 nodes, and 8 explicit connections as a reference-only SVG map with approval and source traceability. It must not invent voltage propagation, switching, timing, current flow, or unreviewed connectivity. The simulator supports exact manual phase selection, explicit component commands, fault injection, and diagnostic definitions. Private records must be loaded at runtime and must not be committed. Automated collection is not authorized until a source reviewer sets `approved_for_collection: true` for the exact source. Public export is not authorized while the package legal hold remains active. `ST-002` diagnostic-case contract design may proceed without an external API, but the selected complaint path must remain bounded by approved evidence and receive its own HVAC acceptance where it adds technical relationships.
+The active direction is the single-owner local-first product defined in `docs/PERSONAL_USE_PIVOT.md`. Governance, schema validation, private package loading, deterministic simulator and case development, personal training, fast manual entry, local persistence, private search, backup, and phone-first offline design are authorized when the active personal thread requires them.
+
+Private records must load at runtime and must never enter Git. The current GitHub repository remains public until the owner explicitly changes its visibility, so tracked changes may contain code, schemas, tests, and non-private governance only. Automated manufacturer-site collection remains unauthorized. Public or customer export of private source-derived records remains blocked. New actionable entries must preserve exact model and revision boundaries, source or field context, safety data, evidence class, and owner confirmation status.
