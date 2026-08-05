@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.hvac-xpert.local/training-replay.schema.json",
+  "title": "Deterministic Training Replay Definition",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "replay_id",
+    "path_id",
+    "model_id",
+    "revision_id",
+    "title",
+    "learning_objective",
+    "difficulty",
+    "max_score",
+    "pass_score",
+    "hint_penalty",
+    "sources"
+  ],
+  "properties": {
+    "schema_version": {"$ref": "common.schema.json#/$defs/schemaVersion"},
+    "replay_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "path_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "model_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "revision_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "title": {"type": "string", "minLength": 1},
+    "learning_objective": {"type": "string", "minLength": 1},
+    "difficulty": {"type": "string", "enum": ["TECHNICIAN"]},
+    "max_score": {"type": "integer", "const": 100},
+    "pass_score": {"type": "integer", "minimum": 1, "maximum": 100},
+    "hint_penalty": {"type": "integer", "minimum": 0, "maximum": 100},
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/sourceReference"}
+    }
+  },
+  "$defs": {
+    "sourceReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "document_id",
+        "page",
+        "section",
+        "validation_level",
+        "validation_outcome",
+        "reviewed_by",
+        "reviewed_at"
+      ],
+      "properties": {
+        "document_id": {"$ref": "common.schema.json#/$defs/entityId"},
+        "page": {"type": "integer", "minimum": 1},
+        "section": {"$ref": "common.schema.json#/$defs/nullableString"},
+        "validation_level": {"type": "string", "minLength": 1},
+        "validation_outcome": {"type": "string", "minLength": 1},
+        "reviewed_by": {"type": "string", "minLength": 1},
+        "reviewed_at": {"type": "string", "format": "date-time"}
+      }
+    }
+  }
+}

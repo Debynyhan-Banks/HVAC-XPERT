@@ -14,6 +14,11 @@ from diagnostics import (
 )
 from scripts.private_package_gate import PrivateKnowledgePackage
 from simulator import DeterministicSimulator, OperatingInputs
+from training import (
+    TrainingAttemptInputError,
+    TrainingReplayEngine,
+    UnknownTrainingReplayError,
+)
 
 
 LOCAL_HOST = "127.0.0.1"
@@ -49,6 +54,7 @@ class PrivateSimulatorApplication:
         self._package = package
         self._definitions = DeterministicSimulator(package)
         self._diagnostic_cases = DiagnosticCaseEngine(package)
+        self._training = TrainingReplayEngine(package)
 
     def definitions(self):
         return {
@@ -57,6 +63,7 @@ class PrivateSimulatorApplication:
             "measurement_behavior": "REFERENCE_DEFINITION_ONLY",
             "topology_behavior": "REFERENCE_DEFINITION_ONLY",
             "diagnostic_case_behavior": "TECHNICIAN_ENTRY_DETERMINISTIC_EVALUATION",
+            "training_behavior": "DETERMINISTIC_SIMULATED_REPLAY_SCORING",
             "model": {
                 "model_id": self._definitions.model_id,
                 "revision_id": self._definitions.revision_id,
@@ -69,10 +76,12 @@ class PrivateSimulatorApplication:
                 "node_count": len(self._package.nodes),
                 "connection_count": len(self._package.connections),
                 "diagnostic_path_count": len(self._diagnostic_cases.diagnostic_paths),
+                "training_replay_count": len(self._training.training_replays),
             },
             "operating_states": json_value(self._definitions.operating_states),
             "fault_codes": list(self._definitions.known_fault_codes),
             "diagnostic_paths": json_value(self._diagnostic_cases.diagnostic_paths),
+            "training_replays": json_value(self._training.training_replays),
             "topology": {
                 "connectors": json_value(self._package.connectors),
                 "pins": json_value(self._package.pins),
@@ -98,6 +107,9 @@ class PrivateSimulatorApplication:
 
     def case_snapshot(self, request):
         return json_value(self._diagnostic_cases.evaluate(request))
+
+    def training_snapshot(self, request):
+        return json_value(self._training.evaluate(request))
 
     @staticmethod
     def _validate_snapshot_request(request):
@@ -169,7 +181,7 @@ def create_handler(application, static_root=STATIC_ROOT):
                 self._send_error(HTTPStatus.FORBIDDEN, "Only localhost requests are allowed")
                 return
             path = urlsplit(self.path).path
-            if path not in {"/api/snapshot", "/api/case"}:
+            if path not in {"/api/snapshot", "/api/case", "/api/training"}:
                 self._send_error(HTTPStatus.NOT_FOUND, "Not found")
                 return
             content_type = self.headers.get_content_type()
@@ -186,11 +198,12 @@ def create_handler(application, static_root=STATIC_ROOT):
                 return
             try:
                 request = json.loads(self.rfile.read(content_length))
-                response = (
-                    application.snapshot(request)
-                    if path == "/api/snapshot"
-                    else application.case_snapshot(request)
-                )
+                if path == "/api/snapshot":
+                    response = application.snapshot(request)
+                elif path == "/api/case":
+                    response = application.case_snapshot(request)
+                else:
+                    response = application.training_snapshot(request)
             except (json.JSONDecodeError, UnicodeDecodeError):
                 self._send_error(HTTPStatus.BAD_REQUEST, "Request body must contain valid JSON")
                 return
@@ -199,6 +212,8 @@ def create_handler(application, static_root=STATIC_ROOT):
                 DiagnosticCaseInputError,
                 DiagnosticDefinitionError,
                 UnknownDiagnosticPathError,
+                TrainingAttemptInputError,
+                UnknownTrainingReplayError,
                 KeyError,
                 ValueError,
             ) as error:

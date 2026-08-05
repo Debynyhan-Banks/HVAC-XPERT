@@ -21,7 +21,7 @@ Unknown or unsupported steps fail closed. A thread may use synthetic fixtures fo
 | `ST-000` | Governance, source controls, schemas, private ingestion, and approval gates | Foundation available; legal work ongoing | No API; manufacturer permission remains external |
 | `ST-001` | One approved pilot model loads into the deterministic reference simulator, virtual reference meter, and SVG topology | Complete for current bounded records | No API |
 | `ST-002` | One complaint completes the field diagnostic case loop from intake through summary or escalation | Complete for bounded E24 pilot path | No API |
-| `ST-003` | The same approved case runs as a scored deterministic training scenario | Pending | No API; requires instructor and HVAC acceptance |
+| `ST-003` | The same approved case runs as a scored deterministic training scenario | Implementation candidate; instructor/HVAC acceptance pending | No API; requires instructor and HVAC acceptance |
 | `ST-004` | AI explains the approved case evidence with citations and explicit uncertainty | Pending | AI provider access and approved retrieval records |
 | `ST-005` | Reviewers author, review, version, and publish procedures and scenarios through a controlled portal | Pending | Authentication and reviewer-role decisions |
 | `ST-006` | Additional complaints and models in the approved pilot family reuse the same workflow | Pending | Additional authorized evidence as gaps are identified |
@@ -29,21 +29,19 @@ Unknown or unsupported steps fail closed. A thread may use synthetic fixtures fo
 | `ST-008` | Confirmed nameplate OCR and user-authorized read-only instrument imports reduce manual entry | Deferred until pilot proof | Vendor SDK or API access, test hardware, and privacy review |
 | `ST-009` | Additional manufacturers enter through the same governed acquisition and diagnostic workflow | Deferred until pilot proof | Manufacturer agreements, licensed feeds, or approved collection access |
 
-## ST-002 bounded objective
+## ST-003 bounded objective
 
-The next thread is deliberately narrow:
+This thread is deliberately narrow:
 
-- one exact pilot model and revision;
-- one complaint supported by approved evidence;
-- one applicable safety boundary;
-- one or more approved diagnostic tests, stopping when no supported branch remains;
-- explicit technician result entry;
-- deterministic comparison only where an approved rule exists;
-- one supported continuation, stop, or escalation path;
-- one traceable case summary; and
-- synthetic and private-package acceptance tests.
+- reuse the exact approved `ST-002` model, revision, complaint, safety boundary, test, expected result, and result branches;
+- generate one deterministic divergent observation labeled `SIMULATED` and never represent it as a field measurement;
+- hide the observation, hint, and response controls until safety acknowledgement;
+- hide target answers and branch guidance until the learner submits both an interpretation and disposition;
+- award 50 points for interpretation and 50 for disposition, subtract 10 points for a requested hint, and pass at 80 points;
+- expose the scoring breakdown, supported answers, approved branch guidance, remediation, package lineage, and source pages after submission; and
+- validate equal-input replay determinism with synthetic and approved private-package acceptance tests.
 
-It does not require an AI API, database service, cloud hosting, connected meter, new crawler, or public manufacturer records. AI explanation and persistent production storage remain later threads.
+It does not require an AI API, database service, cloud hosting, connected meter, new crawler, new source upload, or public manufacturer records. It is not secure examination software, learner-history storage, a manufacturer certification, or repair authorization. AI explanation and persistent production storage remain later threads.
 
 ## Thread anatomy
 

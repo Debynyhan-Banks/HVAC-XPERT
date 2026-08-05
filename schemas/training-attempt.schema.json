@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.hvac-xpert.local/training-attempt.schema.json",
+  "title": "Deterministic Training Attempt Snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "attempt_id",
+    "replay_id",
+    "path_id",
+    "model_id",
+    "revision_id",
+    "knowledge_package_ids",
+    "state",
+    "safety_acknowledged",
+    "simulated_observation",
+    "learner_evaluation",
+    "learner_disposition",
+    "target_evaluation",
+    "target_disposition",
+    "hint_used",
+    "hint",
+    "score",
+    "max_score",
+    "pass_score",
+    "passed",
+    "scoring",
+    "remediation",
+    "guidance",
+    "learner_id",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "schema_version": {"$ref": "common.schema.json#/$defs/schemaVersion"},
+    "attempt_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "replay_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "path_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "model_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "revision_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "knowledge_package_ids": {"$ref": "common.schema.json#/$defs/idArray"},
+    "state": {
+      "type": "string",
+      "enum": [
+        "SAFETY_ACKNOWLEDGEMENT_REQUIRED",
+        "AWAITING_LEARNER_RESPONSE",
+        "SCORED"
+      ]
+    },
+    "safety_acknowledged": {"type": "boolean"},
+    "simulated_observation": {
+      "oneOf": [
+        {"$ref": "#/$defs/simulatedObservation"},
+        {"type": "null"}
+      ]
+    },
+    "learner_evaluation": {
+      "type": ["string", "null"],
+      "enum": ["MATCHES_EXPECTED", "DOES_NOT_MATCH_EXPECTED", "UNKNOWN", null]
+    },
+    "learner_disposition": {
+      "type": ["string", "null"],
+      "enum": ["NEXT_TEST", "COMPLETE", "ESCALATE", "STOP", null]
+    },
+    "target_evaluation": {
+      "type": ["string", "null"],
+      "enum": ["MATCHES_EXPECTED", "DOES_NOT_MATCH_EXPECTED", "UNKNOWN", null]
+    },
+    "target_disposition": {
+      "type": ["string", "null"],
+      "enum": ["NEXT_TEST", "COMPLETE", "ESCALATE", "STOP", null]
+    },
+    "hint_used": {"type": "boolean"},
+    "hint": {"$ref": "common.schema.json#/$defs/nullableString"},
+    "score": {"type": ["integer", "null"], "minimum": 0, "maximum": 100},
+    "max_score": {"type": "integer", "const": 100},
+    "pass_score": {"type": "integer", "minimum": 1, "maximum": 100},
+    "passed": {"type": ["boolean", "null"]},
+    "scoring": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/scoringItem"}
+    },
+    "remediation": {"$ref": "common.schema.json#/$defs/stringArray"},
+    "guidance": {"$ref": "common.schema.json#/$defs/nullableString"},
+    "learner_id": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "updated_at": {"type": "string", "format": "date-time"}
+  },
+  "$defs": {
+    "simulatedObservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "result_kind",
+        "numeric_value",
+        "qualitative_value",
+        "unit",
+        "source_type"
+      ],
+      "properties": {
+        "result_kind": {"type": "string", "enum": ["NUMERIC", "QUALITATIVE"]},
+        "numeric_value": {"type": ["number", "null"]},
+        "qualitative_value": {
+          "type": ["string", "null"],
+          "enum": ["CONTINUITY", "NO_CONTINUITY", "OPEN", "CLOSED", "PRESENT", "ABSENT", "OTHER", "UNKNOWN", null]
+        },
+        "unit": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+        "source_type": {"const": "SIMULATED"}
+      }
+    },
+    "scoringItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["criterion", "earned_points", "available_points", "correct"],
+      "properties": {
+        "criterion": {"type": "string", "minLength": 1},
+        "earned_points": {"type": "integer", "minimum": 0},
+        "available_points": {"type": "integer", "minimum": 1},
+        "correct": {"type": "boolean"}
+      }
+    }
+  }
+}

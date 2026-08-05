@@ -18,6 +18,11 @@ python3 scripts/run_local_app.py \
 The interface supports:
 
 - model and approved-definition counts
+- a safety-gated deterministic training replay derived from each eligible approved diagnostic path
+- clearly labeled simulated observations that cannot be mistaken for live or technician-entered measurements
+- answer-redacted setup followed by explicit interpretation and disposition choices
+- transparent application scoring: 50 interpretation points, 50 disposition points, a 10-point hint penalty, and an 80-point pass threshold
+- post-submission supported answers, approved branch guidance, remediation, package lineage, and source traceability
 - a bounded field diagnostic case panel with exact complaint and fault-code entry conditions
 - required safety acknowledgement before the next approved test is shown
 - technician-entered actual results with deterministic comparison and fail-closed completion, stop, or escalation outcomes
@@ -40,7 +45,9 @@ results. Technical approval does not authorize repair or publication.
 
 The server creates a fresh deterministic simulator for every snapshot request.
 It does not infer or persist equipment state, automate phase transitions, publish
-private records, generate live or simulated meter readings, propagate voltage,
-infer current flow or switching, or serve on a network-accessible interface.
-Field mode currently accepts only explicit technician entry. Connected or imported
-instrument results remain deferred.
+private records, generate live meter readings, propagate voltage, infer current
+flow or switching, or serve on a network-accessible interface. The reference meter
+never generates a reading. Training mode generates only clearly labeled synthetic
+observations from an approved deterministic branch. Field mode currently accepts
+only explicit technician entry. Connected or imported instrument results remain
+deferred.
