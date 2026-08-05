@@ -2,11 +2,11 @@
 
 ## Current phase
 
-Phase 0 — Governance and foundation
+Personal alpha — local field copilot
 
 ## Current objective
 
-Complete instructor and HVAC acceptance of the first deterministic training replay while preserving the source-rights, safety, and publication gates.
+Complete the personal-use scope pivot, then implement the `P-001` ten-minute manual-entry workflow while preserving private-data, safety, applicability, evidence-separation, and export controls.
 
 ## Completed
 
@@ -130,31 +130,35 @@ Complete instructor and HVAC acceptance of the first deterministic training repl
 - Focused synthetic tests cover answer redaction, safety gating, qualitative and numeric simulation, full/partial/incorrect scoring, hint penalty, remediation, request validation, and equal-input determinism
 - Private browser interface now presents the training replay, clearly distinguishes simulation from live or technician-entered evidence, and exposes post-submission scoring, remediation, package lineage, and source traceability
 - `ST-003` remains an implementation candidate until the assigned reviewer accepts the documented training behavior assertions and bounded exclusions
+- Pull request #20 merged the deterministic `ST-003` training replay into `main` as commit `a0dd154`
+- Personal-use pivot defines `Debynyhan-Banks` as the sole active owner and user
+- Active product priorities now favor fast manual entry, local case memory, phone-first offline use, and breadth driven by real service calls
+- Daily personal confidence states are `UNVERIFIED`, `MANUAL_CONFIRMED`, `FIELD_CONFIRMED`, and `CONFLICTED`; unverified or conflicted entries cannot drive deterministic guidance
+- Existing private-package, safety, provenance, evidence-separation, and fail-closed export controls remain in force
+- Multi-tenant SaaS, public manufacturer-content publication, organizational roles, customer billing, broad crawling, and AI model training are deferred
+- Repository visibility remains public pending an explicit owner decision; private records, source content, field history, credentials, and customer or site details remain prohibited from Git
 
 ## In progress
 
-- Written collection and extraction permission request
-- Copyright, storage, factual-extraction, and derivative-use determination
-- Confirmation of exact official service, parts, and specification asset URLs
-- Manual-upload ingestion design using authorized documents or synthetic fixtures
-- Instructor and assigned HVAC/R technical review of the `ST-003` deterministic replay and pilot scoring rubric
+- Owner review and merge of the `P-000` personal-use pivot documentation
+- Repository visibility decision; making the repository private is recommended but is not part of `P-000`
+- `P-001` access checklist and design for fast local manual entry
+- Optional personal acceptance of the merged `ST-003` training behavior and rubric
 
 ## Blockers
 
-- No pilot source is approved for automated collection
-- Posted terms prohibit automated monitoring or copying of covered sites
-- Storage, factual-extraction, and derivative-publication rights remain unresolved
-- Exact official URLs for the service manual and parts catalog are unconfirmed
-- Technically approved records cannot enter the public repository while the legal hold remains
-- Transition timing and automatic transition conditions remain unknown because the cooling-flow chart does not specify them
+- No blocker prevents `P-000` or the code-only portion of `P-001`
+- The public repository cannot receive private manufacturer records, source binaries, field history, customer details, site details, or credentials
+- Automated collection and public or customer distribution remain blocked and are not required for the personal workflow
+- Transition timing and automatic transition conditions remain unknown and cannot be invented
 
 ## Next action
 
-Merge the `ST-003` implementation pull request, run the reviewer exercise in `docs/ST_003_TECHNICAL_REVIEW.md`, and record instructor/HVAC acceptance or requested revisions. No external API, new document upload, cloud service, database, or hardware access is required.
+Merge the `P-000` personal-use pivot documentation, then begin the `P-001` access checklist and implement the ten-minute local manual-entry workflow. No external API, cloud service, crawler, hardware, new document upload, or paid account is required for the first `P-001` increment.
 
 After the work unit passes validation, update this file, commit only the intended non-private files, and push the current branch to `origin`.
 
-## Pilot target
+## Deterministic baseline
 
 - Organization: Daikin Comfort Technologies
 - Brands: Amana and Goodman

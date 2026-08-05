@@ -1,15 +1,15 @@
 # HVAC XPERT
 
-HVAC XPERT is a governed HVAC/R lead-technician, knowledge, simulation, and training platform. It converts manufacturer documentation into validated equipment knowledge, interactive schematics, evidence-grounded diagnostic cases, troubleshooting simulations, and AI-guided service workflows. See `docs/PRODUCT_SCOPE.md` for the canonical capability boundaries.
+HVAC XPERT is a single-owner, local-first HVAC/R field copilot and personal training tool. It turns the owner's private source facts and field observations into searchable equipment knowledge, interactive references, deterministic diagnostic cases, and training replays. See `docs/PERSONAL_USE_PIVOT.md` and `docs/PRODUCT_SCOPE.md` for the active boundaries.
 
 ## Current status
 
-- Phase: Phase 0 — Governance and foundation
-- Pilot organization: Daikin Comfort Technologies
-- Pilot brands: Amana and Goodman
-- Pilot family: S-Series inverter outdoor units
-- Pilot model: `ASXS6S4810AA`
-- Collection authorization: Not yet approved
+- Phase: Personal alpha — local field copilot
+- Primary owner: `Debynyhan-Banks`
+- Deterministic baseline: `ASXS6S4810AA` revision `AA`
+- Active thread: `P-000` personal-use pivot, followed by `P-001` ten-minute manual entry
+- Repository visibility: Public; private records and source files remain excluded
+- Automated collection: Not authorized or needed for the personal workflow
 
 No crawler may download source material until the applicable source record has completed terms, robots, licensing, and access review.
 
@@ -18,13 +18,14 @@ No crawler may download source material until the applicable source record has c
 Every contributor and AI agent must read these files in order:
 
 1. `PROJECT_CHARTER.md`
-2. `CURRENT_STATE.md`
-3. `DECISIONS.md`
-4. `DATA_GOVERNANCE.md`
-5. `SOURCE_POLICY.md`
-6. `VALIDATION_POLICY.md`
-7. `AI_HANDOFF.md`
-8. The schemas relevant to the task
+2. `docs/PERSONAL_USE_PIVOT.md`
+3. `CURRENT_STATE.md`
+4. `DECISIONS.md`
+5. `DATA_GOVERNANCE.md`
+6. `SOURCE_POLICY.md`
+7. `VALIDATION_POLICY.md`
+8. `AI_HANDOFF.md`
+9. The schemas relevant to the task
 
 ## Non-negotiable rules
 
@@ -33,7 +34,8 @@ Every contributor and AI agent must read these files in order:
 - Attach provenance and validation status to every extracted fact.
 - Keep model revisions separate.
 - Treat OCR and AI output as unvalidated until reviewed.
-- Publish only records that pass the required validation gate.
+- Keep source binaries, copied expression, field history, and private knowledge outside Git.
+- Export or publish only through an explicit fail-closed decision.
 - Create original interactive redraws instead of redistributing manufacturer diagrams without permission.
 
 ## Repository map
@@ -52,9 +54,11 @@ Every contributor and AI agent must read these files in order:
 | `tests/` | Unit, integration, golden-document, and acceptance tests |
 | `scripts/` | Auditable maintenance and validation commands |
 
-## Immediate gate
+## Active direction
 
-The first controlled extraction and its operating-state, measurement, electrical-topology, and E24 diagnostic-path extensions are technically approved in private, ignored packages. Internal development composes approved records through the validated private-package gate; public export remains disabled under the unresolved legal and source-rights hold. The deterministic simulator supports exact manual phase selection, approved component commands, fault injection, approved diagnostic definitions, a reference-only virtual meter, and a reference-only SVG connection map through a private browser interface that binds only to `127.0.0.1`. The completed `ST-002` path adds exact E24 complaint and fault intake, required de-energized safety acknowledgement, one approved high-pressure-switch continuity test, technician result entry, deterministic evaluation, and stop or escalation outcomes. The `ST-003` implementation candidate replays that approved path with a clearly labeled synthetic observation, answer-redacted setup, transparent `50 + 50 - hint` scoring, and deterministic remediation; instructor and HVAC acceptance remain pending. The interface never fabricates live readings, propagates voltage, infers switching or current flow, authorizes repair, or adds unreviewed connectivity. Automatic transitions remain disabled because reviewed timing and transition conditions do not exist. Automated discovery or downloading begins only after `approved_for_collection` is set to `true` by an authorized reviewer in `sources/source-registry.yaml`.
+The approved private baseline and completed `ST-001` through `ST-003` workflows remain available: manual phase/reference simulation, SVG topology, virtual reference meter, bounded E24 field case, and deterministic training replay. Public export remains disabled. The active product work now prioritizes fast manual entry, personal confidence states, searchable local case history, phone-first offline access, and job-driven equipment breadth. The interface must continue to distinguish private references, actual field observations, deterministic evaluations, simulations, and optional AI explanations. It never fabricates live readings, authorizes repair, or invents unsupported tests.
+
+The next product thread is `P-001`: add one model, fault, measurement, or diagnostic branch manually in ten minutes or less while preventing unverified or conflicted entries from driving guidance.
 
 ## Private local interface
 

@@ -18,6 +18,19 @@ Validation establishes what evidence supports a technical fact. Extraction confi
 
 Levels describe evidence, not a simple workflow. A fact must not be advanced when the evidence for that level is missing.
 
+## Personal confidence labels
+
+The local personal interface may present the simpler labels below while preserving the canonical evidence and audit fields:
+
+| Personal label | Minimum personal-use evidence |
+| --- | --- |
+| `UNVERIFIED` | Draft entry without completed owner comparison |
+| `MANUAL_CONFIRMED` | Owner compared the entry with an applicable legitimately accessed private source |
+| `FIELD_CONFIRMED` | Owner recorded an applicable real service-call observation |
+| `CONFLICTED` | Source, revision, or field evidence disagrees or applicability remains unresolved |
+
+`UNVERIFIED` and `CONFLICTED` entries are visible for correction but cannot drive deterministic guidance. `FIELD_CONFIRMED` records what happened in an applicable case; it does not silently replace a conflicting manufacturer reference.
+
 ## Automated validation
 
 At minimum, validation must check:
@@ -32,7 +45,7 @@ At minimum, validation must check:
 - No orphan pins, nodes, or connections
 - Duplicate and contradictory assertions
 - Explicit `null` values for known unknowns
-- Publication status consistent with validation level
+- Personal confidence and export status consistent with recorded evidence
 
 ## Human review outcomes
 
@@ -42,11 +55,11 @@ At minimum, validation must check:
 - `REJECTED`: Extraction is unsupported or inapplicable
 - `CONFLICTED`: Authoritative sources disagree or applicability is unresolved
 
-Rejected and conflicted facts remain auditable and are excluded from public operational truth.
+Rejected and conflicted facts remain auditable and are excluded from personal deterministic truth and any export.
 
-## Publication gate
+## Public or customer export gate
 
-A technical fact may enter the public pilot knowledge base only when:
+A technical fact may enter any future public or customer knowledge base only when:
 
 - It passes schema and referential validation.
 - Its source is visible to the reviewer.
@@ -59,4 +72,4 @@ The user interface must show a human-readable validation label and clearly indic
 
 ## Regression controls
 
-Golden-document tests compare approved outputs when extraction code, OCR tooling, schemas, prompts, or AI models change. Any unexplained difference blocks publication until reviewed.
+Golden-document tests compare approved outputs when extraction code, OCR tooling, schemas, prompts, or AI models change. Any unexplained difference blocks confirmed personal use and export until reviewed.

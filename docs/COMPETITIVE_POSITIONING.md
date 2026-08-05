@@ -1,5 +1,9 @@
 # Competitive Positioning
 
+## Status
+
+Historical market analysis. It does not define the active build sequence after ADR-020. Current priorities are the single-owner local-first threads in `PERSONAL_USE_PIVOT.md` and `../ROADMAP.md`.
+
 ## Purpose
 
 This document converts a dated review of adjacent HVAC products into product-priority decisions for HVAC XPERT. Competitor descriptions are market references, not technical sources for manufacturer facts or simulator behavior.
@@ -8,7 +12,7 @@ This document converts a dated review of adjacent HVAC products into product-pri
 
 HVAC XPERT is a model- and revision-specific HVAC/R diagnostic copilot and training simulator that guides a technician to the next safe, discriminating test and shows the reviewed manufacturer evidence behind every technical recommendation.
 
-## Initial market wedge
+## Historical initial market wedge
 
 The pilot does not attempt to win through the largest manual library, the broadest hardware ecosystem, or the most immersive 3D course catalog. It proves depth on one technically complex inverter equipment family by completing one evidence-backed diagnostic case from complaint through traceable summary.
 
