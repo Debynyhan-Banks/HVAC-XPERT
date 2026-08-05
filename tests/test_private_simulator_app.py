@@ -24,6 +24,8 @@ PIN_B_ID = f"{MODEL_ID}:pin:compressor-b"
 NODE_A_ID = f"{MODEL_ID}:node:compressor-a"
 NODE_B_ID = f"{MODEL_ID}:node:compressor-b"
 CONNECTION_ID = f"{MODEL_ID}:connection:compressor-a-to-b"
+PATH_ID = f"{MODEL_ID}:diagnostic-path:F01"
+STEP_ID = f"{PATH_ID}:step:control-voltage"
 
 
 def topology_provenance(fact_id, entity_id):
@@ -45,7 +47,7 @@ def topology_provenance(fact_id, entity_id):
 def package():
     return PrivateKnowledgePackage(
         root=Path("/synthetic/private/package"),
-        manifest={"model_id": MODEL_ID, "revision_id": REVISION_ID},
+        manifest={"package_id": "RUN-SYNTHETIC-BASE", "model_id": MODEL_ID, "revision_id": REVISION_ID},
         equipment_model={},
         components=({"component_id": COMPONENT_ID},),
         faults=(
@@ -191,6 +193,66 @@ def package():
                 "provenance": topology_provenance("FACT-SYNTHETIC-CONNECTION", CONNECTION_ID),
             },
         ),
+        diagnostic_paths=(
+            {
+                "schema_version": "1.0.0",
+                "path_id": PATH_ID,
+                "model_id": MODEL_ID,
+                "revision_id": REVISION_ID,
+                "title": "Synthetic F01 diagnostic path",
+                "complaint_summary": "Synthetic F01 is active.",
+                "entry_fault_ids": [f"{MODEL_ID}:fault:F01"],
+                "safety_acknowledgements": [
+                    {
+                        "acknowledgement_id": f"{PATH_ID}:safety:qualified",
+                        "label": "Use the approved low-voltage procedure.",
+                        "safety_category": "ENERGIZED_LOW_VOLTAGE",
+                        "required": True,
+                    }
+                ],
+                "steps": [
+                    {
+                        "step_id": STEP_ID,
+                        "sequence": 1,
+                        "measurement_id": MEASUREMENT_ID,
+                        "rationale": "Determine whether control voltage is within the approved range.",
+                        "expected_result": {
+                            "result_kind": "NUMERIC",
+                            "nominal": 24,
+                            "minimum": 22,
+                            "maximum": 26,
+                            "unit": "VAC",
+                            "qualitative_value": None,
+                        },
+                        "branches": [
+                            {
+                                "branch_id": f"{STEP_ID}:branch:matches",
+                                "evaluation": "MATCHES_EXPECTED",
+                                "disposition": "COMPLETE",
+                                "next_step_id": None,
+                                "guidance": "The bounded synthetic path is complete.",
+                            },
+                            {
+                                "branch_id": f"{STEP_ID}:branch:not-matches",
+                                "evaluation": "DOES_NOT_MATCH_EXPECTED",
+                                "disposition": "ESCALATE",
+                                "next_step_id": None,
+                                "guidance": "Escalate the synthetic out-of-range result.",
+                            },
+                            {
+                                "branch_id": f"{STEP_ID}:branch:unknown",
+                                "evaluation": "UNKNOWN",
+                                "disposition": "STOP",
+                                "next_step_id": None,
+                                "guidance": "Stop because the synthetic result is unknown.",
+                            },
+                        ],
+                    }
+                ],
+                "provenance": topology_provenance("FACT-SYNTHETIC-PATH", PATH_ID),
+            },
+        ),
+        extension_package_ids=("RUN-SYNTHETIC-STATE", "RUN-SYNTHETIC-PATH"),
     )
 
 
@@ -205,6 +267,37 @@ def snapshot_request(**overrides):
     return values
 
 
+def case_request(**overrides):
+    values = {
+        "case_id": "CASE-SYNTHETIC-001",
+        "path_id": PATH_ID,
+        "mode": "FIELD",
+        "fault_codes": ["F01"],
+        "safety_acknowledged": True,
+        "results": [],
+        "created_at": "2026-08-04T12:00:00Z",
+        "updated_at": "2026-08-04T12:00:00Z",
+    }
+    values.update(overrides)
+    return values
+
+
+def numeric_result(value):
+    return {
+        "result_id": "RESULT-SYNTHETIC-001",
+        "step_id": STEP_ID,
+        "measurement_id": MEASUREMENT_ID,
+        "source_type": "TECHNICIAN_ENTRY",
+        "result_kind": "NUMERIC",
+        "numeric_value": value,
+        "qualitative_value": None,
+        "unit": "VAC",
+        "recorded_by": "synthetic-technician",
+        "recorded_at": "2026-08-04T12:00:00Z",
+        "notes": None,
+    }
+
+
 class PrivateSimulatorApplicationTests(unittest.TestCase):
     def setUp(self):
         self.application = PrivateSimulatorApplication(package())
@@ -216,11 +309,14 @@ class PrivateSimulatorApplicationTests(unittest.TestCase):
         self.assertIs(definitions["automatic_transitions_enabled"], False)
         self.assertEqual(definitions["measurement_behavior"], "REFERENCE_DEFINITION_ONLY")
         self.assertEqual(definitions["topology_behavior"], "REFERENCE_DEFINITION_ONLY")
+        self.assertEqual(definitions["diagnostic_case_behavior"], "TECHNICIAN_ENTRY_DETERMINISTIC_EVALUATION")
         self.assertEqual(definitions["model"]["model_id"], MODEL_ID)
         self.assertEqual(definitions["model"]["component_count"], 1)
         self.assertEqual(definitions["fault_codes"], ["F01"])
         self.assertEqual(definitions["operating_states"][0]["state_id"], STATE_ID)
         self.assertEqual(definitions["model"]["connection_count"], 1)
+        self.assertEqual(definitions["model"]["diagnostic_path_count"], 1)
+        self.assertEqual(definitions["diagnostic_paths"][0]["path_id"], PATH_ID)
         self.assertEqual(definitions["topology"]["connections"][0]["connection_id"], CONNECTION_ID)
         self.assertNotIn("package_root", definitions)
 
@@ -244,6 +340,16 @@ class PrivateSimulatorApplicationTests(unittest.TestCase):
         self.assertEqual(snapshot["status"], "FAULT_ACTIVE")
         self.assertEqual(snapshot["active_fault_codes"], ["F01"])
         self.assertEqual(snapshot["applied_effects"][0]["value"], False)
+
+    def test_evaluates_technician_entered_case_result(self):
+        awaiting = self.application.case_snapshot(case_request())
+        completed = self.application.case_snapshot(case_request(results=[numeric_result(24)]))
+
+        self.assertEqual(awaiting["state"], "AWAITING_RESULT")
+        self.assertEqual(awaiting["current_step_id"], STEP_ID)
+        self.assertEqual(completed["state"], "COMPLETE")
+        self.assertEqual(completed["evaluation"]["outcome"], "MATCHES_EXPECTED")
+        self.assertEqual(completed["results"][0]["source_type"], "TECHNICIAN_ENTRY")
 
     def test_rejects_invalid_request_shapes(self):
         invalid_requests = (
@@ -320,6 +426,18 @@ class PrivateSimulatorApplicationTests(unittest.TestCase):
         self.assertIn("topology_behavior", javascript)
         self.assertIn("REFERENCE_DEFINITION_ONLY", javascript)
         self.assertIn("renderTopology", javascript)
+
+    def test_case_interface_requires_technician_entry_and_deterministic_evaluation(self):
+        html = (STATIC_ROOT / "index.html").read_text(encoding="utf-8")
+        javascript = (STATIC_ROOT / "app.js").read_text(encoding="utf-8")
+
+        self.assertIn('id="case-path-select"', html)
+        self.assertIn("One approved test at a time", html)
+        self.assertIn("Technician-entered actual result", html)
+        self.assertIn("does not connect to or measure the equipment", html)
+        self.assertIn("TECHNICIAN_ENTRY_DETERMINISTIC_EVALUATION", javascript)
+        self.assertIn('requestJson("/api/case"', javascript)
+        self.assertIn('source_type: "TECHNICIAN_ENTRY"', javascript)
 
 
 if __name__ == "__main__":

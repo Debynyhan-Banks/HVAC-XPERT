@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 
 from scripts import validate_review_package
-from scripts.apply_review_decision import apply
+from scripts.apply_review_decision import DIAGNOSTIC_PATH_REVIEW_ACTIONS, apply
 
 
 PACKAGE_ID = "RUN-SYNTHETIC-EXTENSION"
@@ -17,8 +17,11 @@ REVIEWER_ID = "synthetic-reviewer"
 DOCUMENT_ID = "DOC-SYNTHETIC"
 REVIEWED_AT = "2026-08-02T00:00:00Z"
 COMPONENT_ID = f"{MODEL_ID}:component:one"
+FAULT_ID = f"{MODEL_ID}:fault:E24"
 STATE_ID = f"{MODEL_ID}:state:idle"
 MEASUREMENT_ID = f"{MODEL_ID}:measurement:supply"
+DIAGNOSTIC_PATH_ID = f"{MODEL_ID}:diagnostic-path:E24"
+DIAGNOSTIC_STEP_ID = f"{DIAGNOSTIC_PATH_ID}:step:continuity"
 CONNECTOR_ID = f"{MODEL_ID}:connector:terminal-block"
 PIN_A_ID = f"{MODEL_ID}:pin:terminal-a"
 PIN_B_ID = f"{MODEL_ID}:pin:terminal-b"
@@ -96,6 +99,7 @@ class ReviewPackageExtensionTests(unittest.TestCase):
             },
         )
         write_json(base_root / "components" / "one.json", {"component_id": COMPONENT_ID})
+        write_json(base_root / "faults" / "E24.json", {"fault_id": FAULT_ID})
         write_json(
             self.manifest_root / f"{DOCUMENT_ID}.json",
             {"document_id": DOCUMENT_ID, "fingerprint": {"page_count": 1}},
@@ -261,6 +265,77 @@ class ReviewPackageExtensionTests(unittest.TestCase):
             encoding="utf-8",
         )
 
+    def write_diagnostic_path_fixture(self):
+        manifest_path = self.package_root / "package-manifest.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest["record_counts"]["diagnostic_paths"] = 1
+        manifest["technical_review"]["assertion_count"] = 3
+        write_json(manifest_path, manifest)
+        write_json(
+            self.package_root / "diagnostic-paths" / "E24.json",
+            {
+                "schema_version": "1.0.0",
+                "path_id": DIAGNOSTIC_PATH_ID,
+                "model_id": MODEL_ID,
+                "revision_id": REVISION_ID,
+                "title": "Synthetic E24 path",
+                "complaint_summary": "Synthetic control displays E24.",
+                "entry_fault_ids": [FAULT_ID],
+                "safety_acknowledgements": [
+                    {
+                        "acknowledgement_id": f"{DIAGNOSTIC_PATH_ID}:safety:power",
+                        "label": "Disconnect all power.",
+                        "safety_category": "DEENERGIZED_ONLY",
+                        "required": True,
+                    }
+                ],
+                "steps": [
+                    {
+                        "step_id": DIAGNOSTIC_STEP_ID,
+                        "sequence": 1,
+                        "measurement_id": MEASUREMENT_ID,
+                        "rationale": "Check the approved continuity definition.",
+                        "expected_result": {
+                            "result_kind": "QUALITATIVE",
+                            "nominal": None,
+                            "minimum": None,
+                            "maximum": None,
+                            "unit": None,
+                            "qualitative_value": "CONTINUITY",
+                        },
+                        "branches": [
+                            {
+                                "branch_id": f"{DIAGNOSTIC_STEP_ID}:branch:match",
+                                "evaluation": "MATCHES_EXPECTED",
+                                "disposition": "ESCALATE",
+                                "next_step_id": None,
+                                "guidance": "Escalate because no approved next branch exists.",
+                            },
+                            {
+                                "branch_id": f"{DIAGNOSTIC_STEP_ID}:branch:no-match",
+                                "evaluation": "DOES_NOT_MATCH_EXPECTED",
+                                "disposition": "ESCALATE",
+                                "next_step_id": None,
+                                "guidance": "Escalate for qualified service review.",
+                            },
+                            {
+                                "branch_id": f"{DIAGNOSTIC_STEP_ID}:branch:unknown",
+                                "evaluation": "UNKNOWN",
+                                "disposition": "STOP",
+                                "next_step_id": None,
+                                "guidance": "Stop when the result is unknown.",
+                            },
+                        ],
+                    }
+                ],
+                "provenance": [provenance("FACT-SYNTHETIC-DIAGNOSTIC-PATH", DIAGNOSTIC_PATH_ID)],
+            },
+        )
+        (self.package_root / "REVIEW_SUMMARY.md").write_text(
+            f"# Synthetic Diagnostic Path Review\n\n{DIAGNOSTIC_PATH_REVIEW_ACTIONS}\n",
+            encoding="utf-8",
+        )
+
     def test_validates_pending_extension_and_complete_approval(self):
         self.write_topology_fixture()
         self.assertEqual(self.validate(), 0)
@@ -329,6 +404,38 @@ class ReviewPackageExtensionTests(unittest.TestCase):
         write_json(connector_path, connector)
 
         self.assertEqual(self.validate(), 1)
+
+    def test_validates_and_applies_pending_diagnostic_path_review(self):
+        self.write_diagnostic_path_fixture()
+        self.assertEqual(self.validate(), 0)
+        decision_path = self.package_root / "review-decision.json"
+        write_json(
+            decision_path,
+            {
+                "package_id": PACKAGE_ID,
+                "reviewer_id": REVIEWER_ID,
+                "outcome": "ACCEPTED",
+                "scope": "ALL_ASSERTIONS",
+                "reviewed_at": REVIEWED_AT,
+                "reviewer_statement": "Synthetic diagnostic-path approval",
+                "publication_authorized": False,
+            },
+        )
+
+        with contextlib.redirect_stdout(io.StringIO()):
+            apply(self.package_root, decision_path)
+
+        self.assertEqual(self.validate(), 0)
+        approved_path = json.loads(
+            (self.package_root / "diagnostic-paths" / "E24.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            approved_path["provenance"][0]["validation"]["level"],
+            "LEVEL_4_TECHNICIAN_REVIEWED",
+        )
+        approved_summary = (self.package_root / "REVIEW_SUMMARY.md").read_text(encoding="utf-8")
+        self.assertNotIn("## Review actions", approved_summary)
+        self.assertIn("diagnostic-path assertions were accepted", approved_summary)
 
 
 if __name__ == "__main__":

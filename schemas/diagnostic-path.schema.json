@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.hvac-xpert.local/diagnostic-path.schema.json",
+  "title": "Approved Diagnostic Path",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "path_id",
+    "model_id",
+    "revision_id",
+    "title",
+    "complaint_summary",
+    "entry_fault_ids",
+    "safety_acknowledgements",
+    "steps",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": {"$ref": "common.schema.json#/$defs/schemaVersion"},
+    "path_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "model_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "revision_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "title": {"type": "string", "minLength": 1},
+    "complaint_summary": {"type": "string", "minLength": 1},
+    "entry_fault_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "common.schema.json#/$defs/entityId"}
+    },
+    "safety_acknowledgements": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/safetyAcknowledgement"}
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/diagnosticStep"}
+    },
+    "provenance": {"$ref": "common.schema.json#/$defs/provenanceArray"}
+  },
+  "$defs": {
+    "safetyAcknowledgement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["acknowledgement_id", "label", "safety_category", "required"],
+      "properties": {
+        "acknowledgement_id": {"$ref": "common.schema.json#/$defs/entityId"},
+        "label": {"type": "string", "minLength": 1},
+        "safety_category": {
+          "type": "string",
+          "enum": [
+            "DEENERGIZED_ONLY",
+            "ENERGIZED_LOW_VOLTAGE",
+            "ENERGIZED_LINE_VOLTAGE",
+            "HIGH_VOLTAGE_DC",
+            "REFRIGERANT_PRESSURE",
+            "OTHER",
+            "UNKNOWN"
+          ]
+        },
+        "required": {"const": true}
+      }
+    },
+    "expectedResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "result_kind",
+        "nominal",
+        "minimum",
+        "maximum",
+        "unit",
+        "qualitative_value"
+      ],
+      "properties": {
+        "result_kind": {"type": "string", "enum": ["NUMERIC", "QUALITATIVE"]},
+        "nominal": {"type": ["number", "null"]},
+        "minimum": {"type": ["number", "null"]},
+        "maximum": {"type": ["number", "null"]},
+        "unit": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+        "qualitative_value": {
+          "type": ["string", "null"],
+          "enum": ["CONTINUITY", "NO_CONTINUITY", "OPEN", "CLOSED", "PRESENT", "ABSENT", "OTHER", "UNKNOWN", null]
+        }
+      }
+    },
+    "branch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["branch_id", "evaluation", "disposition", "next_step_id", "guidance"],
+      "properties": {
+        "branch_id": {"$ref": "common.schema.json#/$defs/entityId"},
+        "evaluation": {
+          "type": "string",
+          "enum": ["MATCHES_EXPECTED", "DOES_NOT_MATCH_EXPECTED", "UNKNOWN"]
+        },
+        "disposition": {
+          "type": "string",
+          "enum": ["NEXT_TEST", "COMPLETE", "ESCALATE", "STOP"]
+        },
+        "next_step_id": {"$ref": "common.schema.json#/$defs/nullableNonEmptyString"},
+        "guidance": {"type": "string", "minLength": 1}
+      }
+    },
+    "diagnosticStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "step_id",
+        "sequence",
+        "measurement_id",
+        "rationale",
+        "expected_result",
+        "branches"
+      ],
+      "properties": {
+        "step_id": {"$ref": "common.schema.json#/$defs/entityId"},
+        "sequence": {"type": "integer", "minimum": 1},
+        "measurement_id": {"$ref": "common.schema.json#/$defs/entityId"},
+        "rationale": {"type": "string", "minLength": 1},
+        "expected_result": {"$ref": "#/$defs/expectedResult"},
+        "branches": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {"$ref": "#/$defs/branch"}
+        }
+      }
+    }
+  }
+}

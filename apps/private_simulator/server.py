@@ -6,6 +6,12 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit
 
+from diagnostics import (
+    DiagnosticCaseEngine,
+    DiagnosticCaseInputError,
+    DiagnosticDefinitionError,
+    UnknownDiagnosticPathError,
+)
 from scripts.private_package_gate import PrivateKnowledgePackage
 from simulator import DeterministicSimulator, OperatingInputs
 
@@ -42,6 +48,7 @@ class PrivateSimulatorApplication:
     def __init__(self, package: PrivateKnowledgePackage):
         self._package = package
         self._definitions = DeterministicSimulator(package)
+        self._diagnostic_cases = DiagnosticCaseEngine(package)
 
     def definitions(self):
         return {
@@ -49,6 +56,7 @@ class PrivateSimulatorApplication:
             "automatic_transitions_enabled": False,
             "measurement_behavior": "REFERENCE_DEFINITION_ONLY",
             "topology_behavior": "REFERENCE_DEFINITION_ONLY",
+            "diagnostic_case_behavior": "TECHNICIAN_ENTRY_DETERMINISTIC_EVALUATION",
             "model": {
                 "model_id": self._definitions.model_id,
                 "revision_id": self._definitions.revision_id,
@@ -60,9 +68,11 @@ class PrivateSimulatorApplication:
                 "pin_count": len(self._package.pins),
                 "node_count": len(self._package.nodes),
                 "connection_count": len(self._package.connections),
+                "diagnostic_path_count": len(self._diagnostic_cases.diagnostic_paths),
             },
             "operating_states": json_value(self._definitions.operating_states),
             "fault_codes": list(self._definitions.known_fault_codes),
+            "diagnostic_paths": json_value(self._diagnostic_cases.diagnostic_paths),
             "topology": {
                 "connectors": json_value(self._package.connectors),
                 "pins": json_value(self._package.pins),
@@ -85,6 +95,9 @@ class PrivateSimulatorApplication:
             )
         )
         return json_value(snapshot)
+
+    def case_snapshot(self, request):
+        return json_value(self._diagnostic_cases.evaluate(request))
 
     @staticmethod
     def _validate_snapshot_request(request):
@@ -155,7 +168,8 @@ def create_handler(application, static_root=STATIC_ROOT):
             if not self._request_is_local():
                 self._send_error(HTTPStatus.FORBIDDEN, "Only localhost requests are allowed")
                 return
-            if urlsplit(self.path).path != "/api/snapshot":
+            path = urlsplit(self.path).path
+            if path not in {"/api/snapshot", "/api/case"}:
                 self._send_error(HTTPStatus.NOT_FOUND, "Not found")
                 return
             content_type = self.headers.get_content_type()
@@ -172,11 +186,22 @@ def create_handler(application, static_root=STATIC_ROOT):
                 return
             try:
                 request = json.loads(self.rfile.read(content_length))
-                response = application.snapshot(request)
+                response = (
+                    application.snapshot(request)
+                    if path == "/api/snapshot"
+                    else application.case_snapshot(request)
+                )
             except (json.JSONDecodeError, UnicodeDecodeError):
                 self._send_error(HTTPStatus.BAD_REQUEST, "Request body must contain valid JSON")
                 return
-            except (ApplicationRequestError, KeyError, ValueError) as error:
+            except (
+                ApplicationRequestError,
+                DiagnosticCaseInputError,
+                DiagnosticDefinitionError,
+                UnknownDiagnosticPathError,
+                KeyError,
+                ValueError,
+            ) as error:
                 self._send_error(HTTPStatus.UNPROCESSABLE_ENTITY, str(error))
                 return
             self._send_json(HTTPStatus.OK, response)

@@ -8,7 +8,7 @@ HVAC XPERT keeps the phase structure below as governance and maturity gates, but
 | --- | --- | --- |
 | `ST-000` | Governed private evidence and approval foundation | Foundation available; legal work ongoing |
 | `ST-001` | Approved model-to-reference-simulator workflow | Complete for bounded pilot records |
-| `ST-002` | First field diagnostic case loop | Next |
+| `ST-002` | First field diagnostic case loop | In progress; Package 4 technical review pending |
 | `ST-003` | Training replay of the approved case | Pending |
 | `ST-004` | Grounded AI explanation of approved evidence | Pending |
 | `ST-005` | Reviewer and content-authoring operations | Pending |
@@ -17,7 +17,7 @@ HVAC XPERT keeps the phase structure below as governance and maturity gates, but
 | `ST-008` | Confirmed OCR and read-only instrument imports | Deferred until pilot proof |
 | `ST-009` | Controlled manufacturer expansion | Deferred until pilot proof |
 
-`ST-002` requires no external API. Its first increment is limited to one exact model and revision, one evidence-supported complaint, approximately two or three approved tests, deterministic result evaluation, and a traceable summary or escalation outcome.
+`ST-002` requires no external API. Its first increment is limited to one exact model and revision, one evidence-supported complaint, one or more approved tests, deterministic result evaluation, and a traceable summary or escalation outcome. The path must stop rather than add tests unsupported by reviewed evidence.
 
 ## Phase 0 — Governance and foundation
 

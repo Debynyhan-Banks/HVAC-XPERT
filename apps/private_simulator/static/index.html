@@ -51,6 +51,87 @@
         <span id="error-message"></span>
       </div>
 
+      <section class="panel case-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">ST-002 · Field diagnostic case</p>
+            <h2>One approved test at a time</h2>
+          </div>
+          <span id="case-status" class="status-badge status-loading">No case selected</span>
+        </div>
+        <p class="section-explainer">
+          Start from an approved complaint path, acknowledge its safety boundary, and enter the actual result observed by the technician. HVAC XPERT compares the entry with a reviewed definition; it does not connect to or measure the equipment.
+        </p>
+        <div id="case-empty" class="empty-state">
+          <p>No approved diagnostic path is loaded. Pending paths remain unavailable until HVAC technical review is complete.</p>
+        </div>
+        <div id="case-workspace" class="case-workspace" hidden>
+          <div class="case-intake">
+            <label class="field-label" for="case-path-select">Approved complaint path</label>
+            <div class="select-wrap">
+              <select id="case-path-select" disabled>
+                <option value="">Choose an approved path…</option>
+              </select>
+            </div>
+            <div class="case-complaint">
+              <span class="detail-label">Recorded complaint</span>
+              <h3 id="case-title">Select a path</h3>
+              <p id="case-complaint">No complaint selected.</p>
+              <div id="case-faults" class="case-faults"></div>
+            </div>
+            <div id="case-safety-block" class="case-safety-block">
+              <span class="detail-label">Required safety acknowledgement</span>
+              <div id="case-safety-list"></div>
+              <label class="case-safety-check">
+                <input id="case-safety-ack" type="checkbox" disabled>
+                <span>I confirm the listed safety boundary before loading the test.</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="case-test-card">
+            <div class="case-test-heading">
+              <div>
+                <span class="detail-label">Next approved test</span>
+                <h3 id="case-test-name">Safety acknowledgement required</h3>
+              </div>
+              <span id="case-test-safety" class="safety-pill">Unavailable</span>
+            </div>
+            <p id="case-rationale" class="case-rationale">The procedure remains hidden until the required safety acknowledgement is recorded.</p>
+            <div id="case-test-details" class="case-test-details" hidden>
+              <div><span>Meter mode</span><strong id="case-meter-mode">—</strong></div>
+              <div><span>Test points</span><strong id="case-test-points">—</strong></div>
+              <div><span>Expected</span><strong id="case-expected">—</strong></div>
+            </div>
+            <div id="case-procedure-block" class="procedure-block" hidden>
+              <span class="detail-label">Approved procedure</span>
+              <p id="case-procedure">—</p>
+            </div>
+            <div id="case-result-entry" class="case-result-entry" hidden>
+              <div>
+                <label class="field-label" for="case-result-select">Technician-entered actual result</label>
+                <select id="case-result-select"></select>
+                <input id="case-result-number" type="number" step="any" inputmode="decimal" hidden>
+              </div>
+              <div>
+                <label class="field-label" for="case-technician">Recorded by</label>
+                <input id="case-technician" type="text" autocomplete="name" placeholder="Technician name">
+              </div>
+              <button id="case-evaluate" class="primary-button" type="button">Evaluate entered result</button>
+            </div>
+            <div id="case-outcome" class="case-outcome" hidden>
+              <span class="detail-label">Deterministic case outcome</span>
+              <strong id="case-evaluation">—</strong>
+              <p id="case-guidance">—</p>
+            </div>
+            <div class="source-block">
+              <span class="detail-label">Path traceability</span>
+              <p id="case-source">Select an approved path to view evidence.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="workspace">
         <aside class="control-stack">
           <div class="panel control-panel">

@@ -6,7 +6,7 @@ Phase 0 — Governance and foundation
 
 ## Current objective
 
-Complete source legal/access review and prepare the controlled manufacturer-document acquisition pipeline for the pilot family.
+Complete the first bounded field diagnostic case loop while preserving the source-rights, technical-review, safety, and publication gates.
 
 ## Completed
 
@@ -109,6 +109,14 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Roadmap execution now uses steel threads while preserving the existing phases as governance and maturity gates
 - Before-thread access checklists now identify required documents, user decisions, credentials, external services, legal approvals, reviewer actions, expected costs, and blockers without requesting secrets in chat
 - `ST-001` records the completed bounded model-to-reference-simulator workflow; `ST-002` is the next field diagnostic case loop and requires no external API
+- Canonical diagnostic-path and diagnostic-case schemas now separate approved path definitions from field or training case records
+- Private-package and review gates now validate diagnostic-path dependencies, exact fault and measurement references, safety acknowledgements, ordered steps, complete deterministic branches, provenance, and independent approval status
+- Stateless diagnostic case engine now requires exact fault-code entry, required safety acknowledgement, one approved test at a time, chronological technician-entered field results, and deterministic fail-closed branch evaluation
+- Field and training result sources remain separated; connected or imported instrument readings stay deferred
+- Private browser interface now provides complaint context, safety screening, next-test rationale and procedure, technician result entry, deterministic outcome, and traceability without implying equipment measurement or repair authority
+- Synthetic engine and application fixtures validate the complete software loop while pending manufacturer-derived paths remain excluded from runtime composition
+- Private pending Package 4 `RUN-ASXS6-20260804-004` defines one bounded `E24` high-pressure-switch-continuity path with four page-cited assertions, one test, and three stop-or-escalate branches
+- Package 4 validates successfully as pending and retains `publication_allowed: false`; assigned HVAC/R technical review is required before runtime use
 
 ## In progress
 
@@ -116,6 +124,7 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Copyright, storage, factual-extraction, and derivative-use determination
 - Confirmation of exact official service, parts, and specification asset URLs
 - Manual-upload ingestion design using authorized documents or synthetic fixtures
+- HVAC technical review of all four Package 4 E24 diagnostic-path assertions and bounded exclusions
 
 ## Blockers
 
@@ -125,10 +134,11 @@ Complete source legal/access review and prepare the controlled manufacturer-docu
 - Exact official URLs for the service manual and parts catalog are unconfirmed
 - Technically approved records cannot enter the public repository while the legal hold remains
 - Transition timing and automatic transition conditions remain unknown because the cooling-flow chart does not specify them
+- The real E24 diagnostic path cannot load into the private application until Package 4 is technically approved
 
 ## Next action
 
-Review and approve the steel-thread delivery protocol and roadmap. After approval, begin `ST-002` by defining canonical case data contracts, then select one pilot complaint whose complete diagnostic path can be supported by approved records. Diagnostic points must not be linked to topology pins until an approved extension supplies explicit measurement-to-pin references.
+Merge the `ST-002` foundation pull request, then review Package 4 using `docs/PACKAGE_4_TECHNICAL_REVIEW.md` and the cited private service-manual pages 45 and 16. If every assertion and exclusion is correct, provide explicit complete-package technical approval while keeping publication unauthorized. After that decision is recorded, compose Package 4 into the private application and run the real E24 acceptance path.
 
 After the work unit passes validation, update this file, commit only the intended non-private files, and push the current branch to `origin`.
 

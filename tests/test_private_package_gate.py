@@ -315,6 +315,109 @@ class PrivatePackageFixture:
         write_json(extension_root / "connections" / "terminal-a-to-b.json", connection)
         return extension_root, connection
 
+    def write_diagnostic_path_extension(
+        self,
+        required_extension_id="RUN-SYNTHETIC-EXTENSION-001",
+        package_id="RUN-SYNTHETIC-DIAGNOSTIC-PATH-001",
+    ):
+        extension_root = self.private_root / "review" / package_id / "package"
+        path_id = f"{MODEL_ID}:diagnostic-path:E01"
+        step_id = f"{path_id}:step:supply"
+        measurement_id = f"{MODEL_ID}:measurement:supply"
+        manifest = {
+            "schema_version": "1.0.0",
+            "package_kind": "KNOWLEDGE_EXTENSION",
+            "package_id": package_id,
+            "base_package_id": PACKAGE_ID,
+            "required_extension_package_ids": [required_extension_id],
+            "model_id": MODEL_ID,
+            "revision_id": REVISION_ID,
+            "status": "TECHNICALLY_APPROVED_LEGAL_HOLD",
+            "assigned_reviewer": REVIEWER_ID,
+            "publication_allowed": False,
+            "contains_source_binaries": False,
+            "document_ids": [DOCUMENT_ID],
+            "record_counts": {"diagnostic_paths": 1},
+            "technical_review": {
+                "outcome": "ACCEPTED",
+                "scope": "ALL_ASSERTIONS",
+                "reviewer_id": REVIEWER_ID,
+                "reviewed_at": REVIEWED_AT,
+                "assertion_count": 1,
+                "decision_file": "review-decision.json",
+                "legal_hold": True,
+            },
+        }
+        decision = {
+            "package_id": package_id,
+            "reviewer_id": REVIEWER_ID,
+            "outcome": "ACCEPTED",
+            "scope": "ALL_ASSERTIONS",
+            "reviewed_at": REVIEWED_AT,
+            "publication_authorized": False,
+        }
+        path = {
+            "schema_version": "1.0.0",
+            "path_id": path_id,
+            "model_id": MODEL_ID,
+            "revision_id": REVISION_ID,
+            "title": "Synthetic E01 path",
+            "complaint_summary": "Synthetic E01 is active.",
+            "entry_fault_ids": [f"{MODEL_ID}:fault:E01"],
+            "safety_acknowledgements": [
+                {
+                    "acknowledgement_id": f"{path_id}:safety:qualified",
+                    "label": "Use the synthetic approved procedure.",
+                    "safety_category": "ENERGIZED_LOW_VOLTAGE",
+                    "required": True,
+                }
+            ],
+            "steps": [
+                {
+                    "step_id": step_id,
+                    "sequence": 1,
+                    "measurement_id": measurement_id,
+                    "rationale": "Evaluate the synthetic supply measurement.",
+                    "expected_result": {
+                        "result_kind": "NUMERIC",
+                        "nominal": 24,
+                        "minimum": 22,
+                        "maximum": 26,
+                        "unit": "VAC",
+                        "qualitative_value": None,
+                    },
+                    "branches": [
+                        {
+                            "branch_id": f"{step_id}:branch:matches",
+                            "evaluation": "MATCHES_EXPECTED",
+                            "disposition": "COMPLETE",
+                            "next_step_id": None,
+                            "guidance": "Complete the synthetic path.",
+                        },
+                        {
+                            "branch_id": f"{step_id}:branch:not-matches",
+                            "evaluation": "DOES_NOT_MATCH_EXPECTED",
+                            "disposition": "ESCALATE",
+                            "next_step_id": None,
+                            "guidance": "Escalate the synthetic path.",
+                        },
+                        {
+                            "branch_id": f"{step_id}:branch:unknown",
+                            "evaluation": "UNKNOWN",
+                            "disposition": "STOP",
+                            "next_step_id": None,
+                            "guidance": "Stop the synthetic path.",
+                        },
+                    ],
+                }
+            ],
+            "provenance": [extension_provenance("FACT-SYNTHETIC-DIAGNOSTIC-PATH", path_id, package_id)],
+        }
+        write_json(extension_root / "package-manifest.json", manifest)
+        write_json(extension_root / "review-decision.json", decision)
+        write_json(extension_root / "diagnostic-paths" / "E01.json", path)
+        return extension_root, path
+
 
 class PrivatePackageGateTests(unittest.TestCase):
     def setUp(self):
@@ -437,6 +540,42 @@ class PrivatePackageGateTests(unittest.TestCase):
             load_private_approved_package_with_extensions(
                 self.fixture.package_root,
                 (extension_root,),
+                self.fixture.private_root,
+            )
+
+    def test_composes_diagnostic_path_after_required_measurement_extension(self):
+        measurement_root, _manifest, _state = self.fixture.write_extension()
+        diagnostic_root, path = self.fixture.write_diagnostic_path_extension()
+
+        package = load_private_approved_package_with_extensions(
+            self.fixture.package_root,
+            (measurement_root, diagnostic_root),
+            self.fixture.private_root,
+        )
+
+        self.assertEqual(package.diagnostic_paths[0]["path_id"], path["path_id"])
+        self.assertEqual(package.extension_package_ids[-1], "RUN-SYNTHETIC-DIAGNOSTIC-PATH-001")
+
+    def test_rejects_diagnostic_path_loaded_before_required_extension(self):
+        diagnostic_root, _path = self.fixture.write_diagnostic_path_extension()
+
+        with self.assertRaisesRegex(PackageValidationError, "required package is not loaded"):
+            load_private_approved_package_with_extensions(
+                self.fixture.package_root,
+                (diagnostic_root,),
+                self.fixture.private_root,
+            )
+
+    def test_rejects_diagnostic_path_with_unknown_measurement(self):
+        measurement_root, _manifest, _state = self.fixture.write_extension()
+        diagnostic_root, path = self.fixture.write_diagnostic_path_extension()
+        path["steps"][0]["measurement_id"] = "UNKNOWN"
+        write_json(diagnostic_root / "diagnostic-paths" / "E01.json", path)
+
+        with self.assertRaisesRegex(PackageValidationError, "unknown measurement"):
+            load_private_approved_package_with_extensions(
+                self.fixture.package_root,
+                (measurement_root, diagnostic_root),
                 self.fixture.private_root,
             )
 
