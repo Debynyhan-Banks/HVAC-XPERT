@@ -4,7 +4,7 @@ from enum import Enum
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 
 from diagnostics import (
     DiagnosticCaseEngine,
@@ -13,6 +13,9 @@ from diagnostics import (
     UnknownDiagnosticPathError,
 )
 from personal_knowledge import (
+    PersonalCaseStorageError,
+    PersonalCaseStore,
+    PersonalCaseValidationError,
     PersonalEntryStorageError,
     PersonalEntryStore,
     PersonalEntryValidationError,
@@ -55,12 +58,13 @@ def json_value(value):
 
 
 class PrivateSimulatorApplication:
-    def __init__(self, package: PrivateKnowledgePackage, personal_entries=None):
+    def __init__(self, package: PrivateKnowledgePackage, personal_entries=None, personal_cases=None):
         self._package = package
         self._definitions = DeterministicSimulator(package)
         self._diagnostic_cases = DiagnosticCaseEngine(package)
         self._training = TrainingReplayEngine(package)
         self._personal_entries = personal_entries or PersonalEntryStore()
+        self._personal_cases = personal_cases or PersonalCaseStore()
 
     def definitions(self):
         return {
@@ -71,6 +75,7 @@ class PrivateSimulatorApplication:
             "diagnostic_case_behavior": "TECHNICIAN_ENTRY_DETERMINISTIC_EVALUATION",
             "training_behavior": "DETERMINISTIC_SIMULATED_REPLAY_SCORING",
             "personal_entry_behavior": "PRIVATE_LOCAL_FILE_FAIL_CLOSED",
+            "personal_memory_behavior": "PRIVATE_LOCAL_SEARCH_AND_CASE_HISTORY",
             "model": {
                 "model_id": self._definitions.model_id,
                 "revision_id": self._definitions.revision_id,
@@ -121,6 +126,21 @@ class PrivateSimulatorApplication:
     def create_personal_entry(self, request):
         return json_value(self._personal_entries.create(request))
 
+    def personal_memory(self, query=""):
+        entries = self._personal_entries.search(query)
+        cases = self._personal_cases.search(query)
+        return {
+            "query": query,
+            "entry_count": len(entries),
+            "case_count": len(cases),
+            "entries": json_value(entries),
+            "cases": json_value(cases),
+        }
+
+    def save_personal_case(self, request):
+        snapshot = json_value(self._diagnostic_cases.evaluate(request))
+        return json_value(self._personal_cases.save(snapshot))
+
     @staticmethod
     def _validate_snapshot_request(request):
         if not isinstance(request, dict):
@@ -170,9 +190,22 @@ def create_handler(application, static_root=STATIC_ROOT):
             if not self._request_is_local():
                 self._send_error(HTTPStatus.FORBIDDEN, "Only localhost requests are allowed")
                 return
-            path = urlsplit(self.path).path
+            parsed_url = urlsplit(self.path)
+            path = parsed_url.path
             if path == "/api/definitions":
                 self._send_json(HTTPStatus.OK, application.definitions())
+                return
+            if path == "/api/personal-memory":
+                query = parse_qs(parsed_url.query).get("q", [""])[0]
+                try:
+                    response = application.personal_memory(query)
+                except (PersonalEntryValidationError, PersonalCaseValidationError) as error:
+                    self._send_error(HTTPStatus.UNPROCESSABLE_ENTITY, str(error))
+                    return
+                except (PersonalEntryStorageError, PersonalCaseStorageError) as error:
+                    self._send_error(HTTPStatus.INTERNAL_SERVER_ERROR, str(error))
+                    return
+                self._send_json(HTTPStatus.OK, response)
                 return
             static_file = STATIC_FILES.get(path)
             if static_file is None:
@@ -191,7 +224,13 @@ def create_handler(application, static_root=STATIC_ROOT):
                 self._send_error(HTTPStatus.FORBIDDEN, "Only localhost requests are allowed")
                 return
             path = urlsplit(self.path).path
-            if path not in {"/api/snapshot", "/api/case", "/api/training", "/api/personal-entries"}:
+            if path not in {
+                "/api/snapshot",
+                "/api/case",
+                "/api/training",
+                "/api/personal-entries",
+                "/api/personal-cases",
+            }:
                 self._send_error(HTTPStatus.NOT_FOUND, "Not found")
                 return
             content_type = self.headers.get_content_type()
@@ -215,8 +254,11 @@ def create_handler(application, static_root=STATIC_ROOT):
                     response = application.case_snapshot(request)
                 elif path == "/api/training":
                     response = application.training_snapshot(request)
-                else:
+                elif path == "/api/personal-entries":
                     response = application.create_personal_entry(request)
+                    response_status = HTTPStatus.CREATED
+                else:
+                    response = application.save_personal_case(request)
                     response_status = HTTPStatus.CREATED
             except (json.JSONDecodeError, UnicodeDecodeError):
                 self._send_error(HTTPStatus.BAD_REQUEST, "Request body must contain valid JSON")
@@ -229,12 +271,13 @@ def create_handler(application, static_root=STATIC_ROOT):
                 TrainingAttemptInputError,
                 UnknownTrainingReplayError,
                 PersonalEntryValidationError,
+                PersonalCaseValidationError,
                 KeyError,
                 ValueError,
             ) as error:
                 self._send_error(HTTPStatus.UNPROCESSABLE_ENTITY, str(error))
                 return
-            except PersonalEntryStorageError as error:
+            except (PersonalEntryStorageError, PersonalCaseStorageError) as error:
                 self._send_error(HTTPStatus.INTERNAL_SERVER_ERROR, str(error))
                 return
             self._send_json(response_status, response)

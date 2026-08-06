@@ -158,6 +158,42 @@ class PersonalEntryStoreTests(unittest.TestCase):
         with self.assertRaisesRegex(PersonalEntryValidationError, "Unexpected request fields"):
             self.store.create(request)
 
+    def test_searches_private_entries_by_model_fault_and_title(self):
+        created = self.store.create(fault_request())
+
+        by_model = self.store.search("SYN-36HP")
+        by_fault = self.store.search("F42 pressure")
+
+        self.assertEqual([record["entry_id"] for record in by_model], [created["entry_id"]])
+        self.assertEqual([record["entry_id"] for record in by_fault], [created["entry_id"]])
+        self.assertIs(by_model[0]["is_current"], True)
+        self.assertIsNone(by_model[0]["superseded_by_entry_id"])
+
+    def test_records_immutable_correction_lineage(self):
+        original = self.store.create(fault_request(confidence_status="UNVERIFIED"))
+        corrected_request = fault_request()
+        corrected_request["supersedes_entry_id"] = original["entry_id"]
+
+        corrected = self.store.create(corrected_request)
+        results = self.store.search("F42")
+
+        self.assertEqual(corrected["supersedes_entry_id"], original["entry_id"])
+        self.assertEqual(results[0]["entry_id"], corrected["entry_id"])
+        self.assertIs(results[0]["is_current"], True)
+        self.assertEqual(results[1]["superseded_by_entry_id"], corrected["entry_id"])
+        self.assertIs(results[1]["is_current"], False)
+
+    def test_rejects_second_correction_of_superseded_entry(self):
+        original = self.store.create(fault_request(confidence_status="UNVERIFIED"))
+        first_correction = fault_request()
+        first_correction["supersedes_entry_id"] = original["entry_id"]
+        self.store.create(first_correction)
+        second_correction = fault_request()
+        second_correction["supersedes_entry_id"] = original["entry_id"]
+
+        with self.assertRaisesRegex(PersonalEntryValidationError, "already has a newer correction"):
+            self.store.create(second_correction)
+
 
 if __name__ == "__main__":
     unittest.main()

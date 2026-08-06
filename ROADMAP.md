@@ -7,8 +7,8 @@ HVAC XPERT now implements personal value through the personal threads defined in
 | Personal thread | Product outcome | Status |
 | --- | --- | --- |
 | `P-000` | Adopt the single-owner local-first product scope | Complete; merged in PR #21 |
-| `P-001` | Add a model, fault, measurement, or branch manually in ten minutes | Implementation complete; owner acceptance pending |
-| `P-002` | Search private knowledge and persist local case history | Next after P-001 acceptance |
+| `P-001` | Add a model, fault, measurement, or branch manually in ten minutes | Complete; accepted and merged in PR #22 |
+| `P-002` | Search private knowledge and persist local case history | Implementation complete; owner acceptance pending |
 | `P-003` | Use the copilot phone-first and offline without public exposure | Pending |
 | `P-004` | Expand knowledge from equipment encountered on real jobs | Pending |
 | `P-005` | Add optional retrieval-grounded AI explanation | Deferred until manual workflow proves useful |
@@ -36,6 +36,8 @@ HVAC XPERT now implements personal value through the personal threads defined in
 - Add local persistence for knowledge, cases, observations, corrections, and field confirmations.
 - Search by model, fault code, symptom, component, and recent case.
 - Keep actual, reference, deterministic, simulated, and AI evidence visibly distinct.
+- Preserve corrections as new immutable entries linked to the superseded record.
+- Persist only safety-acknowledged field cases evaluated by the deterministic server.
 
 ### P-003 — Phone and offline use
 
