@@ -243,7 +243,16 @@ def validate_personal_entry_request(request):
     record = _require_object(
         request,
         "request",
-        {"entry_kind", "equipment", "title", "details", "evidence", "safety_category", "confidence_status"},
+        {
+            "entry_kind",
+            "equipment",
+            "title",
+            "details",
+            "evidence",
+            "safety_category",
+            "confidence_status",
+            "supersedes_entry_id",
+        },
         {"entry_kind", "equipment", "title", "details", "evidence", "safety_category", "confidence_status"},
     )
     entry_kind = _choice(record["entry_kind"], "entry_kind", ENTRY_KINDS)
@@ -273,6 +282,12 @@ def validate_personal_entry_request(request):
         "evidence": evidence,
         "safety_category": safety_category,
         "confidence_status": confidence_status,
+        "supersedes_entry_id": _text(
+            record.get("supersedes_entry_id"),
+            "supersedes_entry_id",
+            nullable=True,
+            maximum=160,
+        ),
     }
 
 
@@ -286,6 +301,20 @@ class PersonalEntryStore:
 
     def create(self, request):
         values = validate_personal_entry_request(request)
+        supersedes_entry_id = values["supersedes_entry_id"]
+        if supersedes_entry_id is not None:
+            previous = self.get(supersedes_entry_id)
+            if previous["entry_kind"] != values["entry_kind"]:
+                raise PersonalEntryValidationError("A correction must keep the same entry kind")
+            if previous["equipment"]["model_number"] != values["equipment"]["model_number"]:
+                raise PersonalEntryValidationError("A correction must keep the same exact model number")
+            superseded_ids = {
+                record.get("supersedes_entry_id")
+                for record in self._load_records()
+                if record.get("supersedes_entry_id") is not None
+            }
+            if supersedes_entry_id in superseded_ids:
+                raise PersonalEntryValidationError("The selected entry already has a newer correction")
         created_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         entry_id = f"PENTRY-{datetime.now(timezone.utc):%Y%m%dT%H%M%SZ}-{uuid4().hex[:12].upper()}"
         guidance_status = _guidance_status(
@@ -304,6 +333,69 @@ class PersonalEntryStore:
             "updated_at": created_at,
         }
         self._write(record)
+        return record
+
+    def get(self, entry_id):
+        normalized = _text(entry_id, "entry_id", maximum=160)
+        path = self._root / f"{normalized}.json"
+        if path.name != f"{normalized}.json":
+            raise PersonalEntryValidationError("entry_id is invalid")
+        return self._read(path)
+
+    def search(self, query="", limit=12):
+        if not isinstance(query, str) or len(query) > 240:
+            raise PersonalEntryValidationError("Search query must be text with 240 characters or fewer")
+        if isinstance(limit, bool) or not isinstance(limit, int) or not 1 <= limit <= 50:
+            raise PersonalEntryValidationError("Search limit must be an integer from 1 through 50")
+        records = self._load_records()
+        superseded_by = {
+            record["supersedes_entry_id"]: record["entry_id"]
+            for record in records
+            if record.get("supersedes_entry_id") is not None
+        }
+        tokens = [token for token in query.casefold().split() if token]
+        matches = []
+        for record in records:
+            searchable = self._searchable_text(record)
+            if tokens and not all(token in searchable for token in tokens):
+                continue
+            result = dict(record)
+            result["superseded_by_entry_id"] = superseded_by.get(record["entry_id"])
+            result["is_current"] = record["entry_id"] not in superseded_by
+            matches.append(result)
+        matches.sort(key=lambda record: (record.get("updated_at", ""), record["entry_id"]), reverse=True)
+        return tuple(matches[:limit])
+
+    def _load_records(self):
+        if not self._root.exists():
+            return ()
+        try:
+            paths = sorted(self._root.glob("PENTRY-*.json"))
+        except OSError as error:
+            raise PersonalEntryStorageError(f"Could not list private personal entries: {error}") from error
+        return tuple(self._read(path) for path in paths)
+
+    @staticmethod
+    def _searchable_text(value):
+        if isinstance(value, dict):
+            return " ".join(PersonalEntryStore._searchable_text(item) for item in value.values()).casefold()
+        if isinstance(value, list):
+            return " ".join(PersonalEntryStore._searchable_text(item) for item in value).casefold()
+        if value is None:
+            return ""
+        return str(value).casefold()
+
+    def _read(self, path):
+        try:
+            if path.is_symlink() or not path.is_file():
+                raise PersonalEntryStorageError(f"Private personal entry is not a regular file: {path.name}")
+            record = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            raise PersonalEntryStorageError(f"Could not read private personal entry {path.name}: {error}") from error
+        if not isinstance(record, dict) or record.get("entry_id") != path.stem:
+            raise PersonalEntryStorageError(f"Private personal entry identity is invalid: {path.name}")
+        if record.get("deterministic_guidance_active") is not False:
+            raise PersonalEntryStorageError(f"Private personal entry guidance gate is invalid: {path.name}")
         return record
 
     def _write(self, record):

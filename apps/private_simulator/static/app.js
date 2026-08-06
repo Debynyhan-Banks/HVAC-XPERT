@@ -10,10 +10,12 @@ const state = {
   caseCreatedAt: null,
   caseResults: [],
   caseSnapshot: null,
+  caseRequest: null,
   selectedReplayId: null,
   trainingAttemptId: null,
   trainingCreatedAt: null,
   trainingSnapshot: null,
+  correctionEntryId: null,
 };
 
 const elements = {
@@ -80,6 +82,8 @@ const elements = {
   caseEvidenceType: document.querySelector("#case-evidence-type"),
   caseRecordedBy: document.querySelector("#case-recorded-by"),
   caseRecordMeta: document.querySelector("#case-record-meta"),
+  caseSave: document.querySelector("#case-save"),
+  caseSaveStatus: document.querySelector("#case-save-status"),
   caseSource: document.querySelector("#case-source"),
   trainingStatus: document.querySelector("#training-status"),
   trainingEmpty: document.querySelector("#training-empty"),
@@ -112,6 +116,9 @@ const elements = {
   trainingRecordMeta: document.querySelector("#training-record-meta"),
   trainingSource: document.querySelector("#training-source"),
   entryStatus: document.querySelector("#entry-status"),
+  entryCorrectionBanner: document.querySelector("#entry-correction-banner"),
+  entryCorrectionId: document.querySelector("#entry-correction-id"),
+  entryCorrectionCancel: document.querySelector("#entry-correction-cancel"),
   entryForm: document.querySelector("#entry-form"),
   entryManufacturer: document.querySelector("#entry-manufacturer"),
   entryBrand: document.querySelector("#entry-brand"),
@@ -161,6 +168,13 @@ const elements = {
   entryResultConfidence: document.querySelector("#entry-result-confidence"),
   entryResultGuidance: document.querySelector("#entry-result-guidance"),
   entryResultMessage: document.querySelector("#entry-result-message"),
+  memorySearchForm: document.querySelector("#memory-search-form"),
+  memorySearch: document.querySelector("#memory-search"),
+  memoryRecent: document.querySelector("#memory-recent"),
+  memoryEntryCount: document.querySelector("#memory-entry-count"),
+  memoryCaseCount: document.querySelector("#memory-case-count"),
+  memoryEntryList: document.querySelector("#memory-entry-list"),
+  memoryCaseList: document.querySelector("#memory-case-list"),
   errorBanner: document.querySelector("#error-banner"),
   errorMessage: document.querySelector("#error-message"),
 };
@@ -298,7 +312,61 @@ function personalEntryRequest() {
     },
     safety_category: elements.entrySafety.value,
     confidence_status: elements.entryConfidence.value,
+    supersedes_entry_id: state.correctionEntryId,
   };
+}
+
+function cancelEntryCorrection() {
+  state.correctionEntryId = null;
+  elements.entryCorrectionBanner.hidden = true;
+  elements.entryCorrectionId.textContent = "—";
+}
+
+function beginEntryCorrection(record) {
+  state.correctionEntryId = record.entry_id;
+  elements.entryCorrectionBanner.hidden = false;
+  elements.entryCorrectionId.textContent = record.entry_id;
+  elements.entryManufacturer.value = record.equipment.manufacturer;
+  elements.entryBrand.value = record.equipment.brand;
+  elements.entryModel.value = record.equipment.model_number;
+  elements.entryRevision.value = record.equipment.revision || "";
+  elements.entryKind.value = record.entry_kind;
+  elements.entryConfidence.value = record.confidence_status;
+  elements.entryTitle.value = record.title;
+  syncEntryKind();
+  elements.entrySafety.value = record.safety_category;
+  if (record.entry_kind === "EQUIPMENT") {
+    elements.entryEquipmentType.value = record.details.equipment_type;
+    elements.entryEquipmentNotes.value = record.details.notes || "";
+  } else if (record.entry_kind === "FAULT") {
+    elements.entryFaultCode.value = record.details.fault_code;
+    elements.entryFaultMeaning.value = record.details.meaning;
+    elements.entryFaultNotes.value = record.details.notes || "";
+  } else if (record.entry_kind === "MEASUREMENT") {
+    elements.entryMeasurementName.value = record.details.name;
+    elements.entryMeterMode.value = record.details.meter_mode;
+    elements.entryPointA.value = record.details.point_a;
+    elements.entryPointB.value = record.details.point_b || "";
+    elements.entryResultKind.value = record.details.expected_result.result_kind;
+    elements.entryNominal.value = record.details.expected_result.nominal ?? "";
+    elements.entryMinimum.value = record.details.expected_result.minimum ?? "";
+    elements.entryMaximum.value = record.details.expected_result.maximum ?? "";
+    elements.entryUnit.value = record.details.expected_result.unit || "";
+    elements.entryQualitative.value = record.details.expected_result.qualitative_value || "UNKNOWN";
+    elements.entryProcedure.value = record.details.procedure;
+    syncEntryExpectedResult();
+  } else {
+    elements.entryBranchFault.value = record.details.fault_code || "";
+    elements.entryDisposition.value = record.details.disposition;
+    elements.entryCondition.value = record.details.condition;
+    elements.entryNextAction.value = record.details.next_action;
+  }
+  elements.entryContextType.value = record.evidence.context_type;
+  elements.entryDocumentId.value = record.evidence.document_id || "";
+  elements.entryPage.value = record.evidence.page ?? "";
+  elements.entryFieldContext.value = record.evidence.field_context || "";
+  syncEntryContext();
+  elements.entryCorrectionBanner.scrollIntoView({behavior: "smooth", block: "start"});
 }
 
 function renderPersonalEntryResult(record) {
@@ -318,6 +386,7 @@ function renderPersonalEntryResult(record) {
   elements.entryResultMessage.textContent = messages[record.guidance_status];
   elements.entryStatus.textContent = "Saved";
   elements.entryStatus.className = "status-badge status-idle";
+  cancelEntryCorrection();
 }
 
 async function submitPersonalEntry(event) {
@@ -333,6 +402,7 @@ async function submitPersonalEntry(event) {
       body: JSON.stringify(personalEntryRequest()),
     });
     renderPersonalEntryResult(record);
+    await loadPersonalMemory();
   } catch (error) {
     showError(error.message);
     elements.entryStatus.textContent = "Not saved";
@@ -340,6 +410,108 @@ async function submitPersonalEntry(event) {
   } finally {
     elements.entrySubmit.disabled = false;
   }
+}
+
+function entryMemorySummary(record) {
+  if (record.entry_kind === "EQUIPMENT") return record.details.equipment_type;
+  if (record.entry_kind === "FAULT") return `${record.details.fault_code} · ${record.details.meaning}`;
+  if (record.entry_kind === "MEASUREMENT") {
+    const expected = record.details.expected_result.result_kind === "QUALITATIVE"
+      ? humanize(record.details.expected_result.qualitative_value)
+      : formatExpected(record.details.expected_result);
+    return `${record.details.name} · ${record.details.meter_mode} · ${expected}`;
+  }
+  const fault = record.details.fault_code ? `${record.details.fault_code} · ` : "";
+  return `${fault}${record.details.condition} → ${record.details.next_action}`;
+}
+
+function renderMemoryEntries(records) {
+  elements.memoryEntryList.replaceChildren();
+  if (records.length === 0) {
+    elements.memoryEntryList.append(node("p", "memory-empty", "No private knowledge entries match."));
+    return;
+  }
+  for (const record of records) {
+    const card = node("article", `memory-card${record.is_current ? "" : " is-superseded"}`);
+    const heading = node("div", "memory-card-heading");
+    const identity = document.createElement("div");
+    identity.append(
+      node("strong", "", record.title),
+      node("small", "", `${record.equipment.model_number} · ${record.equipment.revision || "revision unknown"}`),
+    );
+    heading.append(identity, node("span", "memory-card-badge", record.is_current ? humanize(record.entry_kind) : "Superseded"));
+    const evidence = record.evidence.context_type === "MANUAL"
+      ? `${record.evidence.document_id} · p. ${record.evidence.page}`
+      : "Private field context";
+    card.append(
+      heading,
+      node("p", "", entryMemorySummary(record)),
+    );
+    const metadata = node("div", "memory-card-meta");
+    metadata.append(
+      node("span", "", humanize(record.confidence_status)),
+      node("span", "", humanize(record.guidance_status)),
+      node("span", "", evidence),
+    );
+    card.append(metadata);
+    if (record.is_current) {
+      const correction = node("button", "memory-card-action", "Use as correction");
+      correction.type = "button";
+      correction.addEventListener("click", () => beginEntryCorrection(record));
+      card.append(correction);
+    } else if (record.superseded_by_entry_id) {
+      card.append(node("p", "", `Corrected by ${record.superseded_by_entry_id}`));
+    }
+    elements.memoryEntryList.append(card);
+  }
+}
+
+function renderMemoryCases(records) {
+  elements.memoryCaseList.replaceChildren();
+  if (records.length === 0) {
+    elements.memoryCaseList.append(node("p", "memory-empty", "No saved field cases match."));
+    return;
+  }
+  for (const record of records) {
+    const latestResult = record.results.at(-1);
+    const card = node("article", "memory-card");
+    const heading = node("div", "memory-card-heading");
+    const identity = document.createElement("div");
+    identity.append(
+      node("strong", "", record.complaint_summary),
+      node("small", "", `${record.model_id} · ${record.case_id}`),
+    );
+    heading.append(identity, node("span", "memory-card-badge", humanize(record.state)));
+    card.append(heading, node("p", "", `${record.fault_codes.join(", ")} · ${formatCaseResult(latestResult)}`));
+    const metadata = node("div", "memory-card-meta");
+    metadata.append(
+      node("span", "", latestResult.recorded_by),
+      node("span", "", record.disposition ? humanize(record.disposition) : "No disposition"),
+      node("span", "", record.updated_at),
+    );
+    card.append(metadata);
+    elements.memoryCaseList.append(card);
+  }
+}
+
+async function loadPersonalMemory(query = elements.memorySearch.value.trim()) {
+  try {
+    const memory = await requestJson(`/api/personal-memory?q=${encodeURIComponent(query)}`);
+    elements.memoryEntryCount.textContent = memory.entry_count;
+    elements.memoryCaseCount.textContent = memory.case_count;
+    renderMemoryEntries(memory.entries);
+    renderMemoryCases(memory.cases);
+  } catch (error) {
+    showError(error.message);
+    elements.memoryEntryList.replaceChildren(node("p", "memory-empty", "Private memory is unavailable."));
+    elements.memoryCaseList.replaceChildren(node("p", "memory-empty", "Private case history is unavailable."));
+  }
+}
+
+async function searchPersonalMemory(event) {
+  event.preventDefault();
+  clearError();
+  await loadPersonalMemory();
 }
 
 function populateModel(model) {
@@ -942,6 +1114,8 @@ function renderCaseSnapshot(snapshot) {
   const path = selectedCasePath();
   renderCaseStatus(snapshot.state);
   elements.caseOutcome.hidden = snapshot.evaluation === null;
+  elements.caseSave.disabled = snapshot.evaluation === null;
+  elements.caseSaveStatus.textContent = snapshot.evaluation === null ? "Enter a result before saving" : "Not saved";
   if (snapshot.evaluation !== null) {
     const evaluatedStep = caseStep(path, snapshot.evaluation.step_id);
     const latestResult = snapshot.results.at(-1);
@@ -971,13 +1145,13 @@ function newCaseIdentity() {
   state.caseCreatedAt = createdAt;
   state.caseResults = [];
   state.caseSnapshot = null;
+  state.caseRequest = null;
 }
 
-async function updateCase(results = state.caseResults) {
+function currentCaseRequest(results = state.caseResults) {
   const path = selectedCasePath();
-  if (!path || !state.caseId) return;
-  clearError();
-  const request = {
+  if (!path || !state.caseId) return null;
+  return {
     case_id: state.caseId,
     path_id: path.path_id,
     mode: "FIELD",
@@ -987,6 +1161,12 @@ async function updateCase(results = state.caseResults) {
     created_at: state.caseCreatedAt,
     updated_at: new Date().toISOString(),
   };
+}
+
+async function updateCase(results = state.caseResults) {
+  const request = currentCaseRequest(results);
+  if (!request) return;
+  clearError();
   try {
     const snapshot = await requestJson("/api/case", {
       method: "POST",
@@ -994,6 +1174,7 @@ async function updateCase(results = state.caseResults) {
       body: JSON.stringify(request),
     });
     state.caseResults = results;
+    state.caseRequest = request;
     renderCaseSnapshot(snapshot);
   } catch (error) {
     showError(error.message);
@@ -1056,6 +1237,26 @@ async function submitCaseResult() {
     notes: null,
   };
   await updateCase([...state.caseResults, result]);
+}
+
+async function savePersonalCase() {
+  if (!state.caseRequest || state.caseSnapshot?.evaluation === null) return;
+  clearError();
+  elements.caseSave.disabled = true;
+  elements.caseSaveStatus.textContent = "Saving privately…";
+  try {
+    const record = await requestJson("/api/personal-cases", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(state.caseRequest),
+    });
+    elements.caseSaveStatus.textContent = `Saved ${record.case_id}`;
+    await loadPersonalMemory();
+  } catch (error) {
+    showError(error.message);
+    elements.caseSave.disabled = false;
+    elements.caseSaveStatus.textContent = "Not saved";
+  }
 }
 
 function selectedTrainingReplay() {
@@ -1295,6 +1496,9 @@ async function initialize() {
     if (state.definitions.personal_entry_behavior !== "PRIVATE_LOCAL_FILE_FAIL_CLOSED") {
       throw new Error("Unsupported personal-entry behavior; application stopped.");
     }
+    if (state.definitions.personal_memory_behavior !== "PRIVATE_LOCAL_SEARCH_AND_CASE_HISTORY") {
+      throw new Error("Unsupported personal-memory behavior; application stopped.");
+    }
     populateModel(state.definitions.model);
     populatePhases(state.definitions.operating_states);
     populateCasePaths(state.definitions.diagnostic_paths);
@@ -1318,6 +1522,7 @@ async function initialize() {
       updateCase();
     });
     elements.caseEvaluate.addEventListener("click", submitCaseResult);
+    elements.caseSave.addEventListener("click", savePersonalCase);
     elements.trainingReplaySelect.addEventListener("change", () => selectTrainingReplay(elements.trainingReplaySelect.value));
     elements.trainingSafetyAck.addEventListener("change", () => {
       resetTrainingResponse();
@@ -1332,11 +1537,17 @@ async function initialize() {
     elements.entryContextType.addEventListener("change", syncEntryContext);
     elements.entryResultKind.addEventListener("change", syncEntryExpectedResult);
     elements.entryForm.addEventListener("submit", submitPersonalEntry);
+    elements.entryCorrectionCancel.addEventListener("click", cancelEntryCorrection);
+    elements.memorySearchForm.addEventListener("submit", searchPersonalMemory);
+    elements.memoryRecent.addEventListener("click", () => {
+      elements.memorySearch.value = "";
+      loadPersonalMemory("");
+    });
     syncEntryKind();
     syncEntryContext();
     syncEntryExpectedResult();
     updatePhaseDescription();
-    await updateSnapshot();
+    await Promise.all([updateSnapshot(), loadPersonalMemory("")]);
   } catch (error) {
     showError(error.message);
     elements.statusBadge.textContent = "Unavailable";

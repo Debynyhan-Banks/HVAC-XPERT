@@ -22,6 +22,9 @@ The interface supports:
 - personal `UNVERIFIED`, `MANUAL_CONFIRMED`, `FIELD_CONFIRMED`, and `CONFLICTED` confidence states
 - fail-closed guidance status that never activates a deterministic rule automatically
 - one-file-per-entry storage under ignored `knowledge-base/private/personal-entries/`
+- private text search across personal entries and saved field cases
+- immutable correction lineage that keeps superseded entries visible without editing them in place
+- explicit field-case saving under ignored `knowledge-base/private/cases/` only after deterministic server evaluation
 - model and approved-definition counts
 - a safety-gated deterministic training replay derived from each eligible approved diagnostic path
 - clearly labeled simulated observations that cannot be mistaken for live or technician-entered measurements
@@ -59,4 +62,6 @@ deferred.
 
 P-001 personal entries are not loaded into the approved simulator automatically.
 Confirmed actionable entries become candidates for separate deterministic-rule
-review. P-002 adds search, corrections, and persistent case history.
+review. P-002 searches private entries and cases, preserves corrections as linked
+new records, and saves only safety-acknowledged, server-evaluated field cases with
+technician-entered results.

@@ -21,28 +21,26 @@ Unknown or unsupported steps fail closed. A thread may use synthetic fixtures fo
 | Thread | Outcome | Status | External access before start |
 | --- | --- | --- | --- |
 | `P-000` | Single-owner local-first scope and simplified governance | Complete; merged in PR #21 | No API, database, hardware, upload, or paid service |
-| `P-001` | Ten-minute manual knowledge entry and personal confidence status | Implementation complete; owner acceptance pending | Existing private documents or field context only |
-| `P-002` | Searchable private knowledge and local case history | Next after P-001 acceptance | Local storage decision; no cloud account required |
+| `P-001` | Ten-minute manual knowledge entry and personal confidence status | Complete; accepted and merged in PR #22 | Existing private documents or field context only |
+| `P-002` | Searchable private knowledge and local case history | Implementation complete; owner acceptance pending | Owner-only local JSON storage; no cloud account required |
 | `P-003` | Phone-first offline field use | Pending | Device/storage/security decisions; no public listener |
 | `P-004` | Job-driven equipment and fault breadth | Pending | Private source or field context for each entry |
 | `P-005` | Optional retrieval-grounded AI explanation | Deferred | Owner-supplied AI provider access if selected |
 | `P-006` | Encrypted backup, restore, and owner-controlled export | Pending | Backup destination decision |
 | `P-007` | Future customer-supplied-content platform evaluation | Deferred | New commercial, legal, security, and hosting scope |
 
-## P-001 bounded objective
+## P-002 bounded objective
 
-The next thread is deliberately narrow:
+The active thread is deliberately narrow:
 
-- one local manual-entry workflow;
-- equipment identity and revision applicability;
-- one of fault, measurement, or diagnostic-branch entry per submission;
-- source document/page or field-context metadata;
-- safety category where the entry can drive a test;
-- owner-facing `UNVERIFIED`, `MANUAL_CONFIRMED`, `FIELD_CONFIRMED`, or `CONFLICTED` status;
-- deterministic guidance limited to confirmed, non-conflicted entries; and
-- focused schema, engine, privacy-boundary, and browser acceptance tests.
+- local text search over private knowledge entries and saved field cases;
+- search matches for model, fault, title, complaint, result, component context, and technician identity;
+- immutable correction records linked to the superseded personal entry;
+- explicit private-history saving only after a safety-acknowledged field case has a technician-entered result and server-side deterministic evaluation;
+- visible separation of technician observations, approved references, and deterministic evaluations; and
+- focused store, correction, privacy-boundary, server, and browser acceptance tests.
 
-It does not require an AI API, cloud hosting, connected meter, crawler, public manufacturer records, or customer accounts. Persistent case history, phone packaging, AI explanation, and commercial workflows remain later personal threads.
+It does not require an AI API, cloud hosting, database, connected meter, crawler, public manufacturer records, or customer accounts. Search indexing, phone packaging, AI explanation, and commercial workflows remain later decisions.
 
 ## Thread anatomy
 

@@ -62,6 +62,13 @@
         <p class="section-explainer">
           Record one equipment, fault, measurement, or diagnostic-branch fact from a private manual or field observation. The record stays local and cannot activate deterministic guidance automatically.
         </p>
+        <div id="entry-correction-banner" class="entry-correction-banner" hidden>
+          <div>
+            <strong>Creating an immutable correction</strong>
+            <span id="entry-correction-id">—</span>
+          </div>
+          <button id="entry-correction-cancel" type="button">Cancel correction</button>
+        </div>
         <form id="entry-form" class="entry-form">
           <fieldset>
             <legend>Equipment applicability</legend>
@@ -248,6 +255,50 @@
         </div>
       </section>
 
+      <section class="panel memory-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">P-002 · Personal memory</p>
+            <h2>Search private knowledge and case history</h2>
+          </div>
+          <div class="memory-counts" aria-label="Personal memory result counts">
+            <span><strong id="memory-entry-count">0</strong> entries</span>
+            <span><strong id="memory-case-count">0</strong> cases</span>
+          </div>
+        </div>
+        <p class="section-explainer">
+          Search locally by model, fault code, symptom, component, title, technician, or recent case. Private field context is searchable but is not copied into Git or sent to a cloud service.
+        </p>
+        <form id="memory-search-form" class="memory-search-form">
+          <label class="search-field memory-search-field">
+            <span class="sr-only">Search personal memory</span>
+            <input id="memory-search" type="search" autocomplete="off" placeholder="Search model, fault, symptom, component, technician…">
+          </label>
+          <button class="primary-button" type="submit">Search private memory</button>
+          <button id="memory-recent" class="secondary-button" type="button">Show recent</button>
+        </form>
+        <div class="memory-grid">
+          <section class="memory-column" aria-labelledby="memory-entry-heading">
+            <div class="memory-column-heading">
+              <h3 id="memory-entry-heading">Knowledge entries</h3>
+              <span>Private references and corrections</span>
+            </div>
+            <div id="memory-entry-list" class="memory-list">
+              <p class="memory-empty">Loading recent entries…</p>
+            </div>
+          </section>
+          <section class="memory-column" aria-labelledby="memory-case-heading">
+            <div class="memory-column-heading">
+              <h3 id="memory-case-heading">Field case history</h3>
+              <span>Technician-entered results only</span>
+            </div>
+            <div id="memory-case-list" class="memory-list">
+              <p class="memory-empty">Loading recent cases…</p>
+            </div>
+          </section>
+        </div>
+      </section>
+
       <section class="panel case-panel">
         <div class="panel-heading">
           <div>
@@ -327,6 +378,10 @@
                 <div><span>Recorded by</span><strong id="case-recorded-by">—</strong></div>
               </div>
               <small id="case-record-meta" class="case-record-meta">—</small>
+              <div class="case-save-row">
+                <button id="case-save" class="secondary-button" type="button">Save case to private history</button>
+                <small id="case-save-status">Not saved</small>
+              </div>
             </div>
             <div class="source-block">
               <span class="detail-label">Path traceability</span>

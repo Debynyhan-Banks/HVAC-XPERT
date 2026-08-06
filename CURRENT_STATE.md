@@ -6,7 +6,7 @@ Personal alpha — local field copilot
 
 ## Current objective
 
-Obtain owner acceptance and merge the `P-001` ten-minute manual-entry workflow, then begin `P-002` searchable private knowledge and local case history.
+Obtain owner acceptance and merge the `P-002` searchable private memory workflow, then begin `P-003` phone-first offline use.
 
 ## Completed
 
@@ -145,23 +145,31 @@ Obtain owner acceptance and merge the `P-001` ten-minute manual-entry workflow, 
 - Unverified, conflicted, revision-unknown, and safety-unknown entries fail closed; no personal entry activates deterministic guidance automatically
 - Confirmed actionable entries are marked only as `ELIGIBLE_FOR_RULE_REVIEW`, preserving a separate deterministic-rule review step
 - Focused personal-entry and private-browser tests pass with schema-foundation validation
+- `P-001` owner acceptance was confirmed and pull request #22 merged as commit `762ea695`
+- P-002 searches private entries and field-case history by model, fault, title, complaint, result, component context, and technician identity
+- Personal corrections create a new immutable entry linked through `supersedes_entry_id`; superseded records remain searchable and visibly non-current
+- Private field cases are persisted only after server-side deterministic evaluation, field-mode enforcement, safety acknowledgement, and at least one technician-entered result
+- Local case snapshots retain exact package lineage, complaint, fault codes, technician observations, deterministic evaluations, and final outcome without implying that the application measured equipment
+- P-002 browser controls support recent-memory review, text search, correction prefill, and explicit private case saving
+- Generated entries and cases remain under ignored owner-only local storage and are never copied into tracked browser assets
+- Focused entry, case-store, and browser integration tests pass; real private-memory browser verification found the representative entry without creating or changing private records
 
 ## In progress
 
-- Owner acceptance and merge of the `P-001` personal manual-entry workflow
+- Owner acceptance and merge of the `P-002` searchable private memory workflow
 - Repository visibility decision; making the repository private is recommended but is not part of `P-000`
 - Optional personal acceptance of the merged `ST-003` training behavior and rubric
 
 ## Blockers
 
-- No implementation blocker prevents P-001 owner acceptance or merge
+- No implementation blocker prevents P-002 owner acceptance or merge
 - The public repository cannot receive private manufacturer records, source binaries, field history, customer details, site details, or credentials
 - Automated collection and public or customer distribution remain blocked and are not required for the personal workflow
 - Transition timing and automatic transition conditions remain unknown and cannot be invented
 
 ## Next action
 
-Review one representative P-001 entry in the localhost interface, confirm that the form and fail-closed status are understandable, and merge the focused pull request. Then begin P-002 search, correction history, and persistent local case records.
+Review private-memory search and correction prefill in the localhost interface. When a real field case is appropriate, complete the deterministic case workflow and explicitly save it to private history. Merge the focused pull request, then begin P-003 phone-first offline design and security decisions.
 
 After the work unit passes validation, update this file, commit only the intended non-private files, and push the current branch to `origin`.
 

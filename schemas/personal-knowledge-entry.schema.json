@@ -42,6 +42,12 @@
       "type": "string",
       "enum": ["UNVERIFIED", "MANUAL_CONFIRMED", "FIELD_CONFIRMED", "CONFLICTED"]
     },
+    "supersedes_entry_id": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "maxLength": 160,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
     "guidance_status": {
       "type": "string",
       "enum": [

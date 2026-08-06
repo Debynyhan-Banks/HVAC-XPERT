@@ -148,3 +148,10 @@ This file records accepted cross-project decisions. Revisions must preserve prio
 - Date: 2026-08-05
 - Decision: P-001 stores one canonical JSON file per owner-entered equipment, fault, measurement, or diagnostic-branch record under the ignored local knowledge directory. No entry becomes an active deterministic rule automatically. PostgreSQL remains deferred until shared, commercial, scale, or concurrency requirements justify it.
 - Reason: Per-record local JSON provides immediate private personal value, schema visibility, simple backup inputs, and a low-complexity path into P-002 search without introducing a cloud service or database before sustained personal use establishes the need.
+
+## ADR-022: Personal memory preserves corrections and evaluated case evidence
+
+- Status: Accepted
+- Date: 2026-08-05
+- Decision: P-002 performs bounded full-text scans over owner-only local JSON records rather than introducing a database or search service. Corrections create new immutable entries linked to the superseded record. Field-case history stores only safety-acknowledged cases evaluated by the deterministic server with at least one technician-entered result; it never converts personal entries into active rules automatically.
+- Reason: A small local record set does not justify indexing infrastructure yet. Immutable correction lineage preserves what changed, while server-evaluated case snapshots keep technician observations distinct from deterministic evaluation and prevent arbitrary browser payloads from becoming trusted case history.

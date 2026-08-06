@@ -10,7 +10,7 @@ from apps.private_simulator.server import (
     create_server,
     is_local_host_header,
 )
-from personal_knowledge import PersonalEntryStore
+from personal_knowledge import PersonalCaseStore, PersonalEntryStore
 from scripts.private_package_gate import PrivateKnowledgePackage
 from simulator import UnknownFaultError, UnknownOperatingStateError
 
@@ -322,9 +322,11 @@ class PrivateSimulatorApplicationTests(unittest.TestCase):
         self.temporary_directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary_directory.cleanup)
         self.personal_entry_root = Path(self.temporary_directory.name) / "personal-entries"
+        self.personal_case_root = Path(self.temporary_directory.name) / "cases"
         self.application = PrivateSimulatorApplication(
             package(),
             PersonalEntryStore(self.personal_entry_root),
+            PersonalCaseStore(self.personal_case_root),
         )
 
     def test_lists_only_local_runtime_definitions(self):
@@ -337,6 +339,7 @@ class PrivateSimulatorApplicationTests(unittest.TestCase):
         self.assertEqual(definitions["diagnostic_case_behavior"], "TECHNICIAN_ENTRY_DETERMINISTIC_EVALUATION")
         self.assertEqual(definitions["training_behavior"], "DETERMINISTIC_SIMULATED_REPLAY_SCORING")
         self.assertEqual(definitions["personal_entry_behavior"], "PRIVATE_LOCAL_FILE_FAIL_CLOSED")
+        self.assertEqual(definitions["personal_memory_behavior"], "PRIVATE_LOCAL_SEARCH_AND_CASE_HISTORY")
         self.assertEqual(definitions["model"]["model_id"], MODEL_ID)
         self.assertEqual(definitions["model"]["component_count"], 1)
         self.assertEqual(definitions["fault_codes"], ["F01"])
@@ -380,6 +383,20 @@ class PrivateSimulatorApplicationTests(unittest.TestCase):
         self.assertEqual(record["guidance_status"], "REFERENCE_ONLY_CONFIRMED")
         self.assertIs(record["deterministic_guidance_active"], False)
         self.assertTrue((self.personal_entry_root / f"{record['entry_id']}.json").is_file())
+
+        memory = self.application.personal_memory("F01")
+        self.assertEqual(memory["entry_count"], 1)
+        self.assertEqual(memory["entries"][0]["entry_id"], record["entry_id"])
+
+    def test_saves_server_evaluated_field_case_to_private_history(self):
+        record = self.application.save_personal_case(case_request(results=[numeric_result(24)]))
+
+        self.assertEqual(record["state"], "COMPLETE")
+        self.assertEqual(record["evaluation"]["outcome"], "MATCHES_EXPECTED")
+        self.assertEqual(record["results"][0]["source_type"], "TECHNICIAN_ENTRY")
+        self.assertTrue((self.personal_case_root / f"{record['case_id']}.json").is_file())
+        memory = self.application.personal_memory("F01 synthetic-technician")
+        self.assertEqual(memory["case_count"], 1)
 
     def test_creates_manual_deterministic_snapshot(self):
         first = self.application.snapshot(snapshot_request())
@@ -555,6 +572,20 @@ class PrivateSimulatorApplicationTests(unittest.TestCase):
         self.assertIn("PRIVATE_LOCAL_FILE_FAIL_CLOSED", javascript)
         self.assertIn('requestJson("/api/personal-entries"', javascript)
         self.assertIn("ELIGIBLE_FOR_RULE_REVIEW", javascript)
+
+    def test_personal_memory_interface_searches_corrects_and_saves_cases_privately(self):
+        html = (STATIC_ROOT / "index.html").read_text(encoding="utf-8")
+        javascript = (STATIC_ROOT / "app.js").read_text(encoding="utf-8")
+
+        self.assertIn("P-002 · Personal memory", html)
+        self.assertIn('id="memory-search"', html)
+        self.assertIn("Search private knowledge and case history", html)
+        self.assertIn("Use as correction", javascript)
+        self.assertIn('id="case-save"', html)
+        self.assertIn("Save case to private history", html)
+        self.assertIn("PRIVATE_LOCAL_SEARCH_AND_CASE_HISTORY", javascript)
+        self.assertIn("/api/personal-memory", javascript)
+        self.assertIn('requestJson("/api/personal-cases"', javascript)
 
 
 if __name__ == "__main__":

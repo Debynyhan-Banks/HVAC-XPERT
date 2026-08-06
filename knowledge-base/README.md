@@ -12,6 +12,21 @@ knowledge-base/private/personal-entries/
 Each record conforms to `schemas/personal-knowledge-entry.schema.json`. Personal
 entries remain outside Git and do not activate deterministic guidance automatically.
 Confirmed actionable entries are candidates for a separate reviewed rule step.
+Corrections create a new record with `supersedes_entry_id`; the prior record remains
+available for personal audit and is marked non-current by the local search service.
+
+## Personal field cases
+
+P-002 writes explicitly saved field-case snapshots to the ignored local directory:
+
+```text
+knowledge-base/private/cases/
+```
+
+The server evaluates each case through the deterministic diagnostic engine before
+storage. Only safety-acknowledged field cases with at least one technician-entered
+result are accepted. Search is local and scans private entry and case JSON; no cloud
+database, public index, or external service receives the records.
 
 Technically approved manufacturer records remain private while source-rights and publication authorization are unresolved. Internal tools load them through `scripts/private_package_gate.py`; they must not read private JSON files directly.
 
