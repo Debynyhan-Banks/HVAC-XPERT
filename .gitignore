@@ -19,3 +19,5 @@ __pycache__/
 tmp/
 sources/private/*
 !sources/private/.gitkeep
+knowledge-base/private/*
+!knowledge-base/private/.gitkeep

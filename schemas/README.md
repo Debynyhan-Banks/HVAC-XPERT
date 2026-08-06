@@ -29,7 +29,7 @@ Manufacturer
 
 `source-registry.schema.json` validates the acquisition allowlist and enforces the fail-closed approval gate.
 
-`diagnostic-path.schema.json` stores reviewed manufacturer-derived complaint, test, expected-result, and branch relationships. `diagnostic-case.schema.json` stores technician observations and deterministic evaluations separately from published equipment knowledge. `training-replay.schema.json` stores the answer-redacted replay definition; `training-attempt.schema.json` stores safety state, clearly labeled synthetic observation, learner response, transparent scoring, and post-submission remediation.
+`diagnostic-path.schema.json` stores reviewed manufacturer-derived complaint, test, expected-result, and branch relationships. `diagnostic-case.schema.json` stores technician observations and deterministic evaluations separately from published equipment knowledge. `training-replay.schema.json` stores the answer-redacted replay definition; `training-attempt.schema.json` stores safety state, clearly labeled synthetic observation, learner response, transparent scoring, and post-submission remediation. `personal-knowledge-entry.schema.json` stores one private owner-entered equipment, fault, measurement, or diagnostic-branch record with exact applicability, source or field context, confidence, safety, and fail-closed guidance status.
 
 ## Contract rules
 
@@ -59,6 +59,7 @@ Manufacturer
 - `diagnostic-case.schema.json`
 - `training-replay.schema.json`
 - `training-attempt.schema.json`
+- `personal-knowledge-entry.schema.json`
 - `scenario.schema.json`
 - `provenance.schema.json`
 - `source-registry.schema.json`

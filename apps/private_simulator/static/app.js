@@ -111,6 +111,56 @@ const elements = {
   trainingRemediation: document.querySelector("#training-remediation"),
   trainingRecordMeta: document.querySelector("#training-record-meta"),
   trainingSource: document.querySelector("#training-source"),
+  entryStatus: document.querySelector("#entry-status"),
+  entryForm: document.querySelector("#entry-form"),
+  entryManufacturer: document.querySelector("#entry-manufacturer"),
+  entryBrand: document.querySelector("#entry-brand"),
+  entryModel: document.querySelector("#entry-model"),
+  entryRevision: document.querySelector("#entry-revision"),
+  entryKind: document.querySelector("#entry-kind"),
+  entryConfidence: document.querySelector("#entry-confidence"),
+  entrySafety: document.querySelector("#entry-safety"),
+  entryTitle: document.querySelector("#entry-title"),
+  entryEquipmentFields: document.querySelector("#entry-equipment-fields"),
+  entryEquipmentType: document.querySelector("#entry-equipment-type"),
+  entryEquipmentNotes: document.querySelector("#entry-equipment-notes"),
+  entryFaultFields: document.querySelector("#entry-fault-fields"),
+  entryFaultCode: document.querySelector("#entry-fault-code"),
+  entryFaultMeaning: document.querySelector("#entry-fault-meaning"),
+  entryFaultNotes: document.querySelector("#entry-fault-notes"),
+  entryMeasurementFields: document.querySelector("#entry-measurement-fields"),
+  entryMeasurementName: document.querySelector("#entry-measurement-name"),
+  entryMeterMode: document.querySelector("#entry-meter-mode"),
+  entryPointA: document.querySelector("#entry-point-a"),
+  entryPointB: document.querySelector("#entry-point-b"),
+  entryResultKind: document.querySelector("#entry-result-kind"),
+  entryNominal: document.querySelector("#entry-nominal"),
+  entryMinimum: document.querySelector("#entry-minimum"),
+  entryMaximum: document.querySelector("#entry-maximum"),
+  entryUnit: document.querySelector("#entry-unit"),
+  entryQualitativeField: document.querySelector("#entry-qualitative-field"),
+  entryQualitative: document.querySelector("#entry-qualitative"),
+  entryNumericFields: [...document.querySelectorAll(".entry-numeric-field")],
+  entryProcedure: document.querySelector("#entry-procedure"),
+  entryBranchFields: document.querySelector("#entry-branch-fields"),
+  entryBranchFault: document.querySelector("#entry-branch-fault"),
+  entryDisposition: document.querySelector("#entry-disposition"),
+  entryCondition: document.querySelector("#entry-condition"),
+  entryNextAction: document.querySelector("#entry-next-action"),
+  entryContextType: document.querySelector("#entry-context-type"),
+  entryDocumentField: document.querySelector("#entry-document-field"),
+  entryDocumentId: document.querySelector("#entry-document-id"),
+  entryPageField: document.querySelector("#entry-page-field"),
+  entryPage: document.querySelector("#entry-page"),
+  entryFieldContextField: document.querySelector("#entry-field-context-field"),
+  entryFieldContext: document.querySelector("#entry-field-context"),
+  entrySubmit: document.querySelector("#entry-submit"),
+  entryResult: document.querySelector("#entry-result"),
+  entryResultTitle: document.querySelector("#entry-result-title"),
+  entryResultId: document.querySelector("#entry-result-id"),
+  entryResultConfidence: document.querySelector("#entry-result-confidence"),
+  entryResultGuidance: document.querySelector("#entry-result-guidance"),
+  entryResultMessage: document.querySelector("#entry-result-message"),
   errorBanner: document.querySelector("#error-banner"),
   errorMessage: document.querySelector("#error-message"),
 };
@@ -137,6 +187,159 @@ async function requestJson(url, options) {
   const payload = await response.json();
   if (!response.ok) throw new Error(payload.error || `Request failed (${response.status})`);
   return payload;
+}
+
+function requiredEntryText(element, label) {
+  const value = element.value.trim();
+  if (!value) {
+    element.focus();
+    throw new Error(`${label} is required.`);
+  }
+  return value;
+}
+
+function optionalEntryText(element) {
+  return element.value.trim() || null;
+}
+
+function optionalEntryNumber(element) {
+  if (element.value === "") return null;
+  const value = Number(element.value);
+  if (!Number.isFinite(value)) {
+    element.focus();
+    throw new Error("Expected numeric values must be valid numbers.");
+  }
+  return value;
+}
+
+function syncEntryKind() {
+  const kind = elements.entryKind.value;
+  elements.entryEquipmentFields.hidden = kind !== "EQUIPMENT";
+  elements.entryFaultFields.hidden = kind !== "FAULT";
+  elements.entryMeasurementFields.hidden = kind !== "MEASUREMENT";
+  elements.entryBranchFields.hidden = kind !== "DIAGNOSTIC_BRANCH";
+  const actionable = kind === "MEASUREMENT" || kind === "DIAGNOSTIC_BRANCH";
+  elements.entrySafety.disabled = !actionable;
+  if (actionable && elements.entrySafety.value === "NOT_ACTIONABLE") elements.entrySafety.value = "UNKNOWN";
+  if (!actionable) elements.entrySafety.value = "NOT_ACTIONABLE";
+}
+
+function syncEntryContext() {
+  const manual = elements.entryContextType.value === "MANUAL";
+  elements.entryDocumentField.hidden = !manual;
+  elements.entryPageField.hidden = !manual;
+  elements.entryFieldContextField.hidden = manual;
+}
+
+function syncEntryExpectedResult() {
+  const numeric = elements.entryResultKind.value === "NUMERIC";
+  for (const field of elements.entryNumericFields) field.hidden = !numeric;
+  elements.entryQualitativeField.hidden = numeric;
+}
+
+function entryDetails(kind) {
+  if (kind === "EQUIPMENT") {
+    return {
+      equipment_type: requiredEntryText(elements.entryEquipmentType, "Equipment type"),
+      notes: optionalEntryText(elements.entryEquipmentNotes),
+    };
+  }
+  if (kind === "FAULT") {
+    return {
+      fault_code: requiredEntryText(elements.entryFaultCode, "Fault code"),
+      meaning: requiredEntryText(elements.entryFaultMeaning, "Fault meaning"),
+      notes: optionalEntryText(elements.entryFaultNotes),
+    };
+  }
+  if (kind === "MEASUREMENT") {
+    const numeric = elements.entryResultKind.value === "NUMERIC";
+    return {
+      name: requiredEntryText(elements.entryMeasurementName, "Measurement name"),
+      meter_mode: requiredEntryText(elements.entryMeterMode, "Meter mode"),
+      point_a: requiredEntryText(elements.entryPointA, "Point A"),
+      point_b: optionalEntryText(elements.entryPointB),
+      expected_result: {
+        result_kind: elements.entryResultKind.value,
+        nominal: numeric ? optionalEntryNumber(elements.entryNominal) : null,
+        minimum: numeric ? optionalEntryNumber(elements.entryMinimum) : null,
+        maximum: numeric ? optionalEntryNumber(elements.entryMaximum) : null,
+        unit: numeric ? requiredEntryText(elements.entryUnit, "Expected unit") : null,
+        qualitative_value: numeric ? null : elements.entryQualitative.value,
+      },
+      procedure: requiredEntryText(elements.entryProcedure, "Measurement procedure"),
+    };
+  }
+  return {
+    fault_code: optionalEntryText(elements.entryBranchFault),
+    condition: requiredEntryText(elements.entryCondition, "Observed condition"),
+    disposition: elements.entryDisposition.value,
+    next_action: requiredEntryText(elements.entryNextAction, "Next action"),
+  };
+}
+
+function personalEntryRequest() {
+  const manual = elements.entryContextType.value === "MANUAL";
+  const pageValue = elements.entryPage.value === "" ? null : Number(elements.entryPage.value);
+  return {
+    entry_kind: elements.entryKind.value,
+    equipment: {
+      manufacturer: requiredEntryText(elements.entryManufacturer, "Manufacturer"),
+      brand: requiredEntryText(elements.entryBrand, "Brand"),
+      model_number: requiredEntryText(elements.entryModel, "Exact model number"),
+      revision: optionalEntryText(elements.entryRevision),
+    },
+    title: requiredEntryText(elements.entryTitle, "Entry title"),
+    details: entryDetails(elements.entryKind.value),
+    evidence: {
+      context_type: elements.entryContextType.value,
+      document_id: manual ? requiredEntryText(elements.entryDocumentId, "Document ID or title") : null,
+      page: manual ? pageValue : null,
+      field_context: manual ? null : requiredEntryText(elements.entryFieldContext, "Private field context"),
+    },
+    safety_category: elements.entrySafety.value,
+    confidence_status: elements.entryConfidence.value,
+  };
+}
+
+function renderPersonalEntryResult(record) {
+  const messages = {
+    BLOCKED_UNVERIFIED: "Saved as a draft. Confirm it against a private manual or applicable field result before rule review.",
+    BLOCKED_CONFLICTED: "Saved with a conflict. It remains blocked until the disagreement is resolved explicitly.",
+    BLOCKED_REVISION_UNKNOWN: "Saved, but exact revision applicability is still required.",
+    BLOCKED_SAFETY_UNKNOWN: "Saved, but a specific safety category is required before rule review.",
+    REFERENCE_ONLY_CONFIRMED: "Confirmed as private reference information; it is not an actionable diagnostic rule.",
+    ELIGIBLE_FOR_RULE_REVIEW: "Confirmed and safety-bounded. It remains inactive until a deterministic rule is reviewed separately.",
+  };
+  elements.entryResult.hidden = false;
+  elements.entryResultTitle.textContent = record.title;
+  elements.entryResultId.textContent = record.entry_id;
+  elements.entryResultConfidence.textContent = record.confidence_status.replaceAll("_", " ");
+  elements.entryResultGuidance.textContent = record.guidance_status.replaceAll("_", " ");
+  elements.entryResultMessage.textContent = messages[record.guidance_status];
+  elements.entryStatus.textContent = "Saved";
+  elements.entryStatus.className = "status-badge status-idle";
+}
+
+async function submitPersonalEntry(event) {
+  event.preventDefault();
+  clearError();
+  elements.entrySubmit.disabled = true;
+  elements.entryStatus.textContent = "Saving";
+  elements.entryStatus.className = "status-badge status-operation";
+  try {
+    const record = await requestJson("/api/personal-entries", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(personalEntryRequest()),
+    });
+    renderPersonalEntryResult(record);
+  } catch (error) {
+    showError(error.message);
+    elements.entryStatus.textContent = "Not saved";
+    elements.entryStatus.className = "status-badge status-fault";
+  } finally {
+    elements.entrySubmit.disabled = false;
+  }
 }
 
 function populateModel(model) {
@@ -1089,6 +1292,9 @@ async function initialize() {
     if (state.definitions.training_behavior !== "DETERMINISTIC_SIMULATED_REPLAY_SCORING") {
       throw new Error("Unsupported training behavior; application stopped.");
     }
+    if (state.definitions.personal_entry_behavior !== "PRIVATE_LOCAL_FILE_FAIL_CLOSED") {
+      throw new Error("Unsupported personal-entry behavior; application stopped.");
+    }
     populateModel(state.definitions.model);
     populatePhases(state.definitions.operating_states);
     populateCasePaths(state.definitions.diagnostic_paths);
@@ -1122,6 +1328,13 @@ async function initialize() {
       updateTraining();
     });
     elements.trainingSubmit.addEventListener("click", submitTrainingResponse);
+    elements.entryKind.addEventListener("change", syncEntryKind);
+    elements.entryContextType.addEventListener("change", syncEntryContext);
+    elements.entryResultKind.addEventListener("change", syncEntryExpectedResult);
+    elements.entryForm.addEventListener("submit", submitPersonalEntry);
+    syncEntryKind();
+    syncEntryContext();
+    syncEntryExpectedResult();
     updatePhaseDescription();
     await updateSnapshot();
   } catch (error) {

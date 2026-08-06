@@ -1,0 +1,247 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.hvac-xpert.local/personal-knowledge-entry.schema.json",
+  "title": "Personal Knowledge Entry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "entry_id",
+    "entry_kind",
+    "equipment",
+    "title",
+    "details",
+    "evidence",
+    "safety_category",
+    "confidence_status",
+    "guidance_status",
+    "deterministic_guidance_active",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "schema_version": {"$ref": "common.schema.json#/$defs/schemaVersion"},
+    "entry_id": {"$ref": "common.schema.json#/$defs/entityId"},
+    "entry_kind": {
+      "type": "string",
+      "enum": ["EQUIPMENT", "FAULT", "MEASUREMENT", "DIAGNOSTIC_BRANCH"]
+    },
+    "equipment": {"$ref": "#/$defs/equipment"},
+    "title": {"type": "string", "minLength": 1, "maxLength": 240},
+    "details": {
+      "oneOf": [
+        {"$ref": "#/$defs/equipmentDetails"},
+        {"$ref": "#/$defs/faultDetails"},
+        {"$ref": "#/$defs/measurementDetails"},
+        {"$ref": "#/$defs/branchDetails"}
+      ]
+    },
+    "evidence": {"$ref": "#/$defs/evidence"},
+    "safety_category": {"$ref": "#/$defs/safetyCategory"},
+    "confidence_status": {
+      "type": "string",
+      "enum": ["UNVERIFIED", "MANUAL_CONFIRMED", "FIELD_CONFIRMED", "CONFLICTED"]
+    },
+    "guidance_status": {
+      "type": "string",
+      "enum": [
+        "BLOCKED_UNVERIFIED",
+        "BLOCKED_CONFLICTED",
+        "BLOCKED_REVISION_UNKNOWN",
+        "BLOCKED_SAFETY_UNKNOWN",
+        "REFERENCE_ONLY_CONFIRMED",
+        "ELIGIBLE_FOR_RULE_REVIEW"
+      ]
+    },
+    "deterministic_guidance_active": {"const": false},
+    "created_at": {"type": "string", "format": "date-time"},
+    "updated_at": {"type": "string", "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"entry_kind": {"const": "EQUIPMENT"}}},
+      "then": {
+        "properties": {
+          "details": {"$ref": "#/$defs/equipmentDetails"},
+          "safety_category": {"const": "NOT_ACTIONABLE"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"entry_kind": {"const": "FAULT"}}},
+      "then": {
+        "properties": {
+          "details": {"$ref": "#/$defs/faultDetails"},
+          "safety_category": {"const": "NOT_ACTIONABLE"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"entry_kind": {"const": "MEASUREMENT"}}},
+      "then": {
+        "properties": {
+          "details": {"$ref": "#/$defs/measurementDetails"},
+          "safety_category": {"not": {"const": "NOT_ACTIONABLE"}}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"entry_kind": {"const": "DIAGNOSTIC_BRANCH"}}},
+      "then": {
+        "properties": {
+          "details": {"$ref": "#/$defs/branchDetails"},
+          "safety_category": {"not": {"const": "NOT_ACTIONABLE"}}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"confidence_status": {"const": "MANUAL_CONFIRMED"}}},
+      "then": {
+        "properties": {
+          "equipment": {"properties": {"revision": {"type": "string", "minLength": 1}}},
+          "evidence": {"properties": {"context_type": {"const": "MANUAL"}}}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"confidence_status": {"const": "FIELD_CONFIRMED"}}},
+      "then": {
+        "properties": {
+          "equipment": {"properties": {"revision": {"type": "string", "minLength": 1}}},
+          "evidence": {"properties": {"context_type": {"const": "FIELD"}}}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "entry_kind": {"enum": ["MEASUREMENT", "DIAGNOSTIC_BRANCH"]},
+          "confidence_status": {"enum": ["MANUAL_CONFIRMED", "FIELD_CONFIRMED"]}
+        }
+      },
+      "then": {
+        "properties": {
+          "safety_category": {"not": {"enum": ["NOT_ACTIONABLE", "OTHER", "UNKNOWN"]}}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "equipment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["manufacturer", "brand", "model_number", "revision"],
+      "properties": {
+        "manufacturer": {"type": "string", "minLength": 1, "maxLength": 160},
+        "brand": {"type": "string", "minLength": 1, "maxLength": 160},
+        "model_number": {"type": "string", "minLength": 1, "maxLength": 160},
+        "revision": {"type": ["string", "null"], "minLength": 1, "maxLength": 160}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["context_type", "document_id", "page", "field_context"],
+      "properties": {
+        "context_type": {"type": "string", "enum": ["MANUAL", "FIELD"]},
+        "document_id": {"type": ["string", "null"], "minLength": 1, "maxLength": 240},
+        "page": {"type": ["integer", "null"], "minimum": 1},
+        "field_context": {"type": ["string", "null"], "minLength": 1, "maxLength": 4000}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"context_type": {"const": "MANUAL"}}},
+          "then": {
+            "properties": {
+              "document_id": {"type": "string", "minLength": 1},
+              "page": {"type": "integer", "minimum": 1},
+              "field_context": {"type": "null"}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"context_type": {"const": "FIELD"}}},
+          "then": {
+            "properties": {
+              "document_id": {"type": "null"},
+              "page": {"type": "null"},
+              "field_context": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      ]
+    },
+    "safetyCategory": {
+      "type": "string",
+      "enum": [
+        "NOT_ACTIONABLE",
+        "DEENERGIZED_ONLY",
+        "ENERGIZED_LOW_VOLTAGE",
+        "ENERGIZED_LINE_VOLTAGE",
+        "HIGH_VOLTAGE_DC",
+        "REFRIGERANT_PRESSURE",
+        "OTHER",
+        "UNKNOWN"
+      ]
+    },
+    "equipmentDetails": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["equipment_type", "notes"],
+      "properties": {
+        "equipment_type": {"type": "string", "minLength": 1, "maxLength": 160},
+        "notes": {"type": ["string", "null"], "maxLength": 4000}
+      }
+    },
+    "faultDetails": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fault_code", "meaning", "notes"],
+      "properties": {
+        "fault_code": {"type": "string", "minLength": 1, "maxLength": 80},
+        "meaning": {"type": "string", "minLength": 1, "maxLength": 2000},
+        "notes": {"type": ["string", "null"], "maxLength": 4000}
+      }
+    },
+    "expectedResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["result_kind", "nominal", "minimum", "maximum", "unit", "qualitative_value"],
+      "properties": {
+        "result_kind": {"type": "string", "enum": ["NUMERIC", "QUALITATIVE"]},
+        "nominal": {"type": ["number", "null"]},
+        "minimum": {"type": ["number", "null"]},
+        "maximum": {"type": ["number", "null"]},
+        "unit": {"type": ["string", "null"], "minLength": 1, "maxLength": 40},
+        "qualitative_value": {
+          "type": ["string", "null"],
+          "enum": ["CONTINUITY", "NO_CONTINUITY", "OPEN", "CLOSED", "PRESENT", "ABSENT", "OTHER", "UNKNOWN", null]
+        }
+      }
+    },
+    "measurementDetails": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "meter_mode", "point_a", "point_b", "expected_result", "procedure"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1, "maxLength": 240},
+        "meter_mode": {"type": "string", "minLength": 1, "maxLength": 80},
+        "point_a": {"type": "string", "minLength": 1, "maxLength": 500},
+        "point_b": {"type": ["string", "null"], "minLength": 1, "maxLength": 500},
+        "expected_result": {"$ref": "#/$defs/expectedResult"},
+        "procedure": {"type": "string", "minLength": 1, "maxLength": 4000}
+      }
+    },
+    "branchDetails": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fault_code", "condition", "disposition", "next_action"],
+      "properties": {
+        "fault_code": {"type": ["string", "null"], "minLength": 1, "maxLength": 80},
+        "condition": {"type": "string", "minLength": 1, "maxLength": 2000},
+        "disposition": {"type": "string", "enum": ["NEXT_TEST", "COMPLETE", "ESCALATE", "STOP"]},
+        "next_action": {"type": "string", "minLength": 1, "maxLength": 4000}
+      }
+    }
+  }
+}

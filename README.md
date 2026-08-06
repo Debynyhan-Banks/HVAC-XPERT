@@ -7,7 +7,7 @@ HVAC XPERT is a single-owner, local-first HVAC/R field copilot and personal trai
 - Phase: Personal alpha — local field copilot
 - Primary owner: `Debynyhan-Banks`
 - Deterministic baseline: `ASXS6S4810AA` revision `AA`
-- Active thread: `P-000` personal-use pivot, followed by `P-001` ten-minute manual entry
+- Active thread: `P-001` ten-minute manual entry; owner acceptance pending
 - Repository visibility: Public; private records and source files remain excluded
 - Automated collection: Not authorized or needed for the personal workflow
 
@@ -58,7 +58,7 @@ Every contributor and AI agent must read these files in order:
 
 The approved private baseline and completed `ST-001` through `ST-003` workflows remain available: manual phase/reference simulation, SVG topology, virtual reference meter, bounded E24 field case, and deterministic training replay. Public export remains disabled. The active product work now prioritizes fast manual entry, personal confidence states, searchable local case history, phone-first offline access, and job-driven equipment breadth. The interface must continue to distinguish private references, actual field observations, deterministic evaluations, simulations, and optional AI explanations. It never fabricates live readings, authorizes repair, or invents unsupported tests.
 
-The next product thread is `P-001`: add one model, fault, measurement, or diagnostic branch manually in ten minutes or less while preventing unverified or conflicted entries from driving guidance.
+P-001 now provides a private localhost form that saves one model, fault, measurement, or diagnostic branch as a local JSON record while preventing unverified, conflicted, revision-unknown, or safety-unknown entries from driving guidance. After owner acceptance and merge, P-002 adds private search, correction history, and persistent case records.
 
 ## Private local interface
 

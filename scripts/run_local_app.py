@@ -12,6 +12,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 
 from apps.private_simulator.server import LOCAL_HOST, PrivateSimulatorApplication, create_server
+from personal_knowledge import DEFAULT_PERSONAL_ENTRY_ROOT, PersonalEntryStore
 from scripts.private_package_gate import (
     DEFAULT_PRIVATE_ROOT,
     PackageValidationError,
@@ -42,7 +43,7 @@ def run(args):
         args.extension,
         args.private_root,
     )
-    application = PrivateSimulatorApplication(package)
+    application = PrivateSimulatorApplication(package, PersonalEntryStore(DEFAULT_PERSONAL_ENTRY_ROOT))
     return create_server(application, args.port)
 
 
@@ -56,6 +57,7 @@ def main():
     address = f"http://{LOCAL_HOST}:{server.server_port}"
     print(f"HVAC XPERT private simulator: {address}")
     print("Press Ctrl+C to stop. Private package records remain local and are not exported.")
+    print(f"Personal entries remain private under: {DEFAULT_PERSONAL_ENTRY_ROOT}")
     if args.open:
         webbrowser.open(address)
     try:

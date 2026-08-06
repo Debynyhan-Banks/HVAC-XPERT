@@ -6,9 +6,9 @@ HVAC XPERT now implements personal value through the personal threads defined in
 
 | Personal thread | Product outcome | Status |
 | --- | --- | --- |
-| `P-000` | Adopt the single-owner local-first product scope | Documentation complete; merge pending |
-| `P-001` | Add a model, fault, measurement, or branch manually in ten minutes | Next |
-| `P-002` | Search private knowledge and persist local case history | Pending |
+| `P-000` | Adopt the single-owner local-first product scope | Complete; merged in PR #21 |
+| `P-001` | Add a model, fault, measurement, or branch manually in ten minutes | Implementation complete; owner acceptance pending |
+| `P-002` | Search private knowledge and persist local case history | Next after P-001 acceptance |
 | `P-003` | Use the copilot phone-first and offline without public exposure | Pending |
 | `P-004` | Expand knowledge from equipment encountered on real jobs | Pending |
 | `P-005` | Add optional retrieval-grounded AI explanation | Deferred until manual workflow proves useful |

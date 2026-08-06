@@ -12,6 +12,11 @@ from diagnostics import (
     DiagnosticDefinitionError,
     UnknownDiagnosticPathError,
 )
+from personal_knowledge import (
+    PersonalEntryStorageError,
+    PersonalEntryStore,
+    PersonalEntryValidationError,
+)
 from scripts.private_package_gate import PrivateKnowledgePackage
 from simulator import DeterministicSimulator, OperatingInputs
 from training import (
@@ -50,11 +55,12 @@ def json_value(value):
 
 
 class PrivateSimulatorApplication:
-    def __init__(self, package: PrivateKnowledgePackage):
+    def __init__(self, package: PrivateKnowledgePackage, personal_entries=None):
         self._package = package
         self._definitions = DeterministicSimulator(package)
         self._diagnostic_cases = DiagnosticCaseEngine(package)
         self._training = TrainingReplayEngine(package)
+        self._personal_entries = personal_entries or PersonalEntryStore()
 
     def definitions(self):
         return {
@@ -64,6 +70,7 @@ class PrivateSimulatorApplication:
             "topology_behavior": "REFERENCE_DEFINITION_ONLY",
             "diagnostic_case_behavior": "TECHNICIAN_ENTRY_DETERMINISTIC_EVALUATION",
             "training_behavior": "DETERMINISTIC_SIMULATED_REPLAY_SCORING",
+            "personal_entry_behavior": "PRIVATE_LOCAL_FILE_FAIL_CLOSED",
             "model": {
                 "model_id": self._definitions.model_id,
                 "revision_id": self._definitions.revision_id,
@@ -110,6 +117,9 @@ class PrivateSimulatorApplication:
 
     def training_snapshot(self, request):
         return json_value(self._training.evaluate(request))
+
+    def create_personal_entry(self, request):
+        return json_value(self._personal_entries.create(request))
 
     @staticmethod
     def _validate_snapshot_request(request):
@@ -181,7 +191,7 @@ def create_handler(application, static_root=STATIC_ROOT):
                 self._send_error(HTTPStatus.FORBIDDEN, "Only localhost requests are allowed")
                 return
             path = urlsplit(self.path).path
-            if path not in {"/api/snapshot", "/api/case", "/api/training"}:
+            if path not in {"/api/snapshot", "/api/case", "/api/training", "/api/personal-entries"}:
                 self._send_error(HTTPStatus.NOT_FOUND, "Not found")
                 return
             content_type = self.headers.get_content_type()
@@ -198,12 +208,16 @@ def create_handler(application, static_root=STATIC_ROOT):
                 return
             try:
                 request = json.loads(self.rfile.read(content_length))
+                response_status = HTTPStatus.OK
                 if path == "/api/snapshot":
                     response = application.snapshot(request)
                 elif path == "/api/case":
                     response = application.case_snapshot(request)
-                else:
+                elif path == "/api/training":
                     response = application.training_snapshot(request)
+                else:
+                    response = application.create_personal_entry(request)
+                    response_status = HTTPStatus.CREATED
             except (json.JSONDecodeError, UnicodeDecodeError):
                 self._send_error(HTTPStatus.BAD_REQUEST, "Request body must contain valid JSON")
                 return
@@ -214,12 +228,16 @@ def create_handler(application, static_root=STATIC_ROOT):
                 UnknownDiagnosticPathError,
                 TrainingAttemptInputError,
                 UnknownTrainingReplayError,
+                PersonalEntryValidationError,
                 KeyError,
                 ValueError,
             ) as error:
                 self._send_error(HTTPStatus.UNPROCESSABLE_ENTITY, str(error))
                 return
-            self._send_json(HTTPStatus.OK, response)
+            except PersonalEntryStorageError as error:
+                self._send_error(HTTPStatus.INTERNAL_SERVER_ERROR, str(error))
+                return
+            self._send_json(response_status, response)
 
         def do_OPTIONS(self):
             self._send_error(HTTPStatus.METHOD_NOT_ALLOWED, "Cross-origin requests are not supported")

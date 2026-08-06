@@ -17,6 +17,11 @@ python3 scripts/run_local_app.py \
 
 The interface supports:
 
+- a P-001 private form for equipment, fault, measurement, and diagnostic-branch records
+- exact model and revision applicability with private manual-page or field context
+- personal `UNVERIFIED`, `MANUAL_CONFIRMED`, `FIELD_CONFIRMED`, and `CONFLICTED` confidence states
+- fail-closed guidance status that never activates a deterministic rule automatically
+- one-file-per-entry storage under ignored `knowledge-base/private/personal-entries/`
 - model and approved-definition counts
 - a safety-gated deterministic training replay derived from each eligible approved diagnostic path
 - clearly labeled simulated observations that cannot be mistaken for live or technician-entered measurements
@@ -51,3 +56,7 @@ never generates a reading. Training mode generates only clearly labeled syntheti
 observations from an approved deterministic branch. Field mode currently accepts
 only explicit technician entry. Connected or imported instrument results remain
 deferred.
+
+P-001 personal entries are not loaded into the approved simulator automatically.
+Confirmed actionable entries become candidates for separate deterministic-rule
+review. P-002 adds search, corrections, and persistent case history.
